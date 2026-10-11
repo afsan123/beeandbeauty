@@ -1,0 +1,421 @@
+- generic [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - generic [ref=f2e3]:
+      - button "Previous announcement" [ref=f2e4] [cursor=pointer]
+      - link "FREE Luxe Lip Butter on Orders Above ৳1,499" [ref=f2e8] [cursor=pointer]:
+        - /url: /offers
+      - button "Next announcement" [ref=f2e9] [cursor=pointer]
+    - generic [ref=f2e13]:
+      - button "Open mobile menu" [ref=f2e15] [cursor=pointer]
+      - link "BEE&BEAUTY" [ref=f2e17] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f2e19]:
+        - button "Search catalog" [ref=f2e21] [cursor=pointer]
+        - link "Wishlist (0 items)" [ref=f2e25] [cursor=pointer]:
+          - /url: /wishlist
+        - button "Cart (1 items)" [ref=f2e473] [cursor=pointer]:
+          - generic [ref=f2e474]: "1"
+  - dialog [ref=f2e478]:
+    - generic [ref=f2e479]:
+      - generic [ref=f2e480]: Shopping Bag (1)
+      - button "Close drawer" [ref=f2e486] [cursor=pointer]
+    - generic [ref=f2e491]:
+      - generic [ref=f2e499]:
+        - text: Add
+        - strong [ref=f2e500]: ৳1,009
+        - text: more to get
+        - strong [ref=f2e501]: FREE Delivery
+      - generic [ref=f2e505]:
+        - link [ref=f2e506] [cursor=pointer]:
+          - /url: /product/royal-honey-velvet-matte-lipstick
+          - img "Royal Honey Velvet Matte Lipstick" [ref=f2e507]
+        - generic [ref=f2e508]:
+          - generic [ref=f2e509]:
+            - generic [ref=f2e510]:
+              - link "Royal Honey Velvet Matte Lipstick" [ref=f2e511] [cursor=pointer]:
+                - /url: /product/royal-honey-velvet-matte-lipstick
+              - button "Remove Royal Honey Velvet Matte Lipstick from cart" [ref=f2e512] [cursor=pointer]
+            - generic [ref=f2e516]: 01 01 Royal Rosewood
+          - generic [ref=f2e519]:
+            - generic [ref=f2e520]:
+              - generic [ref=f2e521]: ৳490
+              - generic [ref=f2e522]: ৳650
+              - generic [ref=f2e523]: "| 25% Off"
+            - generic [ref=f2e524]:
+              - button "Decrease quantity" [disabled] [ref=f2e525] [cursor=pointer]
+              - generic [ref=f2e527]: "1"
+              - button "Increase quantity" [ref=f2e528] [cursor=pointer]
+      - generic [ref=f2e530]:
+        - heading "Recommended Add-ons" [level=4] [ref=f2e531]
+        - generic [ref=f2e532]:
+          - generic [ref=f2e533]:
+            - img "Nectar Plump Peptide Lip Gloss" [ref=f2e535]
+            - generic [ref=f2e536]:
+              - paragraph [ref=f2e537]: Nectar Plump Peptide Lip Gloss
+              - paragraph [ref=f2e538]: ৳420
+            - button "Add" [ref=f2e539] [cursor=pointer]
+          - generic [ref=f2e542]:
+            - img "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=f2e544]
+            - generic [ref=f2e545]:
+              - paragraph [ref=f2e546]: Silk Cloud 16HR Transferproof Liquid Lipstick
+              - paragraph [ref=f2e547]: ৳499
+            - button "Add" [ref=f2e548] [cursor=pointer]
+          - generic [ref=f2e551]:
+            - img "Bee Tinted Nourishing Lip Oil" [ref=f2e553]
+            - generic [ref=f2e554]:
+              - paragraph [ref=f2e555]: Bee Tinted Nourishing Lip Oil
+              - paragraph [ref=f2e556]: ৳380
+            - button "Add" [ref=f2e557] [cursor=pointer]
+    - generic [ref=f2e561]:
+      - generic [ref=f2e563]:
+        - textbox "Promo Code (e.g. BEEFIRST)" [ref=f2e568]
+        - button "Apply" [ref=f2e569] [cursor=pointer]
+      - generic [ref=f2e570]:
+        - generic [ref=f2e571]:
+          - generic [ref=f2e572]: Bag Subtotal
+          - generic [ref=f2e573]: ৳490
+        - generic [ref=f2e574]:
+          - generic [ref=f2e575]: Shipping Fee
+          - generic [ref=f2e576]: ৳80
+        - generic [ref=f2e577]:
+          - generic [ref=f2e578]: Total Savings on this order
+          - generic [ref=f2e579]: ৳160
+        - generic [ref=f2e580]:
+          - generic [ref=f2e581]: Estimated Total
+          - generic [ref=f2e582]: ৳570
+      - generic [ref=f2e583]:
+        - link "Proceed to Checkout" [ref=f2e584] [cursor=pointer]:
+          - /url: /checkout
+        - generic [ref=f2e588]:
+          - link "View Complete Shopping Bag" [ref=f2e589] [cursor=pointer]:
+            - /url: /cart
+          - generic [ref=f2e590]: 100% Secure Checkout
+  - main [ref=f2e33]:
+    - generic [ref=f2e34]:
+      - generic [ref=f2e36]:
+        - generic [ref=f2e37]:
+          - button "View image 1" [ref=f2e38] [cursor=pointer]:
+            - img "Royal Honey Velvet Matte Lipstick thumbnail 1" [ref=f2e39]
+          - button "View image 2" [ref=f2e40] [cursor=pointer]:
+            - img "Royal Honey Velvet Matte Lipstick thumbnail 2" [ref=f2e41]
+          - button "View image 3" [ref=f2e42] [cursor=pointer]:
+            - img "Royal Honey Velvet Matte Lipstick thumbnail 3" [ref=f2e43]
+          - button "View image 4" [ref=f2e44] [cursor=pointer]:
+            - img "Royal Honey Velvet Matte Lipstick thumbnail 4" [ref=f2e45]
+        - generic [ref=f2e46]:
+          - img "Royal Honey Velvet Matte Lipstick" [ref=f2e47]
+          - generic:
+            - generic: Bestseller
+            - generic: Save 25%
+      - generic [ref=f2e48]:
+        - generic [ref=f2e49]:
+          - navigation [ref=f2e50]:
+            - link "Home" [ref=f2e51] [cursor=pointer]:
+              - /url: /
+            - generic [ref=f2e52]: /
+            - link "Lips" [ref=f2e53] [cursor=pointer]:
+              - /url: /shop/lips
+            - generic [ref=f2e54]: /
+            - generic [ref=f2e55]: Royal Honey Velvet Matte Lipstick
+          - generic [ref=f2e56]:
+            - heading "Royal Honey Velvet Matte Lipstick" [level=1] [ref=f2e57]
+            - paragraph [ref=f2e58]: 12HR Weightless Matte Infused with Pure Honey & Squalane
+          - generic [ref=f2e59]:
+            - generic [ref=f2e60]:
+              - generic "4.9 out of 5 stars" [ref=f2e61]
+              - generic [ref=f2e72]: (914)
+            - generic [ref=f2e73]: "|"
+            - generic [ref=f2e74]: In Stock
+          - generic [ref=f2e75]:
+            - generic [ref=f2e76]:
+              - generic [ref=f2e77]: ৳490
+              - generic [ref=f2e78]: ৳650
+              - generic [ref=f2e79]: "| 25% Off"
+            - paragraph [ref=f2e80]: MRP inclusive of all local taxes. Free shipping on orders over ৳1,499.
+          - generic [ref=f2e81]:
+            - generic [ref=f2e82]:
+              - generic [ref=f2e83]:
+                - generic [ref=f2e84]: "Color:"
+                - generic [ref=f2e85]: 01 Royal Rosewood
+              - generic [ref=f2e86]: 5 Shades
+            - generic [ref=f2e87]:
+              - button "All Shades" [ref=f2e88] [cursor=pointer]
+              - button "nude" [ref=f2e89] [cursor=pointer]
+              - button "red" [ref=f2e90] [cursor=pointer]
+              - button "brown" [ref=f2e91] [cursor=pointer]
+              - button "berry" [ref=f2e92] [cursor=pointer]
+              - button "pink" [ref=f2e93] [cursor=pointer]
+            - generic [ref=f2e94]:
+              - button "Shade 01 Royal Rosewood" [ref=f2e95] [cursor=pointer]
+              - button "Shade 02 Crimson Honey" [ref=f2e96] [cursor=pointer]
+              - button "Shade 03 Sundown Sienna" [ref=f2e97] [cursor=pointer]
+              - button "Shade 04 Velvet Mulberry" [ref=f2e98] [cursor=pointer]
+              - button "Shade 05 Petal Peach" [ref=f2e99] [cursor=pointer]
+          - generic [ref=f2e100]:
+            - generic [ref=f2e101]:
+              - button "Decrease quantity" [disabled] [ref=f2e102] [cursor=pointer]
+              - generic [ref=f2e104]: "1"
+              - button "Increase quantity" [ref=f2e105] [cursor=pointer]
+            - button "Add to Bag" [active] [ref=f2e107] [cursor=pointer]
+            - button "Add to wishlist" [ref=f2e108] [cursor=pointer]
+          - generic [ref=f2e111]:
+            - generic [ref=f2e112]: "Finish: Velvet Soft-Matte"
+            - generic [ref=f2e113]: "Origin: Formulated in Italy, Crafted for Bee&Beauty"
+            - generic [ref=f2e114]: Cruelty-Free & Vegan
+          - generic [ref=f2e116]:
+            - textbox "Enter District Postal Code (e.g. 1213)" [ref=f2e121]
+            - button "Check" [ref=f2e122] [cursor=pointer]
+          - generic [ref=f2e123]:
+            - generic [ref=f2e124]: 100% Genuine
+            - generic [ref=f2e128]: Cash on Delivery
+            - generic [ref=f2e135]: Easy Returns
+        - generic [ref=f2e139]:
+          - generic [ref=f2e140]:
+            - heading "Available Brand Offers & Discounts" [level=3] [ref=f2e145]
+            - generic [ref=f2e146]:
+              - generic [ref=f2e147]:
+                - generic [ref=f2e148]:
+                  - generic [ref=f2e149]:
+                    - generic [ref=f2e150]: BEEFIRST
+                    - generic [ref=f2e151]: NEW CUSTOMER
+                  - paragraph [ref=f2e152]: 10% Welcome Discount
+                  - paragraph [ref=f2e153]: Valid for new customers. No minimum spend required.
+                - button "Copy" [ref=f2e154] [cursor=pointer]
+              - generic [ref=f2e159]:
+                - generic [ref=f2e160]:
+                  - generic [ref=f2e161]:
+                    - generic [ref=f2e162]: GLAM20
+                    - generic [ref=f2e163]: LIMITED TIME
+                  - paragraph [ref=f2e164]: 20% Glamour Week Offer
+                  - paragraph [ref=f2e165]: Valid on orders ৳1,999+. Applied automatically at checkout.
+                - button "Copy" [ref=f2e166] [cursor=pointer]
+              - generic [ref=f2e171]:
+                - generic [ref=f2e172]:
+                  - generic [ref=f2e173]:
+                    - generic [ref=f2e174]: BEE700
+                    - generic [ref=f2e175]: FESTIVE SPECIAL
+                  - paragraph [ref=f2e176]: Flat ৳700 Festive Cash Off
+                  - paragraph [ref=f2e177]: Minimum cart value ৳2,999. Ideal for Bridal Vault & Kits.
+                - button "Copy" [ref=f2e178] [cursor=pointer]
+              - generic [ref=f2e183]:
+                - generic [ref=f2e184]:
+                  - generic [ref=f2e185]:
+                    - generic [ref=f2e186]: BEEFREE
+                    - generic [ref=f2e187]: FREE GIFT
+                  - paragraph [ref=f2e188]: Free Luxury Lip Butter on ৳1,499+
+                  - paragraph [ref=f2e189]: No coupon needed. Added automatically to qualifying carts.
+                - button "Copy" [ref=f2e190] [cursor=pointer]
+          - generic [ref=f2e196]:
+            - generic [ref=f2e197]:
+              - button "Description & Formula Benefits" [expanded] [ref=f2e198] [cursor=pointer]
+              - generic [ref=f2e203]:
+                - paragraph [ref=f2e204]: Experience intense color saturation meets skin-first nourishment. The Royal Honey Velvet Matte Lipstick glides like whipped silk, setting into a modern soft-focus matte that stays color-true through hot humidity, dinners, and long commutes. Infused with organic honey extracts and vegan squalane to continuously plump lip ridges.
+                - generic [ref=f2e205]:
+                  - heading "Key Highlights" [level=4] [ref=f2e206]
+                  - list [ref=f2e207]:
+                    - listitem [ref=f2e208]: Infused with botanical royal jelly extracts for lasting comfort
+                    - listitem [ref=f2e209]: Lightweight, transfer-resistant all-day wear formula
+                    - listitem [ref=f2e210]: PETA-certified 100% cruelty-free and dermatologically tested
+            - button "How To Apply & Pro Artist Tips" [ref=f2e212] [cursor=pointer]
+            - button "Ingredients & Clean Formula" [ref=f2e217] [cursor=pointer]
+            - button "Product Specifications & Origin" [ref=f2e222] [cursor=pointer]
+            - button "Shipping, COD & Easy Returns" [ref=f2e227] [cursor=pointer]
+    - generic [ref=f2e231]:
+      - generic [ref=f2e232]:
+        - heading "Complete The Look" [level=2] [ref=f2e233]
+        - paragraph [ref=f2e234]: Formulas paired by our beauty artists to complement this finish.
+      - generic [ref=f2e235]:
+        - generic [ref=f2e236]:
+          - generic [ref=f2e237]:
+            - link [ref=f2e238] [cursor=pointer]:
+              - /url: /product/nectar-plump-peptide-lip-gloss
+              - generic [ref=f2e239]:
+                - img "Nectar Plump Peptide Lip Gloss" [ref=f2e240]
+                - img "Nectar Plump Peptide Lip Gloss swatch preview" [ref=f2e241]
+            - generic:
+              - generic: New Launch
+              - generic: Save 24%
+            - button "Save to wishlist" [ref=f2e242] [cursor=pointer]
+          - generic [ref=f2e245]:
+            - generic [ref=f2e246]:
+              - generic [ref=f2e247]:
+                - button "Select shade 01 Golden Nectar" [ref=f2e248] [cursor=pointer]
+                - button "Select shade 02 Blushing Berry" [ref=f2e249] [cursor=pointer]
+                - button "Select shade 03 Clear Honey Dew" [ref=f2e250] [cursor=pointer]
+                - button "Select shade 04 Spiced Cherry" [ref=f2e251] [cursor=pointer]
+              - link "Nectar Plump Peptide Lip Gloss" [ref=f2e252] [cursor=pointer]:
+                - /url: /product/nectar-plump-peptide-lip-gloss
+              - generic [ref=f2e254]:
+                - generic "4.8 out of 5 stars" [ref=f2e255]
+                - generic [ref=f2e266]: (682)
+              - generic [ref=f2e268]:
+                - generic [ref=f2e269]: ৳420
+                - generic [ref=f2e270]: ৳550
+                - generic [ref=f2e271]: "| 24% Off"
+            - button "Add to Bag" [ref=f2e272] [cursor=pointer]
+        - generic [ref=f2e273]:
+          - generic [ref=f2e274]:
+            - link [ref=f2e275] [cursor=pointer]:
+              - /url: /product/silk-cloud-16hr-transferproof-liquid-lipstick
+              - generic [ref=f2e276]:
+                - img "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=f2e277]
+                - img "Silk Cloud 16HR Transferproof Liquid Lipstick swatch preview" [ref=f2e278]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 28%
+            - button "Save to wishlist" [ref=f2e279] [cursor=pointer]
+          - generic [ref=f2e282]:
+            - generic [ref=f2e283]:
+              - generic [ref=f2e284]:
+                - button "Select shade 01 Toast & Honey" [ref=f2e285] [cursor=pointer]
+                - button "Select shade 02 Scarlet Empress" [ref=f2e286] [cursor=pointer]
+                - button "Select shade 03 Dusky Mauve" [ref=f2e287] [cursor=pointer]
+                - button "Select shade 04 Warm Caramel" [ref=f2e288] [cursor=pointer]
+                - button "Select shade 05 Vintage Rose" [ref=f2e289] [cursor=pointer]
+              - link "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=f2e290] [cursor=pointer]:
+                - /url: /product/silk-cloud-16hr-transferproof-liquid-lipstick
+              - generic [ref=f2e292]:
+                - generic "4.9 out of 5 stars" [ref=f2e293]
+                - generic [ref=f2e304]: (1,420)
+              - generic [ref=f2e306]:
+                - generic [ref=f2e307]: ৳499
+                - generic [ref=f2e308]: ৳699
+                - generic [ref=f2e309]: "| 29% Off"
+            - button "Add to Bag" [ref=f2e310] [cursor=pointer]
+        - generic [ref=f2e311]:
+          - generic [ref=f2e312]:
+            - link [ref=f2e313] [cursor=pointer]:
+              - /url: /product/bee-tinted-nourishing-lip-oil
+              - generic [ref=f2e314]:
+                - img "Bee Tinted Nourishing Lip Oil" [ref=f2e315]
+                - img "Bee Tinted Nourishing Lip Oil swatch preview" [ref=f2e316]
+            - generic: New Launch
+            - button "Save to wishlist" [ref=f2e317] [cursor=pointer]
+          - generic [ref=f2e320]:
+            - generic [ref=f2e321]:
+              - generic [ref=f2e322]:
+                - button "Select shade 01 Honey Bloom" [ref=f2e323] [cursor=pointer]
+                - button "Select shade 02 Wild Berry Dew" [ref=f2e324] [cursor=pointer]
+                - button "Select shade 03 Amber Fig" [ref=f2e325] [cursor=pointer]
+              - link "Bee Tinted Nourishing Lip Oil" [ref=f2e326] [cursor=pointer]:
+                - /url: /product/bee-tinted-nourishing-lip-oil
+              - generic [ref=f2e328]:
+                - generic "4.7 out of 5 stars" [ref=f2e329]
+                - generic [ref=f2e340]: (450)
+              - generic [ref=f2e342]:
+                - generic [ref=f2e343]: ৳380
+                - generic [ref=f2e344]: ৳480
+                - generic [ref=f2e345]: "| 21% Off"
+            - button "Add to Bag" [ref=f2e346] [cursor=pointer]
+        - generic [ref=f2e347]:
+          - generic [ref=f2e348]:
+            - link [ref=f2e349] [cursor=pointer]:
+              - /url: /product/honey-sculpt-defining-lip-liner
+              - generic [ref=f2e350]:
+                - img "Honey Sculpt Defining Lip Liner" [ref=f2e351]
+                - img "Honey Sculpt Defining Lip Liner swatch preview" [ref=f2e352]
+            - generic: Save 29%
+            - button "Save to wishlist" [ref=f2e353] [cursor=pointer]
+          - generic [ref=f2e356]:
+            - generic [ref=f2e357]:
+              - generic [ref=f2e358]:
+                - button "Select shade 01 Spiced Honey Nude" [ref=f2e359] [cursor=pointer]
+                - button "Select shade 02 Rich Terracotta" [ref=f2e360] [cursor=pointer]
+                - button "Select shade 03 Deep Crimson" [ref=f2e361] [cursor=pointer]
+              - link "Honey Sculpt Defining Lip Liner" [ref=f2e362] [cursor=pointer]:
+                - /url: /product/honey-sculpt-defining-lip-liner
+              - generic [ref=f2e364]:
+                - generic "4.8 out of 5 stars" [ref=f2e365]
+                - generic [ref=f2e376]: (388)
+              - generic [ref=f2e378]:
+                - generic [ref=f2e379]: ৳249
+                - generic [ref=f2e380]: ৳350
+                - generic [ref=f2e381]: "| 29% Off"
+            - button "Add to Bag" [ref=f2e382] [cursor=pointer]
+  - contentinfo [ref=f2e383]:
+    - generic [ref=f2e385]:
+      - generic [ref=f2e386]:
+        - heading "100% Authentic" [level=4] [ref=f2e390]
+        - paragraph [ref=f2e391]: Directly crafted & certified formulations
+      - generic [ref=f2e392]:
+        - heading "Free Fast Shipping" [level=4] [ref=f2e398]
+        - paragraph [ref=f2e399]: On all orders above ৳1,499
+      - generic [ref=f2e400]:
+        - heading "Cruelty Free" [level=4] [ref=f2e404]
+        - paragraph [ref=f2e405]: Never tested on animals, ever
+      - generic [ref=f2e406]:
+        - heading "Cash on Delivery" [level=4] [ref=f2e410]
+        - paragraph [ref=f2e411]: Available across all 64 districts
+    - generic [ref=f2e412]:
+      - generic [ref=f2e413]:
+        - generic [ref=f2e414]: BEE&BEAUTY
+        - paragraph [ref=f2e415]: Luxury cosmetics formulated specifically for South Asian skin tones and weather. Powered by clean botanicals, pure honey extracts, and modern peptide science.
+        - generic [ref=f2e416]:
+          - generic [ref=f2e417]: Join The Bee Club
+          - generic [ref=f2e418]:
+            - textbox "Enter your email" [ref=f2e419]
+            - button "Join" [ref=f2e420] [cursor=pointer]
+      - generic [ref=f2e421]:
+        - heading "Shop Collections" [level=4] [ref=f2e422]
+        - list [ref=f2e423]:
+          - listitem [ref=f2e424]:
+            - link "Lips" [ref=f2e425] [cursor=pointer]:
+              - /url: /shop/lips
+          - listitem [ref=f2e426]:
+            - link "Eyes" [ref=f2e427] [cursor=pointer]:
+              - /url: /shop/eyes
+          - listitem [ref=f2e428]:
+            - link "Face" [ref=f2e429] [cursor=pointer]:
+              - /url: /shop/face
+          - listitem [ref=f2e430]:
+            - link "Nails" [ref=f2e431] [cursor=pointer]:
+              - /url: /shop/nails
+          - listitem [ref=f2e432]:
+            - link "Skincare" [ref=f2e433] [cursor=pointer]:
+              - /url: /shop/skin
+          - listitem [ref=f2e434]:
+            - link "Gifts & Kits" [ref=f2e435] [cursor=pointer]:
+              - /url: /shop/kits
+          - listitem [ref=f2e436]:
+            - link "Under ৳499 Value Store" [ref=f2e437] [cursor=pointer]:
+              - /url: /shop/under499
+          - listitem [ref=f2e438]:
+            - link "Special Offers & Deals" [ref=f2e439] [cursor=pointer]:
+              - /url: /offers
+      - generic [ref=f2e440]:
+        - heading "Customer Care" [level=4] [ref=f2e441]
+        - list [ref=f2e442]:
+          - listitem [ref=f2e443]:
+            - link "Help Center & Support" [ref=f2e444] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=f2e445]:
+            - link "View Shopping Bag" [ref=f2e446] [cursor=pointer]:
+              - /url: /cart
+          - listitem [ref=f2e447]:
+            - link "Saved Wishlist" [ref=f2e448] [cursor=pointer]:
+              - /url: /wishlist
+          - listitem [ref=f2e449]:
+            - link "Clean Beauty Standards" [ref=f2e450] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f2e451]: Shipping across Bangladesh (2-4 Days)
+      - generic [ref=f2e452]:
+        - heading "Direct Inquiries" [level=4] [ref=f2e453]
+        - generic [ref=f2e454]:
+          - paragraph [ref=f2e455]:
+            - strong [ref=f2e456]: "Headquarters:"
+            - text: Banani, Dhaka, Bangladesh
+          - paragraph [ref=f2e457]:
+            - strong [ref=f2e458]: "Customer Email:"
+            - text: support@beeandbeauty.com
+          - paragraph [ref=f2e459]:
+            - strong [ref=f2e460]: "Support Hours:"
+            - text: Saturday – Thursday (10:00 AM – 8:00 PM)
+          - button "Back to Top" [ref=f2e462] [cursor=pointer]
+    - generic [ref=f2e466]:
+      - paragraph [ref=f2e467]: © 2026 Bee&Beauty Cosmetics. All rights reserved. Designed with precision.
+      - generic [ref=f2e468]:
+        - generic [ref=f2e469]: Privacy Policy
+        - generic [ref=f2e470]: Terms of Service
+        - generic [ref=f2e471]: Authenticity Guarantee
+  - alert [ref=f2e472]
+  - button "Scroll back to top" [ref=f2e594] [cursor=pointer]

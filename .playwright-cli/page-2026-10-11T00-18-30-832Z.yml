@@ -1,0 +1,141 @@
+- generic [active] [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - button "Previous announcement" [ref=f7e4] [cursor=pointer]
+      - link "FREE Luxe Lip Butter on Orders Above ৳1,499" [ref=f7e8] [cursor=pointer]:
+        - /url: /offers
+      - button "Next announcement" [ref=f7e9] [cursor=pointer]
+    - generic [ref=f7e13]:
+      - button "Open mobile menu" [ref=f7e15] [cursor=pointer]
+      - link "BEE&BEAUTY" [ref=f7e17] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f7e19]:
+        - button "Search catalog" [ref=f7e21] [cursor=pointer]
+        - link "Wishlist (1 items)" [ref=f7e25] [cursor=pointer]:
+          - /url: /wishlist
+          - generic [ref=f7e28]: "1"
+        - button "Cart (0 items)" [ref=f7e29] [cursor=pointer]
+  - main [ref=f7e34]:
+    - navigation [ref=f7e35]:
+      - link "Home" [ref=f7e36] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f7e37]: /
+      - generic [ref=f7e38]: About Bee&Beauty
+    - generic [ref=f7e39]:
+      - generic [ref=f7e40]: The Clean Luxury Philosophy
+      - heading "Formulated With Passion. Powered By Nature." [level=1] [ref=f7e41]
+      - paragraph [ref=f7e43]: Bee&Beauty was established to challenge standard cosmetic conventions. For years, women across South Asia faced cosmetics with shades that oxidized, formulas that separated in high humidity, and textures that dried out delicate skin.
+    - generic [ref=f7e44]:
+      - generic [ref=f7e45]:
+        - generic [ref=f7e46]: 50K+
+        - generic [ref=f7e47]: Vanity Enthusiasts
+      - generic [ref=f7e48]:
+        - generic [ref=f7e49]: 100%
+        - generic [ref=f7e50]: Cruelty-Free Certified
+      - generic [ref=f7e51]:
+        - generic [ref=f7e52]: "64"
+        - generic [ref=f7e53]: Districts Delivered
+      - generic [ref=f7e54]:
+        - generic [ref=f7e55]: 16h
+        - generic [ref=f7e56]: All-Day Wear Formula
+    - generic [ref=f7e57]:
+      - generic [ref=f7e58]:
+        - heading "The Honey Nectar Complex" [level=2] [ref=f7e63]
+        - paragraph [ref=f7e64]: Every product in our collection features pure botanical royal jelly, antioxidant honey extracts, and cold-pressed botanical oils. This prevents cakey finishes while locking in moisture beneath pigmented layers.
+      - generic [ref=f7e65]:
+        - heading "Warm & Olive Undertones" [level=2] [ref=f7e70]
+        - paragraph [ref=f7e71]: We reject the idea of one-size-fits-all pigments. Our shades are calibrated specifically to harmonize with golden, neutral, and warm olive undertones, ensuring colors look true-to-skin under natural daylight.
+      - generic [ref=f7e72]:
+        - heading "Conscious Standards" [level=2] [ref=f7e76]
+        - paragraph [ref=f7e77]: We are proudly cruelty-free and dermatologically tested. Formulated without parabens, microplastics, harmful synthetic phthalates, or heavy fillers. Safe for sensitive skin.
+    - generic [ref=f7e78]:
+      - heading "Experience The Luxury Difference" [level=2] [ref=f7e79]
+      - paragraph [ref=f7e80]: Discover lightweight formulas that elevate your natural features with every stroke.
+      - link "Shop The Collection" [ref=f7e81] [cursor=pointer]:
+        - /url: /shop/all
+  - contentinfo [ref=f7e85]:
+    - generic [ref=f7e87]:
+      - generic [ref=f7e88]:
+        - heading "100% Authentic" [level=4] [ref=f7e92]
+        - paragraph [ref=f7e93]: Directly crafted & certified formulations
+      - generic [ref=f7e94]:
+        - heading "Free Fast Shipping" [level=4] [ref=f7e100]
+        - paragraph [ref=f7e101]: On all orders above ৳1,499
+      - generic [ref=f7e102]:
+        - heading "Cruelty Free" [level=4] [ref=f7e106]
+        - paragraph [ref=f7e107]: Never tested on animals, ever
+      - generic [ref=f7e108]:
+        - heading "Cash on Delivery" [level=4] [ref=f7e112]
+        - paragraph [ref=f7e113]: Available across all 64 districts
+    - generic [ref=f7e114]:
+      - generic [ref=f7e115]:
+        - generic [ref=f7e116]: BEE&BEAUTY
+        - paragraph [ref=f7e117]: Luxury cosmetics formulated specifically for South Asian skin tones and weather. Powered by clean botanicals, pure honey extracts, and modern peptide science.
+        - generic [ref=f7e118]:
+          - generic [ref=f7e119]: Join The Bee Club
+          - generic [ref=f7e120]:
+            - textbox "Enter your email" [ref=f7e121]
+            - button "Join" [ref=f7e122] [cursor=pointer]
+      - generic [ref=f7e123]:
+        - heading "Shop Collections" [level=4] [ref=f7e124]
+        - list [ref=f7e125]:
+          - listitem [ref=f7e126]:
+            - link "Lips" [ref=f7e127] [cursor=pointer]:
+              - /url: /shop/lips
+          - listitem [ref=f7e128]:
+            - link "Eyes" [ref=f7e129] [cursor=pointer]:
+              - /url: /shop/eyes
+          - listitem [ref=f7e130]:
+            - link "Face" [ref=f7e131] [cursor=pointer]:
+              - /url: /shop/face
+          - listitem [ref=f7e132]:
+            - link "Nails" [ref=f7e133] [cursor=pointer]:
+              - /url: /shop/nails
+          - listitem [ref=f7e134]:
+            - link "Skincare" [ref=f7e135] [cursor=pointer]:
+              - /url: /shop/skin
+          - listitem [ref=f7e136]:
+            - link "Gifts & Kits" [ref=f7e137] [cursor=pointer]:
+              - /url: /shop/kits
+          - listitem [ref=f7e138]:
+            - link "Under ৳499 Value Store" [ref=f7e139] [cursor=pointer]:
+              - /url: /shop/under499
+          - listitem [ref=f7e140]:
+            - link "Special Offers & Deals" [ref=f7e141] [cursor=pointer]:
+              - /url: /offers
+      - generic [ref=f7e142]:
+        - heading "Customer Care" [level=4] [ref=f7e143]
+        - list [ref=f7e144]:
+          - listitem [ref=f7e145]:
+            - link "Help Center & Support" [ref=f7e146] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=f7e147]:
+            - link "View Shopping Bag" [ref=f7e148] [cursor=pointer]:
+              - /url: /cart
+          - listitem [ref=f7e149]:
+            - link "Saved Wishlist" [ref=f7e150] [cursor=pointer]:
+              - /url: /wishlist
+          - listitem [ref=f7e151]:
+            - link "Clean Beauty Standards" [ref=f7e152] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f7e153]: Shipping across Bangladesh (2-4 Days)
+      - generic [ref=f7e154]:
+        - heading "Direct Inquiries" [level=4] [ref=f7e155]
+        - generic [ref=f7e156]:
+          - paragraph [ref=f7e157]:
+            - strong [ref=f7e158]: "Headquarters:"
+            - text: Banani, Dhaka, Bangladesh
+          - paragraph [ref=f7e159]:
+            - strong [ref=f7e160]: "Customer Email:"
+            - text: support@beeandbeauty.com
+          - paragraph [ref=f7e161]:
+            - strong [ref=f7e162]: "Support Hours:"
+            - text: Saturday – Thursday (10:00 AM – 8:00 PM)
+          - button "Back to Top" [ref=f7e164] [cursor=pointer]
+    - generic [ref=f7e168]:
+      - paragraph [ref=f7e169]: © 2026 Bee&Beauty Cosmetics. All rights reserved. Designed with precision.
+      - generic [ref=f7e170]:
+        - generic [ref=f7e171]: Privacy Policy
+        - generic [ref=f7e172]: Terms of Service
+        - generic [ref=f7e173]: Authenticity Guarantee
+  - alert [ref=f7e174]

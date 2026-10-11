@@ -1,0 +1,172 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - button "Previous announcement" [ref=f3e4] [cursor=pointer]
+      - link "Fast Express Delivery Across All 64 Districts of Bangladesh" [ref=f3e259] [cursor=pointer]:
+        - /url: /shop/lips
+      - button "Next announcement" [ref=f3e9] [cursor=pointer]
+    - generic [ref=f3e13]:
+      - button "Open mobile menu" [ref=f3e15] [cursor=pointer]
+      - link "BEE&BEAUTY" [ref=f3e17] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f3e19]:
+        - button "Search catalog" [ref=f3e21] [cursor=pointer]
+        - link "Wishlist (0 items)" [ref=f3e25] [cursor=pointer]:
+          - /url: /wishlist
+        - button "Cart (1 items)" [ref=f3e28] [cursor=pointer]:
+          - generic [ref=f3e32]: "1"
+  - main [ref=f3e34]:
+    - generic [ref=f3e36]:
+      - generic [ref=f3e37] [cursor=pointer]: Customer Info
+      - generic [ref=f3e41] [cursor=pointer]: Shipping
+      - generic [ref=f3e45]:
+        - generic [ref=f3e46]: "3"
+        - generic [ref=f3e47]: Payment
+      - generic [ref=f3e49]:
+        - generic [ref=f3e50]: "4"
+        - generic [ref=f3e51]: Confirmation
+    - generic [ref=f3e53]:
+      - generic [ref=f3e262]:
+        - generic [ref=f3e263]:
+          - 'heading "Step 3: Payment & Review" [level=2] [ref=f3e264]'
+          - paragraph [ref=f3e265]: Select your preferred payment method.
+        - generic [ref=f3e266]:
+          - generic [ref=f3e267] [cursor=pointer]:
+            - radio "Cash on Delivery (COD) Pay in cash upon physical package receipt and inspection at your doorstep." [checked] [ref=f3e268]
+            - generic [ref=f3e269]:
+              - generic [ref=f3e270]: Cash on Delivery (COD)
+              - paragraph [ref=f3e277]: Pay in cash upon physical package receipt and inspection at your doorstep.
+          - generic [ref=f3e278] [cursor=pointer]:
+            - radio "bKash / Nagad / Rocket Wallet Instant Direct merchant mobile wallet payment simulation." [ref=f3e279]
+            - generic [ref=f3e280]:
+              - generic [ref=f3e281]:
+                - generic [ref=f3e282]: bKash / Nagad / Rocket Wallet
+                - generic [ref=f3e283]: Instant
+              - paragraph [ref=f3e284]: Direct merchant mobile wallet payment simulation.
+          - generic [ref=f3e285] [cursor=pointer]:
+            - radio "Visa / Mastercard / Amex Secure SSL-encrypted card processing checkout flow." [ref=f3e286]
+            - generic [ref=f3e287]:
+              - generic [ref=f3e288]: Visa / Mastercard / Amex
+              - paragraph [ref=f3e292]: Secure SSL-encrypted card processing checkout flow.
+        - generic [ref=f3e293]:
+          - generic [ref=f3e294]: Safe & Protected Purchase Guarantee
+          - paragraph [ref=f3e299]: By clicking “Complete Purchase”, you verify that you have reviewed your delivery address and order details.
+        - generic [ref=f3e300]:
+          - button "Back to Shipping" [ref=f3e301] [cursor=pointer]
+          - button "Complete Purchase (৳521)" [ref=f3e305] [cursor=pointer]
+      - generic [ref=f3e89]:
+        - heading "Order Summary (1 items)" [level=3] [ref=f3e90]
+        - generic [ref=f3e92]:
+          - generic [ref=f3e93]:
+            - img "Royal Honey Velvet Matte Lipstick" [ref=f3e94]
+            - generic [ref=f3e95]: "1"
+          - generic [ref=f3e96]:
+            - paragraph [ref=f3e97]: Royal Honey Velvet Matte Lipstick
+            - paragraph [ref=f3e98]: "Shade: 01 01 Royal Rosewood"
+          - generic [ref=f3e99]: ৳490
+        - generic [ref=f3e100]:
+          - generic [ref=f3e101]:
+            - generic [ref=f3e102]: Subtotal
+            - generic [ref=f3e103]: ৳490
+          - generic [ref=f3e104]:
+            - generic [ref=f3e105]: Coupon Discount (BEEFIRST)
+            - generic [ref=f3e106]: "-৳49"
+          - generic [ref=f3e107]:
+            - generic [ref=f3e108]: Shipping & Handling
+            - generic [ref=f3e109]: ৳80
+          - generic [ref=f3e110]:
+            - generic [ref=f3e111]: Total Savings
+            - generic [ref=f3e112]: ৳209
+          - generic [ref=f3e113]:
+            - generic [ref=f3e114]: Total Payable
+            - generic [ref=f3e115]: ৳521
+        - generic [ref=f3e116]:
+          - generic [ref=f3e117]: Encrypted checkout session with SSL encryption
+          - generic [ref=f3e122]: Verified tracked delivery across 64 districts
+          - generic [ref=f3e129]: Hassle-free 7-day replacement warranty
+  - contentinfo [ref=f3e134]:
+    - generic [ref=f3e136]:
+      - generic [ref=f3e137]:
+        - heading "100% Authentic" [level=4] [ref=f3e141]
+        - paragraph [ref=f3e142]: Directly crafted & certified formulations
+      - generic [ref=f3e143]:
+        - heading "Free Fast Shipping" [level=4] [ref=f3e149]
+        - paragraph [ref=f3e150]: On all orders above ৳1,499
+      - generic [ref=f3e151]:
+        - heading "Cruelty Free" [level=4] [ref=f3e155]
+        - paragraph [ref=f3e156]: Never tested on animals, ever
+      - generic [ref=f3e157]:
+        - heading "Cash on Delivery" [level=4] [ref=f3e161]
+        - paragraph [ref=f3e162]: Available across all 64 districts
+    - generic [ref=f3e163]:
+      - generic [ref=f3e164]:
+        - generic [ref=f3e165]: BEE&BEAUTY
+        - paragraph [ref=f3e166]: Luxury cosmetics formulated specifically for South Asian skin tones and weather. Powered by clean botanicals, pure honey extracts, and modern peptide science.
+        - generic [ref=f3e167]:
+          - generic [ref=f3e168]: Join The Bee Club
+          - generic [ref=f3e169]:
+            - textbox "Enter your email" [ref=f3e170]
+            - button "Join" [ref=f3e171] [cursor=pointer]
+      - generic [ref=f3e172]:
+        - heading "Shop Collections" [level=4] [ref=f3e173]
+        - list [ref=f3e174]:
+          - listitem [ref=f3e175]:
+            - link "Lips" [ref=f3e176] [cursor=pointer]:
+              - /url: /shop/lips
+          - listitem [ref=f3e177]:
+            - link "Eyes" [ref=f3e178] [cursor=pointer]:
+              - /url: /shop/eyes
+          - listitem [ref=f3e179]:
+            - link "Face" [ref=f3e180] [cursor=pointer]:
+              - /url: /shop/face
+          - listitem [ref=f3e181]:
+            - link "Nails" [ref=f3e182] [cursor=pointer]:
+              - /url: /shop/nails
+          - listitem [ref=f3e183]:
+            - link "Skincare" [ref=f3e184] [cursor=pointer]:
+              - /url: /shop/skin
+          - listitem [ref=f3e185]:
+            - link "Gifts & Kits" [ref=f3e186] [cursor=pointer]:
+              - /url: /shop/kits
+          - listitem [ref=f3e187]:
+            - link "Under ৳499 Value Store" [ref=f3e188] [cursor=pointer]:
+              - /url: /shop/under499
+          - listitem [ref=f3e189]:
+            - link "Special Offers & Deals" [ref=f3e190] [cursor=pointer]:
+              - /url: /offers
+      - generic [ref=f3e191]:
+        - heading "Customer Care" [level=4] [ref=f3e192]
+        - list [ref=f3e193]:
+          - listitem [ref=f3e194]:
+            - link "Help Center & Support" [ref=f3e195] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=f3e196]:
+            - link "View Shopping Bag" [ref=f3e197] [cursor=pointer]:
+              - /url: /cart
+          - listitem [ref=f3e198]:
+            - link "Saved Wishlist" [ref=f3e199] [cursor=pointer]:
+              - /url: /wishlist
+          - listitem [ref=f3e200]:
+            - link "Clean Beauty Standards" [ref=f3e201] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f3e202]: Shipping across Bangladesh (2-4 Days)
+      - generic [ref=f3e203]:
+        - heading "Direct Inquiries" [level=4] [ref=f3e204]
+        - generic [ref=f3e205]:
+          - paragraph [ref=f3e206]:
+            - strong [ref=f3e207]: "Headquarters:"
+            - text: Banani, Dhaka, Bangladesh
+          - paragraph [ref=f3e208]:
+            - strong [ref=f3e209]: "Customer Email:"
+            - text: support@beeandbeauty.com
+          - paragraph [ref=f3e210]:
+            - strong [ref=f3e211]: "Support Hours:"
+            - text: Saturday – Thursday (10:00 AM – 8:00 PM)
+          - button "Back to Top" [ref=f3e213] [cursor=pointer]
+    - generic [ref=f3e217]:
+      - paragraph [ref=f3e218]: © 2026 Bee&Beauty Cosmetics. All rights reserved. Designed with precision.
+      - generic [ref=f3e219]:
+        - generic [ref=f3e220]: Privacy Policy
+        - generic [ref=f3e221]: Terms of Service
+        - generic [ref=f3e222]: Authenticity Guarantee
+  - alert [ref=f3e223]

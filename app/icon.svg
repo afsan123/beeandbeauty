@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="plumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6A1B6D" />
+      <stop offset="100%" stop-color="#4A104C" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4E295" />
+      <stop offset="100%" stop-color="#D4AF37" />
+    </linearGradient>
+  </defs>
+  <!-- Background with subtle luxury border -->
+  <rect width="64" height="64" rx="14" fill="url(#plumGrad)" />
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-opacity="0.4" />
+  
+  <!-- Stylized Bee Wings / Floral curves -->
+  <path d="M22 28 C16 20, 26 14, 32 24 C38 14, 48 20, 42 28" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" />
+  <path d="M25 32 C18 30, 24 23, 32 28 C40 23, 46 30, 39 32" fill="none" stroke="#C2188B" stroke-width="1.5" stroke-linecap="round" />
+  
+  <!-- Central Bee Body / Profile Monogram -->
+  <circle cx="32" cy="38" r="4.5" fill="url(#goldGrad)" />
+  <path d="M32 42.5 L32 47" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" />
+  <circle cx="32" cy="49" r="1.5" fill="url(#goldGrad)" />
+</svg>

@@ -1,0 +1,182 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - button "Previous announcement" [ref=f6e4] [cursor=pointer]
+      - link "FREE Luxe Lip Butter on Orders Above ৳1,499" [ref=f6e8] [cursor=pointer]:
+        - /url: /offers
+      - button "Next announcement" [ref=f6e9] [cursor=pointer]
+    - generic [ref=f6e13]:
+      - button "Open mobile menu" [ref=f6e15] [cursor=pointer]
+      - link "BEE&BEAUTY" [ref=f6e17] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f6e19]:
+        - button "Search catalog" [ref=f6e21] [cursor=pointer]
+        - link "Wishlist (1 items)" [ref=f6e25] [cursor=pointer]:
+          - /url: /wishlist
+          - generic [ref=f6e28]: "1"
+        - button "Cart (0 items)" [ref=f6e29] [cursor=pointer]
+  - main [ref=f6e34]:
+    - navigation [ref=f6e35]:
+      - link "Home" [ref=f6e36] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f6e37]: /
+      - generic [ref=f6e38]: Offers & Deals
+    - generic [ref=f6e39]:
+      - generic [ref=f6e40]: Exclusive Brand Savings
+      - heading "Promotional Offers & Perks" [level=1] [ref=f6e41]
+      - paragraph [ref=f6e42]: Discover verified vouchers, welcome codes, and threshold gifts crafted to elevate your beauty collection.
+    - generic [ref=f6e43]:
+      - generic [ref=f6e44]:
+        - generic [ref=f6e45]:
+          - generic [ref=f6e46]:
+            - generic [ref=f6e47]: NEW CUSTOMER
+            - generic [ref=f6e48]: Valid for new customers. No minimum spend required.
+          - heading "10% Welcome Discount" [level=2] [ref=f6e49]
+          - paragraph [ref=f6e50]: Enjoy 10% off your entire first purchase across all luxury cosmetics.
+        - generic [ref=f6e51]:
+          - generic [ref=f6e52]: BEEFIRST
+          - generic [ref=f6e57]:
+            - button "Copy Code" [ref=f6e58] [cursor=pointer]
+            - link "Shop Now" [ref=f6e63] [cursor=pointer]:
+              - /url: /shop/all
+      - generic [ref=f6e64]:
+        - generic [ref=f6e65]:
+          - generic [ref=f6e66]:
+            - generic [ref=f6e67]: LIMITED TIME
+            - generic [ref=f6e68]: Valid on orders ৳1,999+. Applied automatically at checkout.
+          - heading "20% Glamour Week Offer" [level=2] [ref=f6e69]
+          - paragraph [ref=f6e70]: Get an instant 20% savings on all cart orders above ৳1,999.
+        - generic [ref=f6e71]:
+          - generic [ref=f6e72]: GLAM20
+          - generic [ref=f6e77]:
+            - button "Copy Code" [ref=f6e78] [cursor=pointer]
+            - link "Shop Now" [ref=f6e83] [cursor=pointer]:
+              - /url: /shop/all
+      - generic [ref=f6e84]:
+        - generic [ref=f6e85]:
+          - generic [ref=f6e86]:
+            - generic [ref=f6e87]: FESTIVE SPECIAL
+            - generic [ref=f6e88]: Minimum cart value ৳2,999. Ideal for Bridal Vault & Kits.
+          - heading "Flat ৳700 Festive Cash Off" [level=2] [ref=f6e89]
+          - paragraph [ref=f6e90]: Unlock ৳700 direct price deduction on premium bundles above ৳2,999.
+        - generic [ref=f6e91]:
+          - generic [ref=f6e92]: BEE700
+          - generic [ref=f6e97]:
+            - button "Copy Code" [ref=f6e98] [cursor=pointer]
+            - link "Shop Now" [ref=f6e103] [cursor=pointer]:
+              - /url: /shop/all
+      - generic [ref=f6e104]:
+        - generic [ref=f6e105]:
+          - generic [ref=f6e106]:
+            - generic [ref=f6e107]: FREE GIFT
+            - generic [ref=f6e108]: No coupon needed. Added automatically to qualifying carts.
+          - heading "Free Luxury Lip Butter on ৳1,499+" [level=2] [ref=f6e109]
+          - paragraph [ref=f6e110]: Every order over ৳1,499 automatically unlocks free delivery plus a complimentary mini lip butter.
+        - generic [ref=f6e111]:
+          - generic [ref=f6e112]: BEEFREE
+          - generic [ref=f6e117]:
+            - button "Copy Code" [ref=f6e118] [cursor=pointer]
+            - link "Shop Now" [ref=f6e123] [cursor=pointer]:
+              - /url: /shop/all
+    - generic [ref=f6e124]:
+      - generic [ref=f6e131]:
+        - heading "Free Nationwide Delivery" [level=3] [ref=f6e132]
+        - paragraph [ref=f6e133]: Available on all orders over ৳1,499.
+      - generic [ref=f6e139]:
+        - heading "First Order Perk" [level=3] [ref=f6e140]
+        - paragraph [ref=f6e141]: 10% instant off with code BEEFIRST.
+      - generic [ref=f6e147]:
+        - heading "Luxury Gift Sets" [level=3] [ref=f6e148]
+        - paragraph [ref=f6e149]: Save up to 30% on curated kits.
+    - generic [ref=f6e150]:
+      - heading "Frequently Asked Questions & Offer Policies" [level=3] [ref=f6e151]
+      - generic [ref=f6e152]:
+        - button "How to Redeem a Promo Code" [ref=f6e154] [cursor=pointer]
+        - button "Free Shipping Threshold Terms" [ref=f6e159] [cursor=pointer]
+        - button "Stacking & Combining Offers" [ref=f6e164] [cursor=pointer]
+  - contentinfo [ref=f6e168]:
+    - generic [ref=f6e170]:
+      - generic [ref=f6e171]:
+        - heading "100% Authentic" [level=4] [ref=f6e175]
+        - paragraph [ref=f6e176]: Directly crafted & certified formulations
+      - generic [ref=f6e177]:
+        - heading "Free Fast Shipping" [level=4] [ref=f6e183]
+        - paragraph [ref=f6e184]: On all orders above ৳1,499
+      - generic [ref=f6e185]:
+        - heading "Cruelty Free" [level=4] [ref=f6e189]
+        - paragraph [ref=f6e190]: Never tested on animals, ever
+      - generic [ref=f6e191]:
+        - heading "Cash on Delivery" [level=4] [ref=f6e195]
+        - paragraph [ref=f6e196]: Available across all 64 districts
+    - generic [ref=f6e197]:
+      - generic [ref=f6e198]:
+        - generic [ref=f6e199]: BEE&BEAUTY
+        - paragraph [ref=f6e200]: Luxury cosmetics formulated specifically for South Asian skin tones and weather. Powered by clean botanicals, pure honey extracts, and modern peptide science.
+        - generic [ref=f6e201]:
+          - generic [ref=f6e202]: Join The Bee Club
+          - generic [ref=f6e203]:
+            - textbox "Enter your email" [ref=f6e204]
+            - button "Join" [ref=f6e205] [cursor=pointer]
+      - generic [ref=f6e206]:
+        - heading "Shop Collections" [level=4] [ref=f6e207]
+        - list [ref=f6e208]:
+          - listitem [ref=f6e209]:
+            - link "Lips" [ref=f6e210] [cursor=pointer]:
+              - /url: /shop/lips
+          - listitem [ref=f6e211]:
+            - link "Eyes" [ref=f6e212] [cursor=pointer]:
+              - /url: /shop/eyes
+          - listitem [ref=f6e213]:
+            - link "Face" [ref=f6e214] [cursor=pointer]:
+              - /url: /shop/face
+          - listitem [ref=f6e215]:
+            - link "Nails" [ref=f6e216] [cursor=pointer]:
+              - /url: /shop/nails
+          - listitem [ref=f6e217]:
+            - link "Skincare" [ref=f6e218] [cursor=pointer]:
+              - /url: /shop/skin
+          - listitem [ref=f6e219]:
+            - link "Gifts & Kits" [ref=f6e220] [cursor=pointer]:
+              - /url: /shop/kits
+          - listitem [ref=f6e221]:
+            - link "Under ৳499 Value Store" [ref=f6e222] [cursor=pointer]:
+              - /url: /shop/under499
+          - listitem [ref=f6e223]:
+            - link "Special Offers & Deals" [ref=f6e224] [cursor=pointer]:
+              - /url: /offers
+      - generic [ref=f6e225]:
+        - heading "Customer Care" [level=4] [ref=f6e226]
+        - list [ref=f6e227]:
+          - listitem [ref=f6e228]:
+            - link "Help Center & Support" [ref=f6e229] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=f6e230]:
+            - link "View Shopping Bag" [ref=f6e231] [cursor=pointer]:
+              - /url: /cart
+          - listitem [ref=f6e232]:
+            - link "Saved Wishlist" [ref=f6e233] [cursor=pointer]:
+              - /url: /wishlist
+          - listitem [ref=f6e234]:
+            - link "Clean Beauty Standards" [ref=f6e235] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f6e236]: Shipping across Bangladesh (2-4 Days)
+      - generic [ref=f6e237]:
+        - heading "Direct Inquiries" [level=4] [ref=f6e238]
+        - generic [ref=f6e239]:
+          - paragraph [ref=f6e240]:
+            - strong [ref=f6e241]: "Headquarters:"
+            - text: Banani, Dhaka, Bangladesh
+          - paragraph [ref=f6e242]:
+            - strong [ref=f6e243]: "Customer Email:"
+            - text: support@beeandbeauty.com
+          - paragraph [ref=f6e244]:
+            - strong [ref=f6e245]: "Support Hours:"
+            - text: Saturday – Thursday (10:00 AM – 8:00 PM)
+          - button "Back to Top" [ref=f6e247] [cursor=pointer]
+    - generic [ref=f6e251]:
+      - paragraph [ref=f6e252]: © 2026 Bee&Beauty Cosmetics. All rights reserved. Designed with precision.
+      - generic [ref=f6e253]:
+        - generic [ref=f6e254]: Privacy Policy
+        - generic [ref=f6e255]: Terms of Service
+        - generic [ref=f6e256]: Authenticity Guarantee
+  - alert [ref=f6e257]

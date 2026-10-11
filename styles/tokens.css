@@ -1,0 +1,54 @@
+:root {
+  /* Official Bee & Beauty Brand Color Palette */
+  /* Primary brand color and headings */
+  --bb-plum: #6A1B6D;
+  --bb-plum-dark: #4A104C;
+  --bb-plum-light: #8A2D8D;
+
+  /* Accent and highlights */
+  --bb-magenta: #C2188B;
+  --bb-magenta-dark: #9B136F;
+  --bb-magenta-light: #E035A7;
+
+  /* Small premium accents */
+  --bb-gold: #D4AF37;
+  --bb-gold-light: #F4E295;
+  --bb-gold-dark: #A98724;
+
+  /* Canvas backgrounds */
+  --bb-ivory: #FFF9F5;
+  --bb-blush: #FCE4EC;
+  --bb-blush-light: #FFF0F5;
+  --bb-white: #FFFFFF;
+
+  /* High contrast text and neutrals */
+  --bb-charcoal: #2C2C2C;
+  --bb-mid-gray: #666666;
+  --bb-light-gray: #EAE5E1;
+  --bb-border-subtle: #F0E6DD;
+  --bb-surface-card: #FFFFFF;
+
+  /* Legacy aliases for backward compatibility */
+  --bb-black: #6A1B6D;
+  --bb-dark-gray: #2C2C2C;
+  --bb-surface-subtle: #FFF9F5;
+
+  /* Feedback & Badges */
+  --bb-sale-red: #C2188B;
+  --bb-sale-bg: #FCE4EC;
+  --bb-success-green: #2E7D32;
+  --bb-success-bg: #E8F5E9;
+  --bb-star: #D4AF37;
+
+  /* Typography */
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Karla', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Layout & Spacing */
+  --bb-container-max: 1360px;
+  --bb-header-height: 76px;
+  --bb-announcement-height: 38px;
+
+  /* Transitions */
+  --bb-transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}

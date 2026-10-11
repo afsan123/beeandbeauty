@@ -1,0 +1,611 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - button "Previous announcement" [ref=e4] [cursor=pointer]
+      - link "FREE Luxe Lip Butter on Orders Above ৳1,499" [ref=e8] [cursor=pointer]:
+        - /url: /offers
+      - button "Next announcement" [ref=e9] [cursor=pointer]
+    - generic [ref=e13]:
+      - link "BEE&BEAUTY" [ref=e14] [cursor=pointer]:
+        - /url: /
+      - navigation "Main Navigation" [ref=e16]:
+        - link "LIPS" [ref=e18] [cursor=pointer]:
+          - /url: /shop/lips
+        - link "EYES" [ref=e20] [cursor=pointer]:
+          - /url: /shop/eyes
+        - link "FACE" [ref=e22] [cursor=pointer]:
+          - /url: /shop/face
+        - link "NAILS" [ref=e24] [cursor=pointer]:
+          - /url: /shop/nails
+        - link "SKIN" [ref=e26] [cursor=pointer]:
+          - /url: /shop/skin
+        - link "KITS" [ref=e28] [cursor=pointer]:
+          - /url: /shop/kits
+        - link "Under ৳499" [ref=e29] [cursor=pointer]:
+          - /url: /shop/under499
+        - link "Offers" [ref=e30] [cursor=pointer]:
+          - /url: /offers
+      - generic [ref=e31]:
+        - button "Search catalog" [ref=e33] [cursor=pointer]:
+          - generic [ref=e37]: Search
+        - link "Wishlist (0 items)" [ref=e38] [cursor=pointer]:
+          - /url: /wishlist
+        - button "Cart (0 items)" [ref=e41] [cursor=pointer]
+  - main [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: NEW LUXURY LAUNCH
+          - heading "VELVET MATTE ROYAL LIPSTICK" [level=1] [ref=e53]
+          - paragraph [ref=e54]: Infused with botanical royal jelly. 16-hour weightless comfort in 12 bespoke shades.
+          - generic [ref=e55]:
+            - link "Shop Lipsticks" [ref=e56] [cursor=pointer]:
+              - /url: /shop/lips
+            - link "Explore Collection" [ref=e57] [cursor=pointer]:
+              - /url: /shop/all
+        - generic:
+          - generic:
+            - generic: BESTSELLING BASE ESSENTIAL
+            - heading "HONEY DEW SERUM FOUNDATION" [level=1]
+            - paragraph: Flawless luminous coverage engineered for South Asian skin undertones with SPF 30.
+            - generic:
+              - link "Find Your Shade":
+                - /url: /shop/face
+              - link "View All Bases":
+                - /url: /shop/face
+        - generic:
+          - generic:
+            - generic: FESTIVE GLAMOUR DEALS
+            - heading "THE LUXE BEAUTY BOX" [level=1]
+            - paragraph: Complete 6-piece curated vanity set in gold-embossed keepsake packaging. Save 30%.
+            - generic:
+              - link "Shop Gift Sets":
+                - /url: /shop/kits
+              - link "View Deals":
+                - /url: /offers
+      - button "Previous slide" [ref=e58] [cursor=pointer]
+      - button "Next slide" [ref=e61] [cursor=pointer]
+      - generic [ref=e64]:
+        - button "Go to slide 1" [ref=e65] [cursor=pointer]
+        - button "Go to slide 2" [ref=e66] [cursor=pointer]
+        - button "Go to slide 3" [ref=e67] [cursor=pointer]
+    - generic [ref=e69]:
+      - generic [ref=e70]:
+        - generic [ref=e71]: Explore Categories
+        - heading "Shop By Collection" [level=2] [ref=e72]
+      - generic [ref=e73]:
+        - link "Lips LIPS 8 Items" [ref=e74] [cursor=pointer]:
+          - /url: /shop/lips
+          - img "Lips" [ref=e76]
+          - generic [ref=e77]: LIPS
+          - generic [ref=e78]: 8 Items
+        - link "Eyes EYES 5 Items" [ref=e79] [cursor=pointer]:
+          - /url: /shop/eyes
+          - img "Eyes" [ref=e81]
+          - generic [ref=e82]: EYES
+          - generic [ref=e83]: 5 Items
+        - link "Face FACE 6 Items" [ref=e84] [cursor=pointer]:
+          - /url: /shop/face
+          - img "Face" [ref=e86]
+          - generic [ref=e87]: FACE
+          - generic [ref=e88]: 6 Items
+        - link "Nails NAILS 3 Items" [ref=e89] [cursor=pointer]:
+          - /url: /shop/nails
+          - img "Nails" [ref=e91]
+          - generic [ref=e92]: NAILS
+          - generic [ref=e93]: 3 Items
+        - link "Skincare SKIN 3 Items" [ref=e94] [cursor=pointer]:
+          - /url: /shop/skin
+          - img "Skincare" [ref=e96]
+          - generic [ref=e97]: SKIN
+          - generic [ref=e98]: 3 Items
+        - link "Gifts & Kits KITS 4 Items" [ref=e99] [cursor=pointer]:
+          - /url: /shop/kits
+          - img "Gifts & Kits" [ref=e101]
+          - generic [ref=e102]: KITS
+          - generic [ref=e103]: 4 Items
+    - generic [ref=e105]:
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - heading "Cult Bestsellers" [level=2] [ref=e108]
+          - paragraph [ref=e109]: Our most celebrated formulas loved by over 50,000 beauty enthusiasts.
+        - link "View All Bestsellers" [ref=e110] [cursor=pointer]:
+          - /url: /shop/all?sort=bestselling
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - generic [ref=e116]:
+            - link [ref=e117] [cursor=pointer]:
+              - /url: /product/royal-honey-velvet-matte-lipstick
+              - generic [ref=e118]:
+                - img "Royal Honey Velvet Matte Lipstick" [ref=e119]
+                - img "Royal Honey Velvet Matte Lipstick swatch preview" [ref=e120]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 25%
+            - button "Save to wishlist" [ref=e121] [cursor=pointer]
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic [ref=e126]:
+                - button "Select shade 01 Royal Rosewood" [ref=e127] [cursor=pointer]
+                - button "Select shade 02 Crimson Honey" [ref=e128] [cursor=pointer]
+                - button "Select shade 03 Sundown Sienna" [ref=e129] [cursor=pointer]
+                - button "Select shade 04 Velvet Mulberry" [ref=e130] [cursor=pointer]
+                - button "Select shade 05 Petal Peach" [ref=e131] [cursor=pointer]
+              - link "Royal Honey Velvet Matte Lipstick" [ref=e132] [cursor=pointer]:
+                - /url: /product/royal-honey-velvet-matte-lipstick
+              - generic [ref=e134]:
+                - generic "4.9 out of 5 stars" [ref=e135]
+                - generic [ref=e146]: (914)
+              - generic [ref=e148]:
+                - generic [ref=e149]: ৳490
+                - generic [ref=e150]: ৳650
+                - generic [ref=e151]: "| 25% Off"
+            - button "Add to Bag" [ref=e152] [cursor=pointer]
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - link [ref=e155] [cursor=pointer]:
+              - /url: /product/silk-cloud-16hr-transferproof-liquid-lipstick
+              - generic [ref=e156]:
+                - img "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=e157]
+                - img "Silk Cloud 16HR Transferproof Liquid Lipstick swatch preview" [ref=e158]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 28%
+            - button "Save to wishlist" [ref=e159] [cursor=pointer]
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - button "Select shade 01 Toast & Honey" [ref=e165] [cursor=pointer]
+                - button "Select shade 02 Scarlet Empress" [ref=e166] [cursor=pointer]
+                - button "Select shade 03 Dusky Mauve" [ref=e167] [cursor=pointer]
+                - button "Select shade 04 Warm Caramel" [ref=e168] [cursor=pointer]
+                - button "Select shade 05 Vintage Rose" [ref=e169] [cursor=pointer]
+              - link "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=e170] [cursor=pointer]:
+                - /url: /product/silk-cloud-16hr-transferproof-liquid-lipstick
+              - generic [ref=e172]:
+                - generic "4.9 out of 5 stars" [ref=e173]
+                - generic [ref=e184]: (1,420)
+              - generic [ref=e186]:
+                - generic [ref=e187]: ৳499
+                - generic [ref=e188]: ৳699
+                - generic [ref=e189]: "| 29% Off"
+            - button "Add to Bag" [ref=e190] [cursor=pointer]
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - link [ref=e193] [cursor=pointer]:
+              - /url: /product/black-honey-24hr-gel-kohl-kajal
+              - generic [ref=e194]:
+                - img "Black Honey 24HR Gel Kohl Kajal" [ref=e195]
+                - img "Black Honey 24HR Gel Kohl Kajal swatch preview" [ref=e196]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 22%
+            - button "Save to wishlist" [ref=e197] [cursor=pointer]
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - button "Select shade 01 Pitch Black Obsidian" [ref=e203] [cursor=pointer]
+                - button "Select shade 02 Smoked Espresso" [ref=e204] [cursor=pointer]
+                - button "Select shade 03 Royal Emerald" [ref=e205] [cursor=pointer]
+              - link "Black Honey 24HR Gel Kohl Kajal" [ref=e206] [cursor=pointer]:
+                - /url: /product/black-honey-24hr-gel-kohl-kajal
+              - generic [ref=e208]:
+                - generic "4.9 out of 5 stars" [ref=e209]
+                - generic [ref=e220]: (1,680)
+              - generic [ref=e222]:
+                - generic [ref=e223]: ৳249
+                - generic [ref=e224]: ৳320
+                - generic [ref=e225]: "| 22% Off"
+            - button "Add to Bag" [ref=e226] [cursor=pointer]
+        - generic [ref=e227]:
+          - generic [ref=e228]:
+            - link [ref=e229] [cursor=pointer]:
+              - /url: /product/honey-silk-hd-flawless-serum-foundation
+              - generic [ref=e230]:
+                - img "Honey Silk HD Flawless Serum Foundation" [ref=e231]
+                - img "Honey Silk HD Flawless Serum Foundation swatch preview" [ref=e232]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 25%
+            - button "Save to wishlist" [ref=e233] [cursor=pointer]
+          - generic [ref=e236]:
+            - generic [ref=e237]:
+              - generic [ref=e238]:
+                - button "Select shade 01 Warm Biscuit (Fair)" [ref=e239] [cursor=pointer]
+                - button "Select shade 02 Honey Cream (Light-Medium)" [ref=e240] [cursor=pointer]
+                - button "Select shade 03 Golden Amber (Medium Warm)" [ref=e241] [cursor=pointer]
+                - button "Select shade 04 Spiced Caramel (Tan Warm)" [ref=e242] [cursor=pointer]
+                - button "Select shade 05 Rich Espresso (Deep)" [ref=e243] [cursor=pointer]
+              - link "Honey Silk HD Flawless Serum Foundation" [ref=e244] [cursor=pointer]:
+                - /url: /product/honey-silk-hd-flawless-serum-foundation
+              - generic [ref=e246]:
+                - generic "4.9 out of 5 stars" [ref=e247]
+                - generic [ref=e258]: (1,120)
+              - generic [ref=e260]:
+                - generic [ref=e261]: ৳890
+                - generic [ref=e262]: ৳1,190
+                - generic [ref=e263]: "| 25% Off"
+            - button "Add to Bag" [ref=e264] [cursor=pointer]
+    - generic [ref=e269]:
+      - generic [ref=e270]:
+        - generic [ref=e271]: Limited Time Offer
+        - 'heading "Festive Glamour Celebration: Flat ৳700 Off" [level=3] [ref=e272]'
+        - paragraph [ref=e273]: Enjoy an instant ৳700 discount on cart value over ৳2,999. Plus, complimentary tracked doorstep delivery nationwide.
+      - generic [ref=e274]:
+        - generic [ref=e275]:
+          - generic [ref=e279]: BEE700
+          - button "Copy Code" [ref=e280] [cursor=pointer]
+        - link "View All Deals" [ref=e285] [cursor=pointer]:
+          - /url: /offers
+    - generic [ref=e290]:
+      - generic [ref=e291]:
+        - generic [ref=e292]:
+          - heading "Just Launched" [level=2] [ref=e293]
+          - paragraph [ref=e294]: Fresh drops, breakthrough textures, and newly engineered seasonal shades.
+        - link "Shop New Arrivals" [ref=e295] [cursor=pointer]:
+          - /url: /shop/all?badge=new
+      - generic [ref=e299]:
+        - generic [ref=e300]:
+          - generic [ref=e301]:
+            - link [ref=e302] [cursor=pointer]:
+              - /url: /product/nectar-plump-peptide-lip-gloss
+              - generic [ref=e303]:
+                - img "Nectar Plump Peptide Lip Gloss" [ref=e304]
+                - img "Nectar Plump Peptide Lip Gloss swatch preview" [ref=e305]
+            - generic:
+              - generic: New Launch
+              - generic: Save 24%
+            - button "Save to wishlist" [ref=e306] [cursor=pointer]
+          - generic [ref=e309]:
+            - generic [ref=e310]:
+              - generic [ref=e311]:
+                - button "Select shade 01 Golden Nectar" [ref=e312] [cursor=pointer]
+                - button "Select shade 02 Blushing Berry" [ref=e313] [cursor=pointer]
+                - button "Select shade 03 Clear Honey Dew" [ref=e314] [cursor=pointer]
+                - button "Select shade 04 Spiced Cherry" [ref=e315] [cursor=pointer]
+              - link "Nectar Plump Peptide Lip Gloss" [ref=e316] [cursor=pointer]:
+                - /url: /product/nectar-plump-peptide-lip-gloss
+              - generic [ref=e318]:
+                - generic "4.8 out of 5 stars" [ref=e319]
+                - generic [ref=e330]: (682)
+              - generic [ref=e332]:
+                - generic [ref=e333]: ৳420
+                - generic [ref=e334]: ৳550
+                - generic [ref=e335]: "| 24% Off"
+            - button "Add to Bag" [ref=e336] [cursor=pointer]
+        - generic [ref=e337]:
+          - generic [ref=e338]:
+            - link [ref=e339] [cursor=pointer]:
+              - /url: /product/bee-tinted-nourishing-lip-oil
+              - generic [ref=e340]:
+                - img "Bee Tinted Nourishing Lip Oil" [ref=e341]
+                - img "Bee Tinted Nourishing Lip Oil swatch preview" [ref=e342]
+            - generic: New Launch
+            - button "Save to wishlist" [ref=e343] [cursor=pointer]
+          - generic [ref=e346]:
+            - generic [ref=e347]:
+              - generic [ref=e348]:
+                - button "Select shade 01 Honey Bloom" [ref=e349] [cursor=pointer]
+                - button "Select shade 02 Wild Berry Dew" [ref=e350] [cursor=pointer]
+                - button "Select shade 03 Amber Fig" [ref=e351] [cursor=pointer]
+              - link "Bee Tinted Nourishing Lip Oil" [ref=e352] [cursor=pointer]:
+                - /url: /product/bee-tinted-nourishing-lip-oil
+              - generic [ref=e354]:
+                - generic "4.7 out of 5 stars" [ref=e355]
+                - generic [ref=e366]: (450)
+              - generic [ref=e368]:
+                - generic [ref=e369]: ৳380
+                - generic [ref=e370]: ৳480
+                - generic [ref=e371]: "| 21% Off"
+            - button "Add to Bag" [ref=e372] [cursor=pointer]
+        - generic [ref=e373]:
+          - generic [ref=e374]:
+            - link [ref=e375] [cursor=pointer]:
+              - /url: /product/honey-glow-dew-drops-liquid-illuminator
+              - generic [ref=e376]:
+                - img "Honey Glow Dew Drops Liquid Illuminator" [ref=e377]
+                - img "Honey Glow Dew Drops Liquid Illuminator swatch preview" [ref=e378]
+            - generic: New Launch
+            - button "Save to wishlist" [ref=e379] [cursor=pointer]
+          - generic [ref=e382]:
+            - generic [ref=e383]:
+              - generic [ref=e384]:
+                - button "Select shade 01 Champagne Honey" [ref=e385] [cursor=pointer]
+                - button "Select shade 02 Rose Gold Amber" [ref=e386] [cursor=pointer]
+              - link "Honey Glow Dew Drops Liquid Illuminator" [ref=e387] [cursor=pointer]:
+                - /url: /product/honey-glow-dew-drops-liquid-illuminator
+              - generic [ref=e389]:
+                - generic "4.9 out of 5 stars" [ref=e390]
+                - generic [ref=e401]: (480)
+              - generic [ref=e403]:
+                - generic [ref=e404]: ৳520
+                - generic [ref=e405]: ৳690
+                - generic [ref=e406]: "| 25% Off"
+            - button "Add to Bag" [ref=e407] [cursor=pointer]
+        - generic [ref=e408]:
+          - generic [ref=e409]:
+            - link [ref=e410] [cursor=pointer]:
+              - /url: /product/petal-veil-whipped-liquid-blush
+              - generic [ref=e411]:
+                - img "Petal Veil Whipped Liquid Blush" [ref=e412]
+                - img "Petal Veil Whipped Liquid Blush swatch preview" [ref=e413]
+            - generic: New Launch
+            - button "Save to wishlist" [ref=e414] [cursor=pointer]
+          - generic [ref=e417]:
+            - generic [ref=e418]:
+              - generic [ref=e419]:
+                - button "Select shade 01 Honey Terracotta" [ref=e420] [cursor=pointer]
+                - button "Select shade 02 Guava Sorbet" [ref=e421] [cursor=pointer]
+                - button "Select shade 03 Spiced Berry" [ref=e422] [cursor=pointer]
+              - link "Petal Veil Whipped Liquid Blush" [ref=e423] [cursor=pointer]:
+                - /url: /product/petal-veil-whipped-liquid-blush
+              - generic [ref=e425]:
+                - generic "4.8 out of 5 stars" [ref=e426]
+                - generic [ref=e437]: (512)
+              - generic [ref=e439]:
+                - generic [ref=e440]: ৳450
+                - generic [ref=e441]: ৳580
+                - generic [ref=e442]: "| 22% Off"
+            - button "Add to Bag" [ref=e443] [cursor=pointer]
+    - generic [ref=e445]:
+      - generic [ref=e446]:
+        - generic [ref=e447]: Pro Beauty Studio
+        - heading "Master The Signature Looks" [level=2] [ref=e448]
+        - paragraph [ref=e449]: Step-by-step masterclasses curated by our resident South Asian beauty artists.
+      - generic [ref=e450]:
+        - generic [ref=e451]:
+          - generic [ref=e452]:
+            - generic [ref=e453]:
+              - generic [ref=e454]: Daily Complexion
+              - generic [ref=e455]: 3 min routine
+            - heading "The 10-Minute Luminous Honey Glow" [level=3] [ref=e456]
+            - paragraph [ref=e457]: Learn how to layer our Honey Dew Serum Foundation with Golden Elixir Glow Drops for an unclockable natural luminosity that stays shine-free all afternoon.
+          - generic [ref=e458]:
+            - button "View Routine" [ref=e459] [cursor=pointer]
+            - link "Shop Product" [ref=e464] [cursor=pointer]:
+              - /url: /product/honey-dew-serum-foundation
+        - generic [ref=e465]:
+          - generic [ref=e466]:
+            - generic [ref=e467]:
+              - generic [ref=e468]: Dramatic Evening
+              - generic [ref=e469]: 5 min masterclass
+            - heading "Smouldering Royal Velvet Evening Glam" [level=3] [ref=e470]
+            - paragraph [ref=e471]: Craft a high-impact dramatic lip with our Velvet Matte Royal Lipstick in shade 01 Crimson Queen, paired with ultra-precise liquid ink liner wings.
+          - generic [ref=e472]:
+            - button "View Routine" [ref=e473] [cursor=pointer]
+            - link "Shop Product" [ref=e478] [cursor=pointer]:
+              - /url: /product/velvet-matte-royal-lipstick
+        - generic [ref=e479]:
+          - generic [ref=e480]:
+            - generic [ref=e481]:
+              - generic [ref=e482]: Eye & Brow Artistry
+              - generic [ref=e483]: 2 min quick tip
+            - 'heading "Arch & Define: Feathered Brow Tutorial" [level=3] [ref=e484]'
+            - paragraph [ref=e485]: Master effortless micro-stroke feathered brows that resist Dhaka humidity with our Arch Precision Micro Brow Pencil.
+          - generic [ref=e486]:
+            - button "View Routine" [ref=e487] [cursor=pointer]
+            - link "Shop Product" [ref=e492] [cursor=pointer]:
+              - /url: /product/arch-precision-micro-brow-pencil
+    - generic [ref=e494]:
+      - generic [ref=e495]:
+        - generic [ref=e496]:
+          - heading "Under ৳499 Essentials" [level=2] [ref=e497]
+          - paragraph [ref=e498]: High-impact beauty that fits everyday vanity routines without compromise.
+        - link "Shop Under ৳499" [ref=e499] [cursor=pointer]:
+          - /url: /shop/under499
+      - generic [ref=e503]:
+        - generic [ref=e504]:
+          - generic [ref=e505]:
+            - link [ref=e506] [cursor=pointer]:
+              - /url: /product/royal-honey-velvet-matte-lipstick
+              - generic [ref=e507]:
+                - img "Royal Honey Velvet Matte Lipstick" [ref=e508]
+                - img "Royal Honey Velvet Matte Lipstick swatch preview" [ref=e509]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 25%
+            - button "Save to wishlist" [ref=e510] [cursor=pointer]
+          - generic [ref=e513]:
+            - generic [ref=e514]:
+              - generic [ref=e515]:
+                - button "Select shade 01 Royal Rosewood" [ref=e516] [cursor=pointer]
+                - button "Select shade 02 Crimson Honey" [ref=e517] [cursor=pointer]
+                - button "Select shade 03 Sundown Sienna" [ref=e518] [cursor=pointer]
+                - button "Select shade 04 Velvet Mulberry" [ref=e519] [cursor=pointer]
+                - button "Select shade 05 Petal Peach" [ref=e520] [cursor=pointer]
+              - link "Royal Honey Velvet Matte Lipstick" [ref=e521] [cursor=pointer]:
+                - /url: /product/royal-honey-velvet-matte-lipstick
+              - generic [ref=e523]:
+                - generic "4.9 out of 5 stars" [ref=e524]
+                - generic [ref=e535]: (914)
+              - generic [ref=e537]:
+                - generic [ref=e538]: ৳490
+                - generic [ref=e539]: ৳650
+                - generic [ref=e540]: "| 25% Off"
+            - button "Add to Bag" [ref=e541] [cursor=pointer]
+        - generic [ref=e542]:
+          - generic [ref=e543]:
+            - link [ref=e544] [cursor=pointer]:
+              - /url: /product/nectar-plump-peptide-lip-gloss
+              - generic [ref=e545]:
+                - img "Nectar Plump Peptide Lip Gloss" [ref=e546]
+                - img "Nectar Plump Peptide Lip Gloss swatch preview" [ref=e547]
+            - generic:
+              - generic: New Launch
+              - generic: Save 24%
+            - button "Save to wishlist" [ref=e548] [cursor=pointer]
+          - generic [ref=e551]:
+            - generic [ref=e552]:
+              - generic [ref=e553]:
+                - button "Select shade 01 Golden Nectar" [ref=e554] [cursor=pointer]
+                - button "Select shade 02 Blushing Berry" [ref=e555] [cursor=pointer]
+                - button "Select shade 03 Clear Honey Dew" [ref=e556] [cursor=pointer]
+                - button "Select shade 04 Spiced Cherry" [ref=e557] [cursor=pointer]
+              - link "Nectar Plump Peptide Lip Gloss" [ref=e558] [cursor=pointer]:
+                - /url: /product/nectar-plump-peptide-lip-gloss
+              - generic [ref=e560]:
+                - generic "4.8 out of 5 stars" [ref=e561]
+                - generic [ref=e572]: (682)
+              - generic [ref=e574]:
+                - generic [ref=e575]: ৳420
+                - generic [ref=e576]: ৳550
+                - generic [ref=e577]: "| 24% Off"
+            - button "Add to Bag" [ref=e578] [cursor=pointer]
+        - generic [ref=e579]:
+          - generic [ref=e580]:
+            - link [ref=e581] [cursor=pointer]:
+              - /url: /product/silk-cloud-16hr-transferproof-liquid-lipstick
+              - generic [ref=e582]:
+                - img "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=e583]
+                - img "Silk Cloud 16HR Transferproof Liquid Lipstick swatch preview" [ref=e584]
+            - generic:
+              - generic: Bestseller
+              - generic: Save 28%
+            - button "Save to wishlist" [ref=e585] [cursor=pointer]
+          - generic [ref=e588]:
+            - generic [ref=e589]:
+              - generic [ref=e590]:
+                - button "Select shade 01 Toast & Honey" [ref=e591] [cursor=pointer]
+                - button "Select shade 02 Scarlet Empress" [ref=e592] [cursor=pointer]
+                - button "Select shade 03 Dusky Mauve" [ref=e593] [cursor=pointer]
+                - button "Select shade 04 Warm Caramel" [ref=e594] [cursor=pointer]
+                - button "Select shade 05 Vintage Rose" [ref=e595] [cursor=pointer]
+              - link "Silk Cloud 16HR Transferproof Liquid Lipstick" [ref=e596] [cursor=pointer]:
+                - /url: /product/silk-cloud-16hr-transferproof-liquid-lipstick
+              - generic [ref=e598]:
+                - generic "4.9 out of 5 stars" [ref=e599]
+                - generic [ref=e610]: (1,420)
+              - generic [ref=e612]:
+                - generic [ref=e613]: ৳499
+                - generic [ref=e614]: ৳699
+                - generic [ref=e615]: "| 29% Off"
+            - button "Add to Bag" [ref=e616] [cursor=pointer]
+        - generic [ref=e617]:
+          - generic [ref=e618]:
+            - link [ref=e619] [cursor=pointer]:
+              - /url: /product/bee-tinted-nourishing-lip-oil
+              - generic [ref=e620]:
+                - img "Bee Tinted Nourishing Lip Oil" [ref=e621]
+                - img "Bee Tinted Nourishing Lip Oil swatch preview" [ref=e622]
+            - generic: New Launch
+            - button "Save to wishlist" [ref=e623] [cursor=pointer]
+          - generic [ref=e626]:
+            - generic [ref=e627]:
+              - generic [ref=e628]:
+                - button "Select shade 01 Honey Bloom" [ref=e629] [cursor=pointer]
+                - button "Select shade 02 Wild Berry Dew" [ref=e630] [cursor=pointer]
+                - button "Select shade 03 Amber Fig" [ref=e631] [cursor=pointer]
+              - link "Bee Tinted Nourishing Lip Oil" [ref=e632] [cursor=pointer]:
+                - /url: /product/bee-tinted-nourishing-lip-oil
+              - generic [ref=e634]:
+                - generic "4.7 out of 5 stars" [ref=e635]
+                - generic [ref=e646]: (450)
+              - generic [ref=e648]:
+                - generic [ref=e649]: ৳380
+                - generic [ref=e650]: ৳480
+                - generic [ref=e651]: "| 21% Off"
+            - button "Add to Bag" [ref=e652] [cursor=pointer]
+    - generic [ref=e654]:
+      - generic [ref=e655]:
+        - generic [ref=e656]: The Brand Ethos
+        - heading "Luxury Beauty, Formulated for You" [level=2] [ref=e657]
+        - paragraph [ref=e659]: "Bee&Beauty was born from a singular passion: creating high-performance, skincare-infused makeup that celebrates the warmth and diversity of South Asian complexions. We blend nourishing apicultural botanicals with weightless pigments that never oxidize or cake."
+      - generic [ref=e660]:
+        - generic [ref=e661]:
+          - heading "Botanical Infusion" [level=3] [ref=e666]
+          - paragraph [ref=e667]: Enriched with ethically harvested royal jelly, honey nectar, and nourishing seed oils.
+        - generic [ref=e668]:
+          - heading "100% Cruelty-Free" [level=3] [ref=e672]
+          - paragraph [ref=e673]: PETA-certified humane. We never test on animals at any stage of product development.
+        - generic [ref=e674]:
+          - heading "Custom Undertones" [level=3] [ref=e679]
+          - paragraph [ref=e680]: Tailored shade ranges specifically formulated to enhance golden, neutral, and warm undertones.
+        - generic [ref=e681]:
+          - heading "Dermatologist Tested" [level=3] [ref=e686]
+          - paragraph [ref=e687]: Hypoallergenic and non-comedogenic formulations safe for sensitive and humid-climate skin.
+  - contentinfo [ref=e688]:
+    - generic [ref=e690]:
+      - generic [ref=e691]:
+        - heading "100% Authentic" [level=4] [ref=e695]
+        - paragraph [ref=e696]: Directly crafted & certified formulations
+      - generic [ref=e697]:
+        - heading "Free Fast Shipping" [level=4] [ref=e703]
+        - paragraph [ref=e704]: On all orders above ৳1,499
+      - generic [ref=e705]:
+        - heading "Cruelty Free" [level=4] [ref=e709]
+        - paragraph [ref=e710]: Never tested on animals, ever
+      - generic [ref=e711]:
+        - heading "Cash on Delivery" [level=4] [ref=e715]
+        - paragraph [ref=e716]: Available across all 64 districts
+    - generic [ref=e717]:
+      - generic [ref=e718]:
+        - generic [ref=e719]: BEE&BEAUTY
+        - paragraph [ref=e720]: Luxury cosmetics formulated specifically for South Asian skin tones and weather. Powered by clean botanicals, pure honey extracts, and modern peptide science.
+        - generic [ref=e721]:
+          - generic [ref=e722]: Join The Bee Club
+          - generic [ref=e723]:
+            - textbox "Enter your email" [ref=e724]
+            - button "Join" [ref=e725] [cursor=pointer]
+      - generic [ref=e726]:
+        - heading "Shop Collections" [level=4] [ref=e727]
+        - list [ref=e728]:
+          - listitem [ref=e729]:
+            - link "Lips" [ref=e730] [cursor=pointer]:
+              - /url: /shop/lips
+          - listitem [ref=e731]:
+            - link "Eyes" [ref=e732] [cursor=pointer]:
+              - /url: /shop/eyes
+          - listitem [ref=e733]:
+            - link "Face" [ref=e734] [cursor=pointer]:
+              - /url: /shop/face
+          - listitem [ref=e735]:
+            - link "Nails" [ref=e736] [cursor=pointer]:
+              - /url: /shop/nails
+          - listitem [ref=e737]:
+            - link "Skincare" [ref=e738] [cursor=pointer]:
+              - /url: /shop/skin
+          - listitem [ref=e739]:
+            - link "Gifts & Kits" [ref=e740] [cursor=pointer]:
+              - /url: /shop/kits
+          - listitem [ref=e741]:
+            - link "Under ৳499 Value Store" [ref=e742] [cursor=pointer]:
+              - /url: /shop/under499
+          - listitem [ref=e743]:
+            - link "Special Offers & Deals" [ref=e744] [cursor=pointer]:
+              - /url: /offers
+      - generic [ref=e745]:
+        - heading "Customer Care" [level=4] [ref=e746]
+        - list [ref=e747]:
+          - listitem [ref=e748]:
+            - link "Help Center & Support" [ref=e749] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=e750]:
+            - link "View Shopping Bag" [ref=e751] [cursor=pointer]:
+              - /url: /cart
+          - listitem [ref=e752]:
+            - link "Saved Wishlist" [ref=e753] [cursor=pointer]:
+              - /url: /wishlist
+          - listitem [ref=e754]:
+            - link "Clean Beauty Standards" [ref=e755] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=e756]: Shipping across Bangladesh (2-4 Days)
+      - generic [ref=e757]:
+        - heading "Direct Inquiries" [level=4] [ref=e758]
+        - generic [ref=e759]:
+          - paragraph [ref=e760]:
+            - strong [ref=e761]: "Headquarters:"
+            - text: Banani, Dhaka, Bangladesh
+          - paragraph [ref=e762]:
+            - strong [ref=e763]: "Customer Email:"
+            - text: support@beeandbeauty.com
+          - paragraph [ref=e764]:
+            - strong [ref=e765]: "Support Hours:"
+            - text: Saturday – Thursday (10:00 AM – 8:00 PM)
+          - button "Back to Top" [ref=e767] [cursor=pointer]
+    - generic [ref=e771]:
+      - paragraph [ref=e772]: © 2026 Bee&Beauty Cosmetics. All rights reserved. Designed with precision.
+      - generic [ref=e773]:
+        - generic [ref=e774]: Privacy Policy
+        - generic [ref=e775]: Terms of Service
+        - generic [ref=e776]: Authenticity Guarantee
+  - alert [ref=e777]

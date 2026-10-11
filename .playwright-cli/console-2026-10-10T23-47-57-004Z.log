@@ -1,0 +1,6 @@
+[     752ms] [WARNING] In a sandboxed environment, addEventListener may not behave as expected. @ https://www.sugarcosmetics.com/cdn/wpm/s7ec887c8w14f9f074p854094e1m1370c602m.js:0
+[     865ms] [LOG] %c This store is Powered by Reelfy background:#000;color: #dcf3fb Visit https://apps.shopify.com/reelfy/ for more info @ https://www.sugarcosmetics.com/cdn/shop/t/101/assets/reelfy.js?v=30875496842182924771784715123:0
+[    1048ms] [LOG] allPageLogic initialize {SERVER_URL: undefined, SHOP_DOMAIN: sugar-cosmetics.myshopify.com, STOREFRONT_ACCESS_TOKEN: 602759815f361cb74b259668ff759932, app: Object, merchantInfo: Object} @ https://cdn.shopify.com/extensions/01a0c3ac-a149-7d1a-b6ca-0b75dd3d6ed3/echo-all-in-one-fixed-bundles-697/assets/flyBundlesCore.min.js:0
+[    1656ms] [WARNING] gk_analytics_sdk_unavailable_after_retry: init_threw @ https://pdp.gokwik.co/merchant-integration/build/merchant.integration.js?v4:0
+[    1700ms] [WARNING] [Meta Pixel] - Invalid parameter format for currency. Please refer https://developers.facebook.com/docs/meta-pixel/reference/ for valid parameter specifications. @ https://connect.facebook.net/en_US/fbevents.js:203
+[    2390ms] [LOG] [PushOwl Web Push Notifications] starting up @ https://cdn.shopify.com/extensions/01a11b15-54c5-7255-96a1-1eeb432f5c53/pushowl-332/assets/pushowl-shopify-main.js:0
