@@ -35,3 +35,9 @@ For the full architectural knowledge base, market specifications, and design sys
    - Dynamic route pages (`app/shop/[category]/page.tsx`, `app/product/[slug]/page.tsx`, `app/search/page.tsx`) must wrap async data access (`await params` / `await searchParams`) inside `<Suspense fallback={<Skeleton />}>` rather than awaiting at the root of the page component, preserving instant static shells under Partial Prerendering.
 6. **Verification Requirements**:
    - Always run `npm test` and `npm run build` before completing tasks.
+7. **Admin Panel & Bulk Operations**:
+   - All catalog creation must enforce valid BDT pricing and auto-generate SEO URL slugs via `generateSlug()` from `lib/slug.ts`.
+   - Bulk upload operations must parse through `lib/productBulkParser.ts` supporting CSV/JSON with live preview.
+8. **Pre-Launch Data Integrity**:
+   - The production catalog must be driven by the real launch dataset via the Admin Panel and Supabase database.
+   - Operational collections (orders, inquiries, customer reviews) must be kept clean of dummy/mock records prior to live launch.

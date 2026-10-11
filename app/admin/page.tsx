@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation.js';
 import { AdminHeader } from '../../components/admin/AdminHeader.tsx';
 import { KPICard } from '../../components/admin/KPICard.tsx';
+import { LaunchPreparationCard } from '../../components/admin/LaunchPreparationCard.tsx';
+import { ExecutiveActionHub } from '../../components/admin/ExecutiveActionHub.tsx';
+import { ExecutiveSalesAnalytics } from '../../components/admin/ExecutiveSalesAnalytics.tsx';
+import { ExecutiveMerchandisingAnalytics } from '../../components/admin/ExecutiveMerchandisingAnalytics.tsx';
+import { ExecutiveCustomerLogisticsHub } from '../../components/admin/ExecutiveCustomerLogisticsHub.tsx';
 import { OrderDetailModal } from '../../components/admin/OrderDetailModal.tsx';
 import type { StoredOrder } from '../../lib/services/orderService.ts';
 import { formatPrice } from '../../lib/formatters.ts';
@@ -19,8 +24,97 @@ interface DashboardData {
     deliveredCount: number;
     cancelledCount: number;
     aov: number;
+    totalUnitsSold?: number;
+    basketSize?: number;
+    freeShippingCount?: number;
+    freeShippingPercent?: number;
     paymentBreakdown: { cod: number; bkash: number; nagad: number };
     zoneBreakdown: { dhaka: number; outside: number };
+  };
+  salesTrends: Array<{
+    date: string;
+    label: string;
+    revenue: number;
+    orders: number;
+  }>;
+  topProducts: Array<{
+    id: string;
+    title: string;
+    categoryName: string;
+    categorySlug: string;
+    price: number;
+    inStock: boolean;
+    unitsSold: number;
+    revenue: number;
+    isBestseller?: boolean;
+  }>;
+  categoryBreakdown: Array<{
+    slug: string;
+    name: string;
+    revenue: number;
+    unitsSold: number;
+    productCount: number;
+    percent: number;
+  }>;
+  customerIntelligence: {
+    totalCustomers: number;
+    repeatCustomers: number;
+    repeatRate: number;
+    vipCustomers: number;
+    averageLtv: number;
+    totalSubscribers: number;
+  };
+  fulfillmentPipeline: {
+    pendingCount: number;
+    processingCount: number;
+    shippedCount: number;
+    deliveredCount: number;
+    cancelledCount: number;
+    slaInsideDhaka: string;
+    slaOutsideDhaka: string;
+  };
+  actionItems: {
+    urgentOrders: Array<{
+      id: string;
+      orderNumber: string;
+      customerName: string;
+      customerPhone: string;
+      district: string;
+      deliveryZone: 'dhaka' | 'outside';
+      totalAmount: number;
+      paymentMethod: string;
+      createdAt: string;
+    }>;
+    urgentInquiries: Array<{
+      id: string;
+      ticketNumber: string;
+      fullName: string;
+      subject: string;
+      status: string;
+      createdAt: string;
+    }>;
+    pendingBookings: Array<{
+      id: string;
+      clientName: string;
+      clientPhone: string;
+      serviceType: string;
+      preferredDate: string;
+      preferredTime?: string;
+      status: string;
+    }>;
+    stockAlerts: Array<{
+      id: string;
+      title: string;
+      categoryName: string;
+      inStock: boolean;
+      outShades: string[];
+    }>;
+    systemHealth: {
+      database: string;
+      courierGateways: string;
+      paymentGateways: string;
+      smsHelpline: string;
+    };
   };
   recentOrders: StoredOrder[];
   recentInquiries: Array<{
@@ -39,6 +133,12 @@ interface DashboardData {
     totalReviews: number;
     totalSubscribers: number;
     openInquiries: number;
+    totalCustomers: number;
+    totalProducts: number;
+    totalCategories: number;
+    pendingBookings: number;
+    activeBanners: number;
+    activeOffers: number;
   };
 }
 
@@ -140,6 +240,9 @@ export default function AdminDashboardPage() {
         </div>
       ) : data ? (
         <>
+          {/* Pre-Launch Verification & Operations Center */}
+          <LaunchPreparationCard onRefreshParent={fetchDashboardData} />
+
           {/* Top 4 Hero Financial & Operational KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <KPICard
@@ -197,8 +300,79 @@ export default function AdminDashboardPage() {
             />
           </div>
 
-          {/* Operational Command Strip: Customer Care & Voucher Engines */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 1. Executive Action Center & Immediate Priorities */}
+          <ExecutiveActionHub
+            urgentOrders={data.actionItems?.urgentOrders || []}
+            urgentInquiries={data.actionItems?.urgentInquiries || []}
+            pendingBookings={data.actionItems?.pendingBookings || []}
+            stockAlerts={data.actionItems?.stockAlerts || []}
+            systemHealth={
+              data.actionItems?.systemHealth || {
+                database: 'Supabase PostgreSQL Connected',
+                courierGateways: 'Steadfast & Pathao Ready',
+                paymentGateways: 'bKash & Nagad MFS Active',
+                smsHelpline: '+8801754502430',
+              }
+            }
+            onSelectOrder={async (orderNum) => {
+              const res = await fetch(`/api/admin/orders/${orderNum}`);
+              if (res.ok) {
+                const json = await res.json();
+                setSelectedOrder(json);
+              }
+            }}
+          />
+
+          {/* 2. Executive Sales Velocity & 7-Day Revenue Trend Chart */}
+          <ExecutiveSalesAnalytics
+            salesTrends={data.salesTrends || []}
+            totalRevenue={data.metrics.totalRevenue}
+            totalOrders={data.metrics.totalOrders}
+            aov={data.metrics.aov}
+            basketSize={data.metrics.basketSize || 1.0}
+            freeShippingPercent={data.metrics.freeShippingPercent || 0}
+            digitalSettlementPercent={digitalSettlementPercent}
+          />
+
+          {/* 3. Executive Merchandising & Category Distribution Analytics */}
+          <ExecutiveMerchandisingAnalytics
+            topProducts={data.topProducts || []}
+            categoryBreakdown={data.categoryBreakdown || []}
+            totalCatalogProducts={data.counts.totalProducts || 24}
+          />
+
+          {/* 4. Executive Logistics SLA & Customer CRM Intelligence */}
+          <ExecutiveCustomerLogisticsHub
+            customerIntelligence={
+              data.customerIntelligence || {
+                totalCustomers: data.counts.totalCustomers || 0,
+                repeatCustomers: 0,
+                repeatRate: 0,
+                vipCustomers: 0,
+                averageLtv: 0,
+                totalSubscribers: data.counts.totalSubscribers || 0,
+              }
+            }
+            fulfillmentPipeline={
+              data.fulfillmentPipeline || {
+                pendingCount: data.metrics.pendingCount,
+                processingCount: data.metrics.processingCount,
+                shippedCount: data.metrics.shippedCount,
+                deliveredCount: data.metrics.deliveredCount,
+                cancelledCount: data.metrics.cancelledCount,
+                slaInsideDhaka: '24h Target (৳70)',
+                slaOutsideDhaka: '48h Target (৳130)',
+              }
+            }
+            zoneBreakdown={data.metrics.zoneBreakdown}
+            paymentBreakdown={data.metrics.paymentBreakdown}
+            totalOrders={data.metrics.totalOrders}
+            freeShippingCount={data.metrics.freeShippingCount || 0}
+            freeShippingPercent={data.metrics.freeShippingPercent || 0}
+          />
+
+          {/* Operational Command Strip: Customer Care, Vouchers & Quick Shortcuts */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Customer Support Desk */}
             <div className="relative overflow-hidden rounded-2xl bg-white p-5 lg:p-6 shadow-xs border border-stone-200/80 hover:border-[var(--bb-gold)]/60 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
               <div className="flex items-start justify-between gap-4">
@@ -208,10 +382,10 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold font-serif text-stone-900">
-                      Customer Care & Consultation Desk
+                      Customer Care Desk
                     </h3>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      Customer inquiries, shade recommendations, and delivery order support
+                      Shade consultation & support
                     </p>
                   </div>
                 </div>
@@ -223,32 +397,23 @@ export default function AdminDashboardPage() {
                   }`}
                 >
                   {data.counts.openInquiries > 0
-                    ? `${data.counts.openInquiries} Unresolved`
+                    ? `${data.counts.openInquiries} Open`
                     : 'All Cleared'}
                 </span>
               </div>
 
               <div className="mt-4 pt-3.5 border-t border-stone-100 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 sm:gap-4 text-xs text-stone-600">
-                  <div>
-                    <span className="font-bold text-stone-900">{data.counts.openInquiries}</span> Open Tickets
-                  </div>
+                <div className="flex items-center gap-2 text-xs text-stone-600">
+                  <span className="font-bold text-stone-900">2h</span> SLA Target
                   <span className="text-stone-300">•</span>
-                  <div>
-                    <span className="font-bold text-stone-900">2h</span> SLA Target
-                  </div>
-                  <span className="text-stone-300">•</span>
-                  <div>
-                    <span className="font-bold text-stone-900">{data.counts.totalReviews}</span> Reviews
-                  </div>
+                  <span className="font-bold text-stone-900">{data.counts.totalReviews}</span> Reviews
                 </div>
 
                 <Link
                   href="/admin/inquiries"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bb-plum)] hover:bg-[#831843] text-white px-3.5 py-2 text-xs font-semibold shadow-xs transition-colors shrink-0"
                 >
-                  <span>Open Desk</span>
-                  <span>&rarr;</span>
+                  <span>Open Desk &rarr;</span>
                 </Link>
               </div>
             </div>
@@ -262,10 +427,10 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold font-serif text-stone-900">
-                      Promotions & Campaign Vouchers
+                      Promotions & Vouchers
                     </h3>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      Live discount codes, influencer campaigns, and free delivery thresholds
+                      Discount codes & thresholds
                     </p>
                   </div>
                 </div>
@@ -275,267 +440,63 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className="mt-4 pt-3.5 border-t border-stone-100 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 sm:gap-4 text-xs text-stone-600">
-                  <div>
-                    <span className="font-bold text-stone-900">{data.counts.activeCoupons}</span> Active Promos
-                  </div>
+                <div className="flex items-center gap-2 text-xs text-stone-600">
+                  <span className="font-bold text-stone-900">৳2,500</span> Free Ship
                   <span className="text-stone-300">•</span>
-                  <div>
-                    <span className="font-bold text-stone-900">৳2,500</span> Free Ship
-                  </div>
-                  <span className="text-stone-300">•</span>
-                  <div>
-                    <span className="font-bold text-stone-900">{data.counts.totalSubscribers}</span> VIP Club
-                  </div>
+                  <span className="font-bold text-stone-900">{data.counts.totalSubscribers}</span> VIP Club
                 </div>
 
                 <Link
                   href="/admin/coupons"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 hover:bg-[var(--bb-plum)] text-white px-3.5 py-2 text-xs font-semibold shadow-xs transition-colors shrink-0"
                 >
-                  <span>Manage Coupons</span>
-                  <span>&rarr;</span>
+                  <span>Coupons &rarr;</span>
                 </Link>
               </div>
             </div>
-          </div>
 
-          {/* Visual Analytics & Breakdown: 3 Equal-Height Landscape Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Payment Settlement Mix */}
-            <div className="rounded-2xl border border-stone-200/80 bg-white p-6 shadow-xs flex flex-col justify-between h-full hover:border-[var(--bb-gold)]/60 transition-all duration-200">
+            {/* Executive Quick Actions */}
+            <div className="relative overflow-hidden rounded-2xl bg-white p-5 lg:p-6 shadow-xs border border-stone-200/80 hover:border-[var(--bb-gold)]/60 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between border-b border-stone-100 pb-3 mb-4">
+                <div className="flex items-center justify-between border-b border-stone-100 pb-2 mb-3">
                   <h3 className="text-sm font-bold font-serif text-stone-900">
-                    Payment Settlement Mix
-                  </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                    Total {data.metrics.totalOrders} Orders
-                  </span>
-                </div>
-
-                <div className="space-y-3.5">
-                  {/* COD */}
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold text-stone-700 mb-1">
-                      <span>Cash on Delivery (COD)</span>
-                      <span>
-                        {data.metrics.paymentBreakdown.cod} orders (
-                        {data.metrics.totalOrders > 0
-                          ? Math.round(
-                              (data.metrics.paymentBreakdown.cod / data.metrics.totalOrders) * 100
-                            )
-                          : 0}
-                        %)
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
-                      <div
-                        className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${
-                            data.metrics.totalOrders > 0
-                              ? (data.metrics.paymentBreakdown.cod / data.metrics.totalOrders) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* bKash */}
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold text-stone-700 mb-1">
-                      <span className="text-[#D12053] font-bold">bKash Mobile Wallet</span>
-                      <span>
-                        {data.metrics.paymentBreakdown.bkash} orders (
-                        {data.metrics.totalOrders > 0
-                          ? Math.round(
-                              (data.metrics.paymentBreakdown.bkash / data.metrics.totalOrders) * 100
-                            )
-                          : 0}
-                        %)
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
-                      <div
-                        className="h-full bg-[#D12053] rounded-full transition-all duration-500"
-                        style={{
-                          width: `${
-                            data.metrics.totalOrders > 0
-                              ? (data.metrics.paymentBreakdown.bkash / data.metrics.totalOrders) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Nagad */}
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold text-stone-700 mb-1">
-                      <span className="text-[#F26522] font-bold">Nagad Mobile Wallet</span>
-                      <span>
-                        {data.metrics.paymentBreakdown.nagad} orders (
-                        {data.metrics.totalOrders > 0
-                          ? Math.round(
-                              (data.metrics.paymentBreakdown.nagad / data.metrics.totalOrders) * 100
-                            )
-                          : 0}
-                        %)
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
-                      <div
-                        className="h-full bg-[#F26522] rounded-full transition-all duration-500"
-                        style={{
-                          width: `${
-                            data.metrics.totalOrders > 0
-                              ? (data.metrics.paymentBreakdown.nagad / data.metrics.totalOrders) * 100
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3.5 mt-4 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                <span>🔒 Tokenized instant settlement</span>
-                <span className="font-semibold text-stone-800">
-                  {digitalSettlementPercent}% Prepayments
-                </span>
-              </div>
-            </div>
-
-            {/* Delivery Zone Logistics Distribution */}
-            <div className="rounded-2xl border border-stone-200/80 bg-white p-6 shadow-xs flex flex-col justify-between h-full hover:border-[var(--bb-gold)]/60 transition-all duration-200">
-              <div>
-                <div className="flex items-center justify-between border-b border-stone-100 pb-3 mb-4">
-                  <h3 className="text-sm font-bold font-serif text-stone-900">
-                    Logistics & SLA Zones
-                  </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                    Steadfast & Pathao
-                  </span>
-                </div>
-
-                <div className="space-y-3.5">
-                  <div className="grid grid-cols-2 gap-3.5">
-                    <div className="rounded-xl border border-[#3E6351]/20 bg-[#3E6351]/5 p-3.5 space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#3E6351]">
-                        Dhaka (24h SLA)
-                      </span>
-                      <p className="text-2xl font-bold font-serif text-[#2B473A]">
-                        {data.metrics.zoneBreakdown.dhaka}
-                      </p>
-                      <p className="text-[11px] text-[#3E6351] font-medium">৳70 Standard Fee</p>
-                    </div>
-
-                    <div className="rounded-xl border border-[var(--bb-plum)]/20 bg-[var(--bb-plum)]/5 p-3.5 space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--bb-plum)]">
-                        Outside (48h SLA)
-                      </span>
-                      <p className="text-2xl font-bold font-serif text-[var(--bb-plum)]">
-                        {data.metrics.zoneBreakdown.outside}
-                      </p>
-                      <p className="text-[11px] text-[var(--bb-plum)] font-medium">৳130 Courier Fee</p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl bg-amber-50/80 p-3 border border-amber-200/80 text-xs text-amber-900 flex items-center gap-2">
-                    <span className="text-base">✨</span>
-                    <span>
-                      <strong className="font-semibold">Free Delivery:</strong> Orders ৳2,500+ nationwide
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3.5 mt-4 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                <span>🚚 Daily dispatch cut-off: 4:00 PM</span>
-                <span className="font-semibold text-[#3E6351]">Dhaka Hub</span>
-              </div>
-            </div>
-
-            {/* Quick Operational Actions */}
-            <div className="rounded-2xl border border-stone-200/80 bg-white p-6 shadow-xs flex flex-col justify-between h-full hover:border-[var(--bb-gold)]/60 transition-all duration-200">
-              <div>
-                <div className="flex items-center justify-between border-b border-stone-100 pb-3 mb-4">
-                  <h3 className="text-sm font-bold font-serif text-stone-900">
-                    Executive Quick Actions
+                    Executive Quick Shortcuts
                   </h3>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
                     Command Hub
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Link
                     href="/admin/orders"
-                    className="flex items-center justify-between rounded-xl border border-stone-200/80 p-2.5 text-xs font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all group"
+                    className="flex items-center gap-2 rounded-xl border border-stone-200/70 p-2 text-[11px] font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--bb-plum)]/10 text-[var(--bb-plum)]">
-                        📦
-                      </span>
-                      <span>Order Fulfillment Ledger</span>
-                    </span>
-                    <span className="text-stone-400 group-hover:text-[var(--bb-plum)] group-hover:translate-x-0.5 transition-all">
-                      &rarr;
-                    </span>
+                    <span>📦 Orders</span>
                   </Link>
-
                   <Link
                     href="/admin/products"
-                    className="flex items-center justify-between rounded-xl border border-stone-200/80 p-2.5 text-xs font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all group"
+                    className="flex items-center gap-2 rounded-xl border border-stone-200/70 p-2 text-[11px] font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--bb-plum)]/10 text-[var(--bb-plum)]">
-                        💄
-                      </span>
-                      <span>Catalog Stock & Shades</span>
-                    </span>
-                    <span className="text-stone-400 group-hover:text-[var(--bb-plum)] group-hover:translate-x-0.5 transition-all">
-                      &rarr;
-                    </span>
+                    <span>💄 Catalog</span>
                   </Link>
-
                   <Link
-                    href="/admin/coupons"
-                    className="flex items-center justify-between rounded-xl border border-stone-200/80 p-2.5 text-xs font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all group"
+                    href="/admin/inventory"
+                    className="flex items-center gap-2 rounded-xl border border-stone-200/70 p-2 text-[11px] font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--bb-plum)]/10 text-[var(--bb-plum)]">
-                        🎟️
-                      </span>
-                      <span>Campaign Voucher Codes</span>
-                    </span>
-                    <span className="text-stone-400 group-hover:text-[var(--bb-plum)] group-hover:translate-x-0.5 transition-all">
-                      &rarr;
-                    </span>
+                    <span>📊 Shades</span>
                   </Link>
-
                   <Link
-                    href="/admin/subscribers"
-                    className="flex items-center justify-between rounded-xl border border-stone-200/80 p-2.5 text-xs font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all group"
+                    href="/admin/studio"
+                    className="flex items-center gap-2 rounded-xl border border-stone-200/70 p-2 text-[11px] font-semibold text-stone-800 hover:border-[var(--bb-gold)] hover:bg-[var(--bb-ivory)] transition-all"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--bb-plum)]/10 text-[var(--bb-plum)]">
-                        💌
-                      </span>
-                      <span>VIP Subscribers Export ({data.counts.totalSubscribers})</span>
-                    </span>
-                    <span className="text-stone-400 group-hover:text-[var(--bb-plum)] group-hover:translate-x-0.5 transition-all">
-                      &rarr;
-                    </span>
+                    <span>🎬 Studio</span>
                   </Link>
                 </div>
               </div>
 
-              <div className="pt-3.5 mt-4 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                <span>⚡ Real-time Supabase sync</span>
+              <div className="pt-2 mt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
+                <span>⚡ Real-time Telemetry</span>
                 <span className="font-semibold text-[var(--bb-plum)]">RBAC Admin</span>
               </div>
             </div>

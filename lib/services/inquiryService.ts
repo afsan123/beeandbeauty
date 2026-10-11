@@ -159,3 +159,23 @@ export async function updateInquiryStatus(
   return matched;
 }
 
+export async function clearTestInquiries(): Promise<{ success: boolean; deletedCount: number }> {
+  let count = fallbackInquiries.size;
+  fallbackInquiries.clear();
+
+  try {
+    const { data } = await supabaseAdmin
+      .from('contact_inquiries')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .select('id');
+    if (data) {
+      count = Math.max(count, data.length);
+    }
+  } catch (err) {
+    console.warn('Supabase clearTestInquiries fallback:', err);
+  }
+
+  return { success: true, deletedCount: count };
+}
+

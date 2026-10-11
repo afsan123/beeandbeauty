@@ -605,3 +605,26 @@ export async function getOrderMetrics(): Promise<OrderMetrics> {
   };
 }
 
+export async function clearTestOrders(): Promise<{ success: boolean; deletedCount: number }> {
+  let count = fallbackOrdersCache.size;
+  fallbackOrdersCache.clear();
+
+  try {
+    // Delete line items first
+    await supabaseAdmin.from('order_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    // Delete orders
+    const { data } = await supabaseAdmin
+      .from('orders')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .select('id');
+    if (data) {
+      count = Math.max(count, data.length);
+    }
+  } catch (err) {
+    console.warn('Supabase clearTestOrders fallback:', err);
+  }
+
+  return { success: true, deletedCount: count };
+}
+

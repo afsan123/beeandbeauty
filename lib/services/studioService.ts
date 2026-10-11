@@ -79,36 +79,32 @@ const DEFAULT_TUTORIALS: StudioTutorial[] = [
   },
 ];
 
-const DEFAULT_BOOKINGS: StudioBooking[] = [
-  {
-    id: 'bk-101',
-    clientName: 'Nusrat Jahan',
-    clientPhone: '01711223344',
-    clientEmail: 'nusrat.j@example.com',
-    serviceType: 'Bridal Masterclass Makeover',
-    preferredDate: '2026-10-25',
-    preferredTime: '3:00 PM',
-    notes: 'Requires warm undertone base with gold accents for reception event.',
-    status: 'confirmed',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'bk-102',
-    clientName: 'Tasnim Farhana',
-    clientPhone: '01899887766',
-    clientEmail: 'tasnim@example.com',
-    serviceType: 'Shade Match & Skin Consultation',
-    preferredDate: '2026-10-18',
-    preferredTime: '11:00 AM',
-    notes: 'Sensitive skin with olive undertone looking for foundation and serum match.',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  },
-];
+const DEFAULT_BOOKINGS: StudioBooking[] = [];
 
 let inMemoryTutorials: StudioTutorial[] = [...DEFAULT_TUTORIALS];
-let inMemoryBookings: StudioBooking[] = [...DEFAULT_BOOKINGS];
+let inMemoryBookings: StudioBooking[] = [];
 let isStudioLoaded = false;
+
+export async function clearTestBookings(): Promise<{ success: boolean; deletedCount: number }> {
+  let count = inMemoryBookings.length;
+  inMemoryBookings = [];
+  inMemoryTutorials = [...DEFAULT_TUTORIALS];
+
+  try {
+    const { data } = await supabaseAdmin
+      .from('studio_bookings')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .select('id');
+    if (data) {
+      count = Math.max(count, data.length);
+    }
+  } catch (err) {
+    console.warn('Supabase clearTestBookings fallback:', err);
+  }
+
+  return { success: true, deletedCount: count };
+}
 
 export async function fetchRemoteStudio(): Promise<void> {
   try {
@@ -174,7 +170,12 @@ export async function createTutorial(
     sortOrder: input.sortOrder || inMemoryTutorials.length + 1,
   };
 
-  inMemoryTutorials.push(newTutorial);
+  const existingIdx = inMemoryTutorials.findIndex((t) => t.id === newTutorial.id);
+  if (existingIdx !== -1) {
+    inMemoryTutorials[existingIdx] = newTutorial;
+  } else {
+    inMemoryTutorials.push(newTutorial);
+  }
 
   try {
     await supabaseAdmin.from('studio_tutorials').insert({

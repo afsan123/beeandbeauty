@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../supabase/admin.ts';
+import { LAUNCH_BANNERS } from '../data/launchCatalog.ts';
 
 export interface BannerSlide {
   id: string;
@@ -17,81 +18,7 @@ export interface BannerSlide {
   sortOrder: number;
 }
 
-const DEFAULT_BANNERS: BannerSlide[] = [
-  {
-    id: 'slide-1',
-    tagline: 'LUXURY COSMETICS | NEW LAUNCH',
-    title: 'ROYAL VELVET MATTE LIPSTICK',
-    subtitle: 'Infused with botanical royal jelly & honey nectar. 16-hour weightless comfort in bespoke shades for South Asian complexions.',
-    ctaText: 'Shop Lipsticks',
-    ctaHref: '/shop/lips',
-    secondaryCtaText: 'Explore Makeup',
-    secondaryCtaHref: '/shop/all',
-    bgColor: 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
-    accentColor: '#D4AF37',
-    bannerType: 'hero',
-    isActive: true,
-    sortOrder: 1,
-  },
-  {
-    id: 'slide-2',
-    tagline: 'DERMATOLOGICALLY TESTED | CLEAN SKINCARE',
-    title: 'HONEY BARRIER REPAIR & GLOW SERUM',
-    subtitle: 'Raw propolis, 5% niacinamide & ceramide NP. Rebuilds compromised moisture barriers, calms redness, and unlocks an effortless glass glow.',
-    ctaText: 'Shop Skincare',
-    ctaHref: '/shop/skin',
-    secondaryCtaText: 'View All Rituals',
-    secondaryCtaHref: '/shop/skin',
-    bgColor: 'from-[#1B3828] via-[#2A4D39] to-[#14261C]',
-    accentColor: '#F4D06F',
-    bannerType: 'hero',
-    isActive: true,
-    sortOrder: 2,
-  },
-  {
-    id: 'slide-3',
-    tagline: 'SKINCARE-INFUSED BASE | SOUTH ASIAN TONES',
-    title: 'HONEY SILK HD SERUM FOUNDATION',
-    subtitle: 'Flawless luminous coverage with SPF 30 & antioxidant propolis. Breathable skin-first makeup engineered for warm & olive undertones.',
-    ctaText: 'Find Your Shade',
-    ctaHref: '/shop/face',
-    secondaryCtaText: 'Explore Face',
-    secondaryCtaHref: '/shop/face',
-    bgColor: 'from-[#4E243B] via-[#6E3052] to-[#341627]',
-    accentColor: '#D4AF37',
-    bannerType: 'hero',
-    isActive: true,
-    sortOrder: 3,
-  },
-  {
-    id: 'slide-4',
-    tagline: 'CURATED BEAUTY & SKINCARE VAULTS',
-    title: 'THE QUEEN BEE LUXE BOX',
-    subtitle: 'Complete luxury rituals pairing barrier skincare with high-pigment cosmetics in gold-embossed keepsake packaging. Nationwide delivery.',
-    ctaText: 'Shop Gift Sets',
-    ctaHref: '/shop/kits',
-    secondaryCtaText: 'View Deals',
-    secondaryCtaHref: '/offers',
-    bgColor: 'from-[#3A0C3C] via-[#5C165F] to-[#2B082D]',
-    accentColor: '#F4E295',
-    bannerType: 'hero',
-    isActive: true,
-    sortOrder: 4,
-  },
-  {
-    id: 'promo-1',
-    tagline: 'SPECIAL LAUNCH OFFER',
-    title: 'Festive Glamour Celebration: Flat ৳700 Off',
-    subtitle: 'Enjoy an instant ৳700 discount on cart value over ৳2,999 with code BEE700. Complimentary doorstep delivery nationwide.',
-    ctaText: 'View All Offers',
-    ctaHref: '/offers',
-    bgColor: 'from-[#521354] to-[#6A1B6D]',
-    accentColor: '#D4AF37',
-    bannerType: 'promo',
-    isActive: true,
-    sortOrder: 5,
-  },
-];
+const DEFAULT_BANNERS: BannerSlide[] = LAUNCH_BANNERS;
 
 let inMemoryBanners: BannerSlide[] = [...DEFAULT_BANNERS];
 let isBannersLoaded = false;
@@ -148,7 +75,12 @@ export async function createBanner(input: Omit<BannerSlide, 'id'> & { id?: strin
     sortOrder: input.sortOrder || inMemoryBanners.length + 1,
   };
 
-  inMemoryBanners.push(newBanner);
+  const existingIdx = inMemoryBanners.findIndex((b) => b.id === newBanner.id);
+  if (existingIdx !== -1) {
+    inMemoryBanners[existingIdx] = newBanner;
+  } else {
+    inMemoryBanners.push(newBanner);
+  }
 
   try {
     await supabaseAdmin.from('banners').insert({

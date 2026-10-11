@@ -112,8 +112,18 @@ ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 
 -- Service Role policies (bypass RLS for server operations)
 -- Anonymous public read policies
+DROP POLICY IF EXISTS "Public can read active coupons" ON public.coupons;
 CREATE POLICY "Public can read active coupons" ON public.coupons FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS "Public can read product reviews" ON public.product_reviews;
 CREATE POLICY "Public can read product reviews" ON public.product_reviews FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public can insert reviews" ON public.product_reviews;
 CREATE POLICY "Public can insert reviews" ON public.product_reviews FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public can insert contact inquiries" ON public.contact_inquiries;
 CREATE POLICY "Public can insert contact inquiries" ON public.contact_inquiries FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public can subscribe to newsletter" ON public.newsletter_subscribers;
 CREATE POLICY "Public can subscribe to newsletter" ON public.newsletter_subscribers FOR INSERT WITH CHECK (true);
+

@@ -194,3 +194,23 @@ export async function deleteReview(id: string): Promise<boolean> {
   }
 }
 
+export async function clearTestReviews(): Promise<{ success: boolean; deletedCount: number }> {
+  fallbackReviews.clear();
+  let count = 0;
+
+  try {
+    const { data } = await supabaseAdmin
+      .from('product_reviews')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .select('id');
+    if (data) {
+      count = data.length;
+    }
+  } catch (err) {
+    console.warn('Supabase clearTestReviews fallback:', err);
+  }
+
+  return { success: true, deletedCount: count };
+}
+

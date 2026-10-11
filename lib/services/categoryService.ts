@@ -58,8 +58,15 @@ export async function createCategory(
     subcategories: input.subcategories || [],
   };
 
-  // Update in-memory immediately
-  inMemoryCategories.push(newCategory);
+  // Update in-memory immediately (idempotent upsert)
+  const existingIdx = inMemoryCategories.findIndex(
+    (c) => c.slug === newCategory.slug || c.id === newCategory.id
+  );
+  if (existingIdx !== -1) {
+    inMemoryCategories[existingIdx] = newCategory;
+  } else {
+    inMemoryCategories.push(newCategory);
+  }
 
   try {
     await supabaseAdmin.from('categories').insert({

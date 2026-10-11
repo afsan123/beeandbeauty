@@ -296,3 +296,30 @@ Keeping dependencies strictly minimal and standard:
 3. `tailwindcss`: Modern utility-first styling adhering to the custom token system without bloat.
 4. `lucide-react`: Lightweight, clean SVG icon set for cart, search, heart, chevron, and star icons (no emoji icons in the UI).
 5. No heavy UI libraries, no external component frameworks — all primitives built bespoke to match the Prestige theme design language.
+
+---
+
+## 10. Executive Admin & Operational Back-Office System
+
+To complete the e-commerce lifecycle beyond the customer-facing storefront, a full executive management suite has been integrated at `/admin`:
+
+1. **Catalog Merchandising & Formula Management**:
+   - Create, edit, and delete formulas with shade arrays, specifications, and pricing.
+   - **Real-Time SEO Auto-Slug Engine**: Slugs auto-generate from product names with manual override and 1-click sync.
+   - **Product Bulk Upload**: Standardized RFC-4180 CSV and JSON import engine with live validation matrix, shade tokenization, and sample template downloads.
+2. **Category & Taxonomy Desk**:
+   - Manage categories (`Lips`, `Face`, `Eyes`, `Skincare`, `Nails`, `Kits`, `Under ৳499`), subcategories, and SEO routing.
+3. **Inventory & Shade-Level Stock Control**:
+   - Real-time toggles (`In Stock` / `Sold Out`) at both product and individual shade levels.
+4. **Hero Slides & Campaign Banners Desk**:
+   - Dynamic slide sequencing, gradient controls, and storefront synchronization.
+5. **Campaign Deals & Limited Offers**:
+   - Flash deal configurations (percentage, fixed cash off, free gift) with timer badges.
+6. **Pro Beauty Studio Desk**:
+   - Video masterclass management and 1-on-1 makeover consultation booking desk.
+7. **Order Dispatch & Courier Fulfillment**:
+   - 6-state order lifecycle management, courier tracking code assignment, and real-time storefront tracking.
+8. **Customer CRM & LTV Profiles**:
+   - Customer timeline tracking, repeat buyer analytics, and VIP concierge notes.
+9. **Dual-Resilience Backend Architecture**:
+   - Production persistence in remote Supabase PostgreSQL with automated local memory fallback.

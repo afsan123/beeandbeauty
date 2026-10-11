@@ -61,7 +61,14 @@ export async function createOffer(input: Omit<LimitedOffer, 'id'> & { id?: strin
     isActive: input.isActive !== false,
   };
 
-  inMemoryOffers.push(newOffer);
+  const existingIdx = inMemoryOffers.findIndex(
+    (o) => o.id === newOffer.id || (o.code && o.code.toUpperCase() === newOffer.code?.toUpperCase())
+  );
+  if (existingIdx !== -1) {
+    inMemoryOffers[existingIdx] = newOffer;
+  } else {
+    inMemoryOffers.push(newOffer);
+  }
 
   try {
     await supabaseAdmin.from('limited_offers').insert({

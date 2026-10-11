@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary & Brand Overview
 
-**Bee & Beauty** is a luxury direct-to-consumer cosmetics and skincare brand operating in Bangladesh. The platform is designed to provide an opulent, fast, and frictionless shopping experience tailored for local e-commerce nuances (Cash on Delivery, bKash/Nagad mobile wallets, express Dhaka & nationwide courier delivery, and real-time WhatsApp consultation).
+**Bee & Beauty** is a luxury direct-to-consumer cosmetics and skincare brand operating in Bangladesh. The platform is designed to provide an opulent, fast, and frictionless shopping experience tailored for local e-commerce nuances (Cash on Delivery, bKash/Nagad mobile wallets, express Dhaka & nationwide courier delivery, and real-time WhatsApp consultation), coupled with an executive back-office control panel for catalog and operations management.
 
 ### Brand Identity & Positioning
 - **Brand Tagline**: *"Nature, refined."*
@@ -17,7 +17,7 @@
 - **Tone of Voice**: Sophisticated, warm, authoritative, dermatologically conscious.
 
 ### Verified Brand Assets & Contact Information
-- **Official WhatsApp & Direct Hotline**: `+8801754502430` (Used for customer care, shade consultation, and order dispute handling).
+- **Official WhatsApp & Direct Helpline**: `+8801754502430` (Used for customer care, shade consultation, and order dispute handling).
 - **Official Email**: `beeandbeauty.bd@gmail.com`
 - **Social Media Channels**:
   - Facebook: `https://facebook.com/beeandbeauty.bd`
@@ -61,10 +61,11 @@ Google Fonts are imported in `app/layout.tsx` and configured via CSS variables:
 
 ## 3. Technology Stack & Environment
 
-- **Framework**: Next.js `16.4.0` (App Router, Turbopack enabled).
-- **React**: `19.x` (Server Components by default; `'use client'` only where interactivity is required).
+- **Framework**: Next.js `16.4.0` (App Router, Turbopack enabled, Partial Prerendering & Cache Components).
+- **React**: `19.3.0` (Server Components by default; `'use client'` only where interactivity is required).
 - **TypeScript**: Strict type validation across all modules.
 - **Styling**: Tailwind CSS v4 + custom CSS custom properties in `styles/tokens.css`.
+- **Database**: Remote Supabase PostgreSQL with automated in-memory dual-layer resilience.
 - **Icons**: `lucide-react` (feather-style crisp stroke icons).
 - **Testing**: Node Native Test Runner (`node --experimental-strip-types --test 'lib/__tests__/**/*.test.ts'`).
 - **Package Manager**: npm.
@@ -75,102 +76,131 @@ Google Fonts are imported in `app/layout.tsx` and configured via CSS variables:
 
 ```
 beeandbeauty/
-├── app/                             # Next.js App Router
-│   ├── layout.tsx                   # Root layout (Google Fonts, metadata, FloatingWhatsApp, CartDrawer)
+├── app/                             # Next.js App Router (Storefront & Admin)
+│   ├── layout.tsx                   # Root layout (Fonts, metadata, FloatingWhatsApp, CartDrawer)
 │   ├── globals.css                  # Global utility classes & root CSS variables
 │   ├── page.tsx                     # Homepage (Hero, Categories, Products, Video, Offer, Founder Note)
 │   ├── shop/page.tsx                # Catalog browsing, filtering, search, sorting
 │   ├── product/[slug]/page.tsx      # PDP (Gallery, ShadePicker, OfferAccordion, Reviews, Related)
 │   ├── cart/page.tsx                # Dedicated cart view
 │   ├── checkout/page.tsx            # Multi-step checkout (Inside/Outside Dhaka, COD, bKash, Nagad)
-│   ├── about/page.tsx               # Brand story, Vision, Mission, Core Pillars
-│   ├── contact/page.tsx             # Contact channels, inquiry form, WhatsApp link
-│   ├── delivery-policy/page.tsx     # 24h Dhaka / 48h Outside Dhaka delivery targets & rates
-│   ├── return-policy/page.tsx       # 3-day return reporting, hygiene rules, WhatsApp reporting
-│   ├── privacy-policy/page.tsx      # Customer privacy, payment data, courier transmission
-│   ├── terms/page.tsx               # Terms of Service under Bangladesh jurisdiction
-│   ├── faq/page.tsx                 # Categorized interactive FAQ accordion
-│   ├── not-found.tsx                # Custom luxury 404 page
-│   └── icon.svg                     # Vector brand favicon
+│   ├── track-order/page.tsx         # Real-time logistics tracker by order reference & phone
+│   ├── offers/page.tsx              # Promotional campaigns & coupon vouchers landing
+│   ├── admin/                       # Executive Admin Panel Suite
+│   │   ├── page.tsx                 # Executive Dashboard & analytics metrics
+│   │   ├── orders/page.tsx          # Orders & dispatch fulfillment desk
+│   │   ├── customers/page.tsx       # Customer profiles & LTV CRM
+│   │   ├── products/page.tsx        # Product catalog, stock matrix & bulk upload
+│   │   ├── categories/page.tsx      # Category taxonomy & subcategory manager
+│   │   ├── inventory/page.tsx       # Real-time stock & shade-level overrides
+│   │   ├── banners/page.tsx         # Hero slides & promo banners sequencing
+│   │   ├── offers/page.tsx          # Limited offers & flash deals manager
+│   │   ├── studio/page.tsx          # Pro Beauty Studio masterclasses & bookings
+│   │   ├── coupons/page.tsx         # Coupon promotion codes engine
+│   │   ├── inquiries/page.tsx       # Customer support ticket desk
+│   │   ├── reviews/page.tsx         # Verified product review moderation
+│   │   ├── subscribers/page.tsx     # VIP newsletter subscriber directory
+│   │   └── login/page.tsx           # Secure executive session authentication
+│   │
+│   └── api/                         # Next.js 16 Route Handlers (REST Endpoints)
+│       ├── orders/                  # Storefront order placement, tracking, by-id
+│       ├── coupons/                 # Coupon validation
+│       ├── shipping/                # Dynamic shipping calculation & SLA
+│       ├── contact/                 # Support inquiry submissions
+│       ├── reviews/                 # Product review submissions
+│       ├── newsletter/              # Newsletter subscription submissions
+│       ├── banners/                 # Public banner retrieval
+│       ├── offers/                  # Public limited offers
+│       ├── studio/                  # Public masterclasses & bookings
+│       └── admin/                   # Executive Back-Office Endpoints
+│           ├── auth/                # Executive login, session verification, logout
+│           ├── dashboard/           # Aggregate financial & operational metrics
+│           ├── orders/              # Admin order management & status transitions
+│           ├── customers/           # CRM analytics, customer LTV, notes
+│           ├── products/            # Product CRUD and /bulk batch upload
+│           ├── categories/          # Category CRUD & taxonomy management
+│           ├── coupons/             # Coupon creation, toggles, deletion
+│           ├── banners/             # Banner slides CRUD
+│           ├── offers/              # Limited offers CRUD
+│           ├── studio/              # Studio tutorials & consultation bookings
+│           ├── inquiries/           # Ticket status workflow
+│           ├── reviews/             # Review moderation & approval
+│           └── subscribers/         # Subscriber directory
 │
 ├── components/
-│   ├── ui/                          # Primitive / Atomic UI Components
-│   │   ├── Logo.tsx                 # Official brand logo (header, footer, symbol variants)
-│   │   ├── Button.tsx               # Brand button variants (primary plum, magenta, gold, outline)
-│   │   ├── Badge.tsx                # Badges (bestseller, new, sale, organic)
-│   │   ├── Price.tsx                # Formatted BDT price renderer with discount calculations
-│   │   ├── FloatingWhatsApp.tsx     # Floating WhatsApp concierge with pre-filled consultation queries
-│   │   ├── PolicyDisclaimer.tsx     # "Draft for development | Pending approval" staging banner
-│   │   ├── Accordion.tsx            # Expandable accordion for FAQs and PDP specs
-│   │   ├── Modal.tsx                # Accessible dialog modal
-│   │   ├── Drawer.tsx               # Off-canvas drawer (Cart & Mobile menu)
-│   │   ├── Input.tsx / Select.tsx   # Form fields with floating labels
-│   │   ├── StarRating.tsx           # Rating stars in Honey Gold
-│   │   └── Toast.tsx                # Notification feedback
+│   ├── admin/                       # Executive Admin UI Components
+│   │   ├── AdminHeader.tsx          # Top bar with status pill, BDT badge, action buttons
+│   │   ├── AdminSidebar.tsx         # Collapsible 13-module navigation menu
+│   │   ├── AdminUIContext.tsx       # Responsive sidebar state provider
+│   │   ├── BulkProductUploadModal.tsx# CSV/JSON bulk catalog importer with preview
+│   │   ├── CreateProductModal.tsx   # Formula builder with auto-slug & shade palette
+│   │   ├── CreateCategoryModal.tsx  # Category & subcategory builder
+│   │   ├── CreateBannerModal.tsx    # Slide banner creator
+│   │   ├── CreateOfferModal.tsx     # Campaign deal builder
+│   │   ├── CreateTutorialModal.tsx  # Masterclass video editor
+│   │   ├── CustomerDetailModal.tsx  # Customer timeline & concierge notes
+│   │   └── MetricCard.tsx           # Key operational KPI card
 │   │
-│   ├── layout/                      # Structural Layout Components
-│   │   ├── Header.tsx               # Main nav, search, wishlist & cart counters, logo
-│   │   ├── Footer.tsx               # Brand manifesto, verified socials, policies, payment badges
-│   │   ├── AnnouncementBar.tsx      # Ticker with Dhaka 24h / outside 48h and WhatsApp support
-│   │   ├── MegaMenu.tsx             # Desktop category dropdown menu
-│   │   ├── MobileNav.tsx            # Responsive mobile drawer navigation
-│   │   └── BackToTop.tsx            # Scroll-to-top button stacked at bottom-[5.25rem] right-6 above FloatingWhatsApp
+│   ├── ui/                          # Primitive Luxury UI Components
+│   │   ├── Logo.tsx                 # Official brand logo
+│   │   ├── Button.tsx               # Brand button variants (plum, magenta, gold, outline)
+│   │   ├── Badge.tsx                # Badges (bestseller, new, sale, organic)
+│   │   ├── Price.tsx                # Formatted BDT price renderer
+│   │   └── FloatingWhatsApp.tsx     # Floating WhatsApp concierge (+8801754502430)
+│   │
+│   ├── layout/                      # Storefront Structural Components
+│   │   ├── Header.tsx               # Main nav, search, wishlist & cart counters
+│   │   ├── Footer.tsx               # Manifesto, verified socials, policies, payment badges
+│   │   ├── AnnouncementBar.tsx      # Ticker with Dhaka 24h SLA and WhatsApp support
+│   │   └── StorefrontWrapper.tsx    # Hides storefront header/footer on `/admin/*` routes
 │   │
 │   ├── catalog/                     # Product Listing Components
-│   │   ├── ProductCard.tsx          # Card with shade swatches, quick add, wishlist toggle
-│   │   ├── ProductGrid.tsx          # Responsive responsive grid
-│   │   ├── FilterDrawer.tsx         # Category, price range, skin concern filters
-│   │   └── ShopClient.tsx           # Client wrapper for filtering, search, sorting
+│   │   ├── ProductCard.tsx          # Card with shade swatches, quick add, wishlist
+│   │   ├── ProductGrid.tsx          # Responsive catalog grid
+│   │   └── FilterDrawer.tsx         # Multi-facet category & price filter
 │   │
-│   ├── product/                     # Product Detail Components
-│   │   ├── ProductGallery.tsx       # Multi-image thumbnail gallery & lightbox
-│   │   ├── ProductInfo.tsx          # Title, price, BD delivery check, Add to Cart
-│   │   ├── ShadePicker.tsx          # Foundation/lipstick color swatch selector
-│   │   ├── OfferAccordion.tsx       # Ingredients, how-to-use, and delivery specs
-│   │   ├── ReviewList.tsx           # Customer reviews with ratings
-│   │   └── RelatedProducts.tsx      # Cross-sell recommendation rail
-│   │
-│   ├── cart/                        # Shopping Bag Components
-│   │   ├── CartDrawer.tsx           # Slide-out bag with live totals
-│   │   ├── CartItemRow.tsx          # Quantity modifiers & line item display
-│   │   ├── FreeShippingBar.tsx      # Progress bar towards ৳2,500 threshold
-│   │   └── CouponInput.tsx          # Promo code entry (e.g. BEE10)
-│   │
-│   ├── checkout/                    # Checkout Flow Components
-│   │   ├── CheckoutSteps.tsx        # Step indicator (Shipping -> Payment -> Review)
-│   │   ├── AddressForm.tsx          # Shipping details with Inside/Outside Dhaka toggle
-│   │   ├── PaymentMethodSelector.tsx# COD, bKash, and Nagad selection
-│   │   └── OrderSummary.tsx         # Itemized breakdown with delivery charge
-│   │
-│   └── home/                        # Landing Page Sections
-│       ├── HeroCarousel.tsx         # Full-width editorial slider
+│   └── home/                        # Homepage Sections
+│       ├── HeroCarousel.tsx         # Full-width editorial slider (live synced to admin)
 │       ├── CategoryTiles.tsx        # Visual category entry points
-│       ├── ProductRail.tsx          # Bestseller & New Arrival product carousels
-│       ├── OfferBanner.tsx          # Promotional spotlight banner
-│       ├── VideoBlock.tsx           # Editorial brand video showcase
+│       ├── ProductRail.tsx          # Bestseller & New Arrival product rails
+│       ├── VideoBlock.tsx           # Editorial brand video & tutorial showcase
 │       └── FounderNote.tsx          # Brand philosophy & mission card
 │
-├── context/                         # State Providers
-│   ├── CartContext.tsx              # Cart state persisted in localStorage
-│   ├── WishlistContext.tsx          # Wishlist state persisted in localStorage
-│   └── ToastContext.tsx             # Global transient notifications
-│
-├── lib/                             # Core Business Logic & Data Models
-│   ├── cart.ts                      # Pricing calculations, discounts, shipping fees
+├── lib/                             # Core Business Logic, Services & Parsers
+│   ├── slug.ts                      # SEO URL Slug auto-generation engine
+│   ├── productBulkParser.ts         # RFC 4180 CSV & JSON catalog tokenizer
 │   ├── formatters.ts                # BDT currency formatter (`৳`), dates
-│   ├── products.ts                  # Mock products dataset, categories, attributes
-│   ├── categories.ts                # Category tree definitions
-│   ├── reviews.ts                   # Customer reviews dataset
-│   ├── orders.ts                    # Order generation & storage helper
-│   └── __tests__/                   # Unit test suite
-│       └── cart.test.ts             # Logic tests for subtotal, shipping, discounts
+│   ├── filters.ts                   # In-memory product filtering & sorting
+│   ├── search.ts                    # Multi-attribute catalog search
+│   ├── services/                    # Business Domain Services (Dual-Persistence)
+│   │   ├── adminAuth.ts             # Session tokens & credential validation
+│   │   ├── productService.ts        # Product catalog CRUD & bulk ingestion
+│   │   ├── categoryService.ts       # Category taxonomy & slug routing
+│   │   ├── inventoryService.ts      # Product & shade-level inventory overrides
+│   │   ├── bannerService.ts         # Hero slides & promo banners registry
+│   │   ├── limitedOfferService.ts   # Campaign deals & timer vouchers
+│   │   ├── studioService.ts         # Masterclasses & makeover bookings
+│   │   ├── orderService.ts          # Order creation, calculation, tracking, metrics
+│   │   ├── customerService.ts       # Customer CRM aggregation & concierge notes
+│   │   ├── couponService.ts         # Promotion validation & rule enforcement
+│   │   ├── shippingService.ts       # Bangladesh shipping rates & SLA calculation
+│   │   ├── inquiryService.ts        # Customer support ticket handling
+│   │   ├── reviewService.ts         # Verified customer reviews
+│   │   └── newsletterService.ts     # VIP beauty club subscriptions
+│   │
+│   └── __tests__/                   # Unit Test Suites (61 tests passed)
+│       ├── slug.test.ts             # Auto-slug generation rules
+│       ├── productBulkUpload.test.ts# CSV tokenizer, shade parser, batch import
+│       ├── adminFeatures.test.ts    # Extended admin services testing
+│       ├── adminService.test.ts     # Core admin metrics & security
+│       ├── orderService.test.ts     # Order security, price re-calculation
+│       ├── couponService.test.ts    # Promotion rules & discount math
+│       ├── shippingService.test.ts  # BD shipping rates & free threshold
+│       └── cart.test.ts             # Cart arithmetic & line-item logic
 │
-├── styles/                          # CSS Custom Properties
-│   └── tokens.css                   # Brand palette, radii, shadows, typography tokens
-│
-└── public/                          # Static Assets
-    ├── images/                      # Official logo (`logo.png`), product images, banners
-    └── logo.png                     # Official logo root mirror
+└── supabase/                        # Database Migrations
+    ├── migrations/20261011_initial_schema.sql # Orders, coupons, reviews, inquiries
+    └── migrations/20261012_admin_features.sql # Categories, products, banners, offers, studio
 ```
 
 ---
@@ -197,16 +227,6 @@ beeandbeauty/
 3. **Nagad Direct**:
    - Secondary mobile wallet option following identical flow to bKash.
 
-### Return & Hygiene Policy Rules
-- **Reporting Window**: Must be reported within **3 calendar days** of parcel delivery.
-- **Cosmetics Hygiene**: Due to hygiene regulations, opened or unsealed cosmetics (lipsticks, serums, creams) cannot be returned unless verified defective or incorrect shipment.
-- **Report Channel**: Direct submission to WhatsApp `+8801754502430` with unboxing photos/video.
-
-### Staging Disclaimers
-Per developer handover instructions (Sections 16 & 17), policy pages include the `<PolicyDisclaimer />` component displaying:
-> *"Draft for development | Pending approval — This policy is currently drafted for development and staging purposes. Final operational terms are pending review and approval by Bee & Beauty management."*
-**Do not remove this disclaimer until authorized by management.**
-
 ---
 
 ## 6. Critical Engineering Guidelines & Gotchas
@@ -225,83 +245,19 @@ The file `AGENTS.md` is monitored by `next dev`. Keep the `<!-- BEGIN:nextjs-age
 - Format example: `formatPrice(2450)` yields `"৳2,450"`.
 
 ### Next.js 16 Partial Prerendering (PPR) & Instant Shells
-- With `partialPrefetching: true` and `cacheComponents: true`, dynamic route pages (`app/shop/[category]/page.tsx`, `app/product/[slug]/page.tsx`) must defer `await params` / `await searchParams` to inner components wrapped in a `<Suspense fallback={<Skeleton />}>` boundary.
-- Awaiting `params` directly at the top level of the page component prevents Next.js from prerendering the instant static navigation shell and causes the Turbopack `instant-shell-url-data` warning/error.
+- Dynamic route pages (`app/shop/[category]/page.tsx`, `app/product/[slug]/page.tsx`, `app/search/page.tsx`) must defer `await params` / `await searchParams` to inner components wrapped in a `<Suspense fallback={<Skeleton />}>` boundary, preserving instant static shells under Partial Prerendering.
 
 ---
 
 ## 7. Useful Commands & Workflows
 
-### Running Tests
-Execute the unit test suite covering cart math, shipping thresholds, and currency formatters:
 ```bash
+# Run all automated test suites (61 tests across 21 suites)
 npm test
-```
 
-### Production Build
-Run the Turbopack production build to verify TypeScript types, page routes, and static generation:
-```bash
+# Build production bundle with Next.js Turbopack & PPR (98 routes generated)
 npm run build
-```
 
-### Development Server
-Start the local Next.js development server:
-```bash
+# Start local development server
 npm run dev
-# Running on http://localhost:3000
 ```
-
-### Starting Built Production Server
-```bash
-npm run start
-# Running on http://localhost:3000
-```
-
----
-
-## 8. Backend Architecture & Supabase Integration (Completed October 2026)
-
-The backend has been implemented with production-grade domain services, Next.js 16 Route Handlers, resilient dual-persistence fallback, and native Node ESM testing.
-
-### Supabase Project Configuration
-- **Project Reference ID**: `xhhjowchwnaglimgpygr`
-- **Project Endpoint**: `https://xhhjowchwnaglimgpygr.supabase.co`
-- **Environment Variables**: Defined in `.env.local`:
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `SUPABASE_SECRET_KEY`
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-
-### Database Schema (`supabase/migrations/20261011_initial_schema.sql`)
-1. `orders`: High-integrity table tracking customer info, district, shipping fee, payment method (`cod`, `bkash`, `nagad`), payment status, and order status with `BB-2026-XXXXX` order numbers.
-2. `order_items`: Line items with foreign key cascade to `orders(id)`, capturing unit price, shade code/name, quantity, and line totals.
-3. `coupons`: Active promotion registry (`BEE10`, `GLAM20`, `BEE700`, `BEEFREE`) with minimum order spends and maximum discount caps.
-4. `contact_inquiries`: Customer support inquiries with `TKT-2026-XXXX` reference tickets.
-5. `product_reviews`: Verified buyer star ratings (1-5), shade used, comments, and timestamps.
-6. `newsletter_subscribers`: VIP beauty club email captures with active state and deduplication.
-
-### API Route Endpoints (`app/api/`)
-- `POST /api/orders`: Validates customer inputs, recalculates item prices against catalog (protecting against client price tampering), applies coupon logic, calculates BD shipping rates, assigns tracking code (`ST-XXXXXX`), and persists to Supabase (with fallback in-memory cache).
-- `GET /api/orders/[id]`: Fetches an order and line items by ID.
-- `POST /api/orders/track`: Secure order tracking verifying both Order Reference (`BB-2026-XXXXX`) and Mobile Phone Number. Returns 5-stage logistics progression timeline.
-- `POST /api/coupons/validate`: Validates coupon codes against order subtotal and computes discounts.
-- `POST /api/shipping/calculate`: Computes BD shipping fees (Dhaka ৳70 / Outside ৳130, free shipping above ৳2,500) and delivery SLA.
-- `POST /api/contact`: Persists support inquiries and mints unique ticket numbers.
-- `GET / POST /api/reviews`: Fetches product reviews and accepts new verified customer reviews.
-- `POST /api/newsletter`: Captures newsletter subscriptions.
-- `POST /api/payment/simulate-callback`: Simulates webhook confirmation for bKash/Nagad mobile financial services.
-
-### Resilient Dual-Persistence Design
-All services (`orderService`, `couponService`, `inquiryService`, `reviewService`, `newsletterService`) use resilient dual-persistence:
-- Primary: Supabase PostgreSQL via `supabaseAdmin` / `@supabase/supabase-js`.
-- Fallback: Graceful local in-memory store so all functionality remains 100% operational in dev/test/staging environments without crashing if the remote database is unreachable or awaiting schema migration.
-
----
-
-## 9. Next Phases for Incoming Agents
-
-1. **Execute Migration in Supabase Dashboard**: Run `supabase/migrations/20261011_initial_schema.sql` in `https://supabase.com/dashboard/project/xhhjowchwnaglimgpygr/sql/new`.
-2. **Automated Payment Webhook**: Integrate official bKash and Nagad payment gateway APIs (e.g. SSLCommerz, Shurjopay, or direct bKash PGW API) alongside the current manual TrxID flow.
-3. **SMS Notification Engine**: Integrate local BD SMS gateways (e.g. Greenweb, Elitbuzz) for automated order confirmation and courier dispatch SMS.
-4. **Steadfast / Pathao Courier API**: Connect automated parcel booking upon order placement.

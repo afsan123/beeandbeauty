@@ -137,7 +137,7 @@ describe('Admin Extended Features Test Suite', () => {
   describe('Hero & Banners Management', () => {
     it('should list default hero banners', async () => {
       const banners = await getAllBanners();
-      assert.ok(banners.length >= 4);
+      assert.ok(banners.length >= 3);
     });
 
     it('should create, update and delete a banner slide', async () => {

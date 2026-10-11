@@ -24,13 +24,13 @@ describe('Order Service & Server-Side Security', () => {
     assert.ok(order.orderNumber.startsWith('BB-2026-'));
     assert.strictEqual(order.customerName, 'Samira Hossain');
     assert.strictEqual(order.customerEmail, 'samira@example.com');
-    assert.strictEqual(order.subtotal, 980); // 490 * 2
+    assert.strictEqual(order.subtotal, 1700); // 850 * 2
     assert.strictEqual(order.shippingFee, 70); // Under ৳2,500 inside Dhaka
-    assert.strictEqual(order.totalAmount, 1050); // 980 + 70
+    assert.strictEqual(order.totalAmount, 1770); // 1700 + 70
     assert.strictEqual(order.orderStatus, 'confirmed');
     assert.strictEqual(order.items.length, 1);
-    assert.strictEqual(order.items[0].unitPrice, 490);
-    assert.strictEqual(order.items[0].lineTotal, 980);
+    assert.strictEqual(order.items[0].unitPrice, 850);
+    assert.strictEqual(order.items[0].lineTotal, 1700);
   });
 
   it('rejects order with missing required fields', async () => {
@@ -69,8 +69,8 @@ describe('Order Service & Server-Side Security', () => {
       ],
     });
 
-    assert.strictEqual(newOrder.shippingFee, 0); // ৳2,670 >= ৳2,500
-    assert.strictEqual(newOrder.totalAmount, 2670);
+    assert.strictEqual(newOrder.shippingFee, 0); // ৳4,950 >= ৳2,500
+    assert.strictEqual(newOrder.totalAmount, 4950);
 
     // Track order using phone
     const tracked = await trackOrderByPhone(newOrder.orderNumber, '01898765432');

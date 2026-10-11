@@ -153,10 +153,24 @@ ALTER TABLE public.studio_bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customer_notes ENABLE ROW LEVEL SECURITY;
 
 -- Anonymous public read policies
+DROP POLICY IF EXISTS "Public can read categories" ON public.categories;
 CREATE POLICY "Public can read categories" ON public.categories FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public can read products" ON public.products;
 CREATE POLICY "Public can read products" ON public.products FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public can read inventory" ON public.product_inventory;
 CREATE POLICY "Public can read inventory" ON public.product_inventory FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public can read active banners" ON public.banners;
 CREATE POLICY "Public can read active banners" ON public.banners FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS "Public can read active offers" ON public.limited_offers;
 CREATE POLICY "Public can read active offers" ON public.limited_offers FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS "Public can read studio tutorials" ON public.studio_tutorials;
 CREATE POLICY "Public can read studio tutorials" ON public.studio_tutorials FOR SELECT USING (is_active = true);
+
+DROP POLICY IF EXISTS "Public can create studio bookings" ON public.studio_bookings;
 CREATE POLICY "Public can create studio bookings" ON public.studio_bookings FOR INSERT WITH CHECK (true);
+
