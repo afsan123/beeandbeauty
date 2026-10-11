@@ -8,10 +8,11 @@ import { FounderNote } from '../components/home/FounderNote';
 import { VideoBlock } from '../components/home/VideoBlock';
 
 export default async function HomePage() {
-  const [categories, bestsellers, newLaunches, under499] = await Promise.all([
+  const [categories, bestsellers, newLaunches, skincare, under499] = await Promise.all([
     catalogRepository.getCategories(),
     catalogRepository.getFeaturedProducts('bestseller'),
     catalogRepository.getFeaturedProducts('new'),
+    catalogRepository.getProducts({ category: 'skin' }),
     catalogRepository.getFeaturedProducts('under499'),
   ]);
 
@@ -26,7 +27,7 @@ export default async function HomePage() {
       {/* 3. Bestsellers Rail */}
       <ProductRail
         title="Cult Bestsellers"
-        subtitle="Our most celebrated formulas loved by over 50,000 beauty enthusiasts."
+        subtitle="Our most celebrated makeup and skincare formulas loved across Bangladesh."
         products={bestsellers}
         viewAllHref="/shop/all?sort=bestselling"
         viewAllLabel="View All Bestsellers"
@@ -43,7 +44,17 @@ export default async function HomePage() {
         ctaText="View All Deals"
       />
 
-      {/* 5. New Launches Rail */}
+      {/* 5. Clean Skincare & Barrier Rituals Rail */}
+      <ProductRail
+        title="Clean Skincare Rituals"
+        subtitle="Raw propolis, barrier-repairing ceramides, and SPF 50 sun defense formulated for humid tropical climates."
+        products={skincare}
+        viewAllHref="/shop/skin"
+        viewAllLabel="Explore All Skincare"
+        limit={4}
+      />
+
+      {/* 6. New Launches Rail */}
       <ProductRail
         title="Just Launched"
         subtitle="Fresh drops, breakthrough textures, and newly engineered seasonal shades."
@@ -53,7 +64,7 @@ export default async function HomePage() {
         limit={4}
       />
 
-      {/* 6. Signature Masterclass Video Tutorials */}
+      {/* 7. Signature Masterclass Video Tutorials */}
       <VideoBlock />
 
       {/* 7. Under ৳499 Value Rail */}

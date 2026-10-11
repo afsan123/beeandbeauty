@@ -106,9 +106,9 @@ export function FloatingWhatsApp() {
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Chat on WhatsApp"
-        className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all cursor-pointer group active:scale-95"
+        className="w-11 h-11 sm:w-auto sm:h-auto flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white sm:py-3 sm:px-4 rounded-full shadow-lg hover:shadow-xl transition-all cursor-pointer group active:scale-95"
       >
-        <MessageCircle size={22} className="group-hover:scale-110 transition-transform" />
+        <MessageCircle size={22} className="group-hover:scale-110 transition-transform shrink-0" />
         <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline-block">
           Need Help?
         </span>

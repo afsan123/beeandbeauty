@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Heart, Percent, Sparkles, MessageCircle, Phone } from 'lucide-react';
+import { ChevronDown, Heart, Percent, Sparkles, MessageCircle, Phone, Compass } from 'lucide-react';
 import { Drawer } from '../ui/Drawer';
+import { Logo } from '../ui/Logo';
 import { CATEGORIES } from '../../data/mock/catalogData';
 import { useWishlist } from '../../store/wishlist';
 
@@ -21,14 +22,27 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} side="left" title="Menu" width="max-w-xs">
-      <div className="flex flex-col gap-1 py-2 font-sans">
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      side="left"
+      width="w-[85vw] max-w-[340px]"
+      title={
+        <div className="flex items-center gap-2.5">
+          <Logo variant="symbol" className="w-6 h-6" />
+          <span className="font-serif text-lg tracking-wide font-bold text-[#6A1B6D]">
+            Bee &amp; Beauty
+          </span>
+        </div>
+      }
+    >
+      <div className="flex flex-col gap-1 py-1 font-sans">
         {/* Quick Highlights */}
-        <div className="flex items-center gap-3 pb-3 mb-2 border-b border-[#F0E6DD]">
+        <div className="flex items-center gap-2.5 pb-3 mb-2 border-b border-[#F0E6DD]">
           <Link
             href="/offers"
             onClick={onClose}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-[#FFF9F5] border border-[#F0E6DD] rounded text-xs font-semibold uppercase tracking-wider text-[#6A1B6D]"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-white border border-[#F0E6DD] rounded-xs text-xs font-semibold uppercase tracking-wider text-[#6A1B6D] hover:bg-[#FCE4EC]/40 transition-colors shadow-2xs"
           >
             <Percent size={14} className="text-[#D4AF37]" />
             <span>Offers</span>
@@ -36,12 +50,22 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           <Link
             href="/wishlist"
             onClick={onClose}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-[#FFF9F5] border border-[#F0E6DD] rounded text-xs font-semibold uppercase tracking-wider text-[#6A1B6D]"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-white border border-[#F0E6DD] rounded-xs text-xs font-semibold uppercase tracking-wider text-[#6A1B6D] hover:bg-[#FCE4EC]/40 transition-colors shadow-2xs"
           >
             <Heart size={14} className="text-[#C2188B]" />
             <span>Saved ({wishlistCount})</span>
           </Link>
         </div>
+
+        {/* Explore All Shop Link */}
+        <Link
+          href="/shop/all"
+          onClick={onClose}
+          className="flex items-center gap-2.5 py-2.5 px-2 text-xs font-bold uppercase tracking-wider text-[#6A1B6D] hover:bg-white rounded-xs transition-colors"
+        >
+          <Compass size={15} className="text-[#D4AF37]" />
+          <span>Explore All Collections</span>
+        </Link>
 
         {/* Categories */}
         <div className="text-[10px] font-bold uppercase tracking-widest text-[#6A1B6D] px-1 py-2">
@@ -56,9 +80,14 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 <Link
                   href={`/shop/${cat.slug}`}
                   onClick={onClose}
-                  className="py-3 px-1 text-xs font-bold uppercase tracking-wider text-[#2C2C2C] hover:text-[#6A1B6D] flex-1"
+                  className="py-3 px-1 text-xs font-bold uppercase tracking-wider text-[#2C2C2C] hover:text-[#6A1B6D] flex-1 flex items-center"
                 >
-                  {cat.name}
+                  <span>{cat.name}</span>
+                  {cat.slug === 'skin' && (
+                    <span className="text-[9px] uppercase font-bold text-[#274436] bg-[#EBF3EE] border border-[#C2DBCB] px-1.5 py-0.5 rounded-[2px] ml-2">
+                      Clean Care
+                    </span>
+                  )}
                 </Link>
                 <button
                   type="button"

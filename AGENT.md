@@ -33,18 +33,20 @@
 
 The project uses a strict luxury color palette and bespoke typography. All styling must conform to the tokens defined in `styles/tokens.css` and `app/globals.css`.
 
-### Color Palette
+### Color Palette (Cosmetics & Skincare Harmony)
 
 | Token | Name | Hex | Semantic Role |
 | :--- | :--- | :--- | :--- |
-| `--bb-plum` | **Deep Plum** | `#6A1B6D` | Primary brand color, primary CTA buttons, hero accents, category headers. |
-| `--bb-magenta` | **Deep Magenta** | `#C2188B` | Secondary vibrant accent, sale banners, wishlist heart active state, hover highlights. |
-| `--bb-gold` | **Honey Gold** | `#D4AF37` | Luxury metallic accent, bestseller badges, star ratings, borders, announcement highlights. |
+| `--bb-plum` | **Deep Plum** | `#6A1B6D` | Primary brand color, cosmetics anchor, luxury headings, primary CTA buttons. |
+| `--bb-magenta` | **Deep Magenta** | `#C2188B` | Vibrant cosmetic accent, sale banners, wishlist active heart, high-pigment callouts. |
+| `--bb-gold` | **Honey Gold** | `#D4AF37` | Luxury metallic accent, raw nectar emblem, bestseller badges, star ratings. |
+| `--bb-sage` | **Botanical Sage** | `#3E6351` | Clean skincare anchor, clinical barrier repair, dermatologist-tested badges. |
+| `--bb-nectar` | **Honey Nectar** | `#E5A93C` | Raw propolis & royal jelly glow, dewy moisture badges, warm radiance. |
 | `--bb-ivory` | **Warm Ivory** | `#FFF9F5` | Default body canvas background, soft clean backdrop. |
-| `--bb-blush` | **Soft Blush** | `#FCE4EC` | Card surface tint, subtle container backgrounds, promotional tile contrast. |
+| `--bb-blush` | **Soft Blush** | `#FCE4EC` | Rosewater tint, subtle container backgrounds, promotional tile contrast. |
 | `--bb-charcoal` | **Charcoal** | `#2C2C2C` | High-legibility typography for body copy, paragraphs, descriptions. |
 
-*Additional neutrals:* White (`#FFFFFF`), Muted Slate (`#71717A`), Light Border (`#F0E6DE`).
+*Additional neutrals & tints:* Botanical Sage Light (`#EBF3EE`), Honey Nectar Light (`#FEF7ED`), Fresh Dew (`#F0F7F4`), White (`#FFFFFF`), Light Border (`#F0E6DE`).
 
 ### Typography Stack
 Google Fonts are imported in `app/layout.tsx` and configured via CSS variables:
@@ -111,7 +113,8 @@ beeandbeauty/
 │   │   ├── Footer.tsx               # Brand manifesto, verified socials, policies, payment badges
 │   │   ├── AnnouncementBar.tsx      # Ticker with Dhaka 24h / outside 48h and WhatsApp support
 │   │   ├── MegaMenu.tsx             # Desktop category dropdown menu
-│   │   └── MobileNav.tsx            # Responsive mobile drawer navigation
+│   │   ├── MobileNav.tsx            # Responsive mobile drawer navigation
+│   │   └── BackToTop.tsx            # Scroll-to-top button stacked at bottom-[5.25rem] right-6 above FloatingWhatsApp
 │   │
 │   ├── catalog/                     # Product Listing Components
 │   │   ├── ProductCard.tsx          # Card with shade swatches, quick add, wishlist toggle
@@ -221,8 +224,9 @@ The file `AGENTS.md` is monitored by `next dev`. Keep the `<!-- BEGIN:nextjs-age
 - **Never use `$` or other foreign currencies**. Always format prices in Bangladesh Taka (`৳`) using `formatPrice()` from `lib/formatters.ts`.
 - Format example: `formatPrice(2450)` yields `"৳2,450"`.
 
-### Form Props Conventions
-- In `components/checkout/AddressForm.tsx`, the prop for existing data is `initialValues?: Partial<ShippingFormData>`, not `initialData`.
+### Next.js 16 Partial Prerendering (PPR) & Instant Shells
+- With `partialPrefetching: true` and `cacheComponents: true`, dynamic route pages (`app/shop/[category]/page.tsx`, `app/product/[slug]/page.tsx`) must defer `await params` / `await searchParams` to inner components wrapped in a `<Suspense fallback={<Skeleton />}>` boundary.
+- Awaiting `params` directly at the top level of the page component prevents Next.js from prerendering the instant static navigation shell and causes the Turbopack `instant-shell-url-data` warning/error.
 
 ---
 
@@ -255,10 +259,49 @@ npm run start
 
 ---
 
-## 8. Roadmap & Next Phases for Incoming Agents
+## 8. Backend Architecture & Supabase Integration (Completed October 2026)
 
-If assigned new tasks on this project, prioritize according to the following roadmap:
-1. **Backend Integration**: Replace mock product and order storage in `lib/products.ts` and `lib/orders.ts` with Supabase / PostgreSQL database or headless CMS.
-2. **Automated Payment Webhook**: Integrate bKash and Nagad payment gateway APIs (e.g. SSLCommerz, Shurjopay, or direct bKash PGW API) alongside the current manual TrxID flow.
+The backend has been implemented with production-grade domain services, Next.js 16 Route Handlers, resilient dual-persistence fallback, and native Node ESM testing.
+
+### Supabase Project Configuration
+- **Project Reference ID**: `xhhjowchwnaglimgpygr`
+- **Project Endpoint**: `https://xhhjowchwnaglimgpygr.supabase.co`
+- **Environment Variables**: Defined in `.env.local`:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `SUPABASE_SECRET_KEY`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+### Database Schema (`supabase/migrations/20261011_initial_schema.sql`)
+1. `orders`: High-integrity table tracking customer info, district, shipping fee, payment method (`cod`, `bkash`, `nagad`), payment status, and order status with `BB-2026-XXXXX` order numbers.
+2. `order_items`: Line items with foreign key cascade to `orders(id)`, capturing unit price, shade code/name, quantity, and line totals.
+3. `coupons`: Active promotion registry (`BEE10`, `GLAM20`, `BEE700`, `BEEFREE`) with minimum order spends and maximum discount caps.
+4. `contact_inquiries`: Customer support inquiries with `TKT-2026-XXXX` reference tickets.
+5. `product_reviews`: Verified buyer star ratings (1-5), shade used, comments, and timestamps.
+6. `newsletter_subscribers`: VIP beauty club email captures with active state and deduplication.
+
+### API Route Endpoints (`app/api/`)
+- `POST /api/orders`: Validates customer inputs, recalculates item prices against catalog (protecting against client price tampering), applies coupon logic, calculates BD shipping rates, assigns tracking code (`ST-XXXXXX`), and persists to Supabase (with fallback in-memory cache).
+- `GET /api/orders/[id]`: Fetches an order and line items by ID.
+- `POST /api/orders/track`: Secure order tracking verifying both Order Reference (`BB-2026-XXXXX`) and Mobile Phone Number. Returns 5-stage logistics progression timeline.
+- `POST /api/coupons/validate`: Validates coupon codes against order subtotal and computes discounts.
+- `POST /api/shipping/calculate`: Computes BD shipping fees (Dhaka ৳70 / Outside ৳130, free shipping above ৳2,500) and delivery SLA.
+- `POST /api/contact`: Persists support inquiries and mints unique ticket numbers.
+- `GET / POST /api/reviews`: Fetches product reviews and accepts new verified customer reviews.
+- `POST /api/newsletter`: Captures newsletter subscriptions.
+- `POST /api/payment/simulate-callback`: Simulates webhook confirmation for bKash/Nagad mobile financial services.
+
+### Resilient Dual-Persistence Design
+All services (`orderService`, `couponService`, `inquiryService`, `reviewService`, `newsletterService`) use resilient dual-persistence:
+- Primary: Supabase PostgreSQL via `supabaseAdmin` / `@supabase/supabase-js`.
+- Fallback: Graceful local in-memory store so all functionality remains 100% operational in dev/test/staging environments without crashing if the remote database is unreachable or awaiting schema migration.
+
+---
+
+## 9. Next Phases for Incoming Agents
+
+1. **Execute Migration in Supabase Dashboard**: Run `supabase/migrations/20261011_initial_schema.sql` in `https://supabase.com/dashboard/project/xhhjowchwnaglimgpygr/sql/new`.
+2. **Automated Payment Webhook**: Integrate official bKash and Nagad payment gateway APIs (e.g. SSLCommerz, Shurjopay, or direct bKash PGW API) alongside the current manual TrxID flow.
 3. **SMS Notification Engine**: Integrate local BD SMS gateways (e.g. Greenweb, Elitbuzz) for automated order confirmation and courier dispatch SMS.
 4. **Steadfast / Pathao Courier API**: Connect automated parcel booking upon order placement.

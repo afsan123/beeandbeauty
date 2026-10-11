@@ -22,6 +22,9 @@ export default function ContactPage() {
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [ticketNumber, setTicketNumber] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const validate = (): boolean => {
@@ -37,10 +40,31 @@ export default function ContactPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit inquiry.');
+      }
+
+      setTicketNumber(data.ticketNumber);
       setIsSubmitted(true);
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : 'Error submitting message.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -62,6 +86,8 @@ export default function ContactPage() {
       subject: 'Order Status & Tracking',
       message: '',
     });
+    setTicketNumber(null);
+    setSubmitError(null);
     setIsSubmitted(false);
   };
 
@@ -215,8 +241,13 @@ export default function ContactPage() {
               <h3 className="text-lg font-bold uppercase tracking-wider text-[#6A1B6D] font-serif">
                 Inquiry Received
               </h3>
+              {ticketNumber && (
+                <div className="inline-block px-3 py-1 bg-[#FFF9F5] border border-[#F0E6DD] rounded text-xs font-mono font-bold text-[#6A1B6D]">
+                  Ticket: #{ticketNumber}
+                </div>
+              )}
               <p className="text-xs text-[#666666] max-w-sm mx-auto leading-relaxed">
-                Thank you, <strong>{formData.fullName}</strong>. Your inquiry regarding &ldquo;{formData.subject}&rdquo; has been routed to our beauty support team. We will get back to you at <strong>{formData.email}</strong> shortly.
+                Thank you, <strong>{formData.fullName}</strong>. Your inquiry regarding &ldquo;{formData.subject}&rdquo; has been saved to our customer support desk. We will get back to you at <strong>{formData.email}</strong> within 4-6 business hours.
               </p>
               <div className="pt-4">
                 <button
@@ -322,15 +353,22 @@ export default function ContactPage() {
                 )}
               </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-wider py-3 px-8 rounded-[2px] transition-colors cursor-pointer shadow-xs"
-                >
-                  <Send size={14} />
-                  <span>Send Message</span>
-                </button>
-              </div>
+                {submitError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-[2px]">
+                    {submitError}
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#6A1B6D] hover:bg-[#521354] disabled:bg-neutral-400 text-white text-xs font-bold uppercase tracking-wider py-3 px-8 rounded-[2px] transition-colors cursor-pointer disabled:cursor-not-allowed shadow-xs"
+                  >
+                    <Send size={14} />
+                    <span>{isSubmitting ? 'Sending to Support Desk...' : 'Send Message'}</span>
+                  </button>
+                </div>
             </form>
           )}
         </div>

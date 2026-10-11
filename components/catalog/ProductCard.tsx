@@ -117,8 +117,17 @@ export function ProductCard({ product, className }: ProductCardProps) {
       {/* Product Content Body */}
       <div className="p-3.5 flex flex-col flex-1 justify-between gap-2.5 font-sans">
         <div>
-          {/* Interactive Shade Swatches */}
-          {product.shades.length > 0 && (
+          {/* Interactive Shade Swatches for Makeup / Formula Tag for Skincare */}
+          {product.categorySlug === 'skin' ? (
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="text-[9px] uppercase font-bold text-[#274436] bg-[#EBF3EE] px-2 py-0.5 rounded-[2px] border border-[#C2DBCB] tracking-wider">
+                Barrier Skincare
+              </span>
+              <span className="text-[9px] uppercase font-bold text-[#B45309] bg-[#FEF7ED] px-2 py-0.5 rounded-[2px] border border-[#FDE68A] tracking-wider">
+                Raw Honey
+              </span>
+            </div>
+          ) : product.shades.length > 0 ? (
             <div className="flex items-center gap-1.5 mb-2 flex-wrap">
               {product.shades.slice(0, 5).map((shade) => {
                 const isSelected = selectedShade?.id === shade.id;
@@ -149,7 +158,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 </span>
               )}
             </div>
-          )}
+          ) : null}
 
           {/* Title */}
           <Link

@@ -15,6 +15,23 @@
   --bb-gold-light: #F4E295;
   --bb-gold-dark: #A98724;
 
+  /* Skincare & Botanical Harmony Palette */
+  /* Botanical Sage - Clean, organic, dermatological care */
+  --bb-sage: #3E6351;
+  --bb-sage-dark: #274436;
+  --bb-sage-light: #EBF3EE;
+  --bb-sage-border: #C2DBCB;
+
+  /* Honey Nectar & Propolis Glow - Barrier recovery, royal jelly & dewiness */
+  --bb-nectar: #E5A93C;
+  --bb-nectar-dark: #B45309;
+  --bb-nectar-light: #FEF7ED;
+  --bb-nectar-border: #FDE68A;
+
+  /* Fresh Dew & Hydration */
+  --bb-dew: #F0F7F4;
+  --bb-rosewater: #FDF2F0;
+
   /* Canvas backgrounds */
   --bb-ivory: #FFF9F5;
   --bb-blush: #FCE4EC;

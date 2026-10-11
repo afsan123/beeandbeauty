@@ -5,11 +5,11 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 const ANNOUNCEMENTS = [
-  { text: 'Bee & Beauty — Nature, refined. | Luxury Cosmetics', link: '/about' },
-  { text: 'Inside Dhaka within 24h | Outside Dhaka within 48h Delivery', link: '/delivery-policy' },
-  { text: 'FREE Luxe Lip Butter on Orders Above ৳1,499', link: '/offers' },
+  { text: 'Bee & Beauty — Nature, refined. | Clean Skincare & Bespoke Luxury Cosmetics', link: '/about' },
+  { text: 'Inside Dhaka within 24h | Outside Dhaka within 48h Tracked Delivery', link: '/delivery-policy' },
+  { text: 'New: Raw Propolis & Ceramide Barrier Care Rituals Now Live', link: '/shop/skin' },
   { text: 'Special Offer: Flat ৳700 Off on Orders Above ৳2,999 with code BEE700', link: '/offers' },
-  { text: 'Concierge Support via WhatsApp: +8801754502430', link: 'https://wa.me/8801754502430' },
+  { text: 'Beauty & Skincare Concierge via WhatsApp: +8801754502430', link: 'https://wa.me/8801754502430' },
 ];
 
 export function AnnouncementBar() {

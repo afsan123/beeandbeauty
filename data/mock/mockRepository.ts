@@ -1,8 +1,8 @@
-import { CatalogRepository } from '../repository';
-import { Category, FilterState, Offer, Product, SortOption } from '../types';
-import { CATEGORIES, OFFERS, PRODUCTS } from './catalogData';
-import { filterProducts, sortProducts } from '../../lib/filters';
-import { searchCatalog } from '../../lib/search';
+import type { CatalogRepository } from '../repository.ts';
+import type { Category, FilterState, Offer, Product, SortOption } from '../types.ts';
+import { CATEGORIES, OFFERS, PRODUCTS } from './catalogData.ts';
+import { filterProducts, sortProducts } from '../../lib/filters.ts';
+import { searchCatalog } from '../../lib/search.ts';
 
 export class MockCatalogRepository implements CatalogRepository {
   async getProducts(

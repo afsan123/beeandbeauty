@@ -19,9 +19,18 @@ export function Footer() {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email.includes('@')) {
+      try {
+        await fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+      } catch {
+        // graceful
+      }
       setIsSubscribed(true);
       setEmail('');
     }
@@ -132,6 +141,12 @@ export function Footer() {
             Customer Care &amp; Policies
           </h4>
           <ul className="space-y-2.5 text-xs text-[#FCE4EC]/80">
+            <li>
+              <Link href="/track-order" className="text-[#D4AF37] hover:underline font-semibold flex items-center gap-1.5">
+                <Truck size={13} />
+                <span>Track My Order</span>
+              </Link>
+            </li>
             <li>
               <Link href="/faq" className="hover:text-white transition-colors">
                 Frequently Asked Questions (FAQ)

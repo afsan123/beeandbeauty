@@ -1,5 +1,5 @@
-import { Category, Offer, Product } from '../types';
-import { createProductSvg } from './imagePlaceholders';
+import type { Category, Offer, Product } from '../types.ts';
+import { createProductSvg } from './imagePlaceholders.ts';
 
 export const CATEGORIES: Category[] = [
   {

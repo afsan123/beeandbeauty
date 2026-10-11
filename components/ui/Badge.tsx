@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '../../lib/cn';
 
 export interface BadgeProps {
-  type?: 'new' | 'bestseller' | 'sale' | 'exclusive' | 'limited' | 'custom';
+  type?: 'new' | 'bestseller' | 'sale' | 'exclusive' | 'limited' | 'skincare' | 'organic' | 'barrier' | 'clean' | 'custom';
   label: string;
   className?: string;
   size?: 'sm' | 'md';
@@ -20,6 +20,10 @@ export function Badge({
     sale: 'bg-[#C2188B] text-white font-semibold',
     exclusive: 'bg-[#FCE4EC] text-[#6A1B6D] border border-[#C2188B]/40 font-semibold',
     limited: 'bg-[#A98724] text-white',
+    skincare: 'bg-[#EBF3EE] text-[#274436] border border-[#C2DBCB] font-semibold',
+    clean: 'bg-[#EBF3EE] text-[#274436] border border-[#C2DBCB] font-semibold',
+    organic: 'bg-[#FEF7ED] text-[#B45309] border border-[#FDE68A] font-semibold',
+    barrier: 'bg-[#F0F7F4] text-[#1E5642] border border-[#A7D4C0] font-semibold',
     custom: 'bg-[#6A1B6D] text-white',
   };
 

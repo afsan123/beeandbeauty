@@ -48,9 +48,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
     e.preventDefault();
     if (pincode.length >= 4) {
       if (pincode.startsWith('1')) {
-        setPincodeMessage('Dhaka Metro delivery available! Target arrival within 24 hours (৳80 or Free > ৳1,499).');
+        setPincodeMessage('Dhaka Metro delivery available! Target arrival within 24 hours (৳70 or Free > ৳2,500).');
       } else {
-        setPincodeMessage('Nationwide delivery available! Target arrival within 48 hours (৳130 or Free > ৳1,499).');
+        setPincodeMessage('Nationwide delivery available! Target arrival within 48 hours (৳130 or Free > ৳2,500).');
       }
     } else {
       setPincodeMessage('Please enter a valid 4-digit postal code.');
@@ -101,18 +101,28 @@ export function ProductInfo({ product }: ProductInfoProps) {
           size="xl"
         />
         <p className="text-[11px] text-[#666666] mt-1 font-medium">
-          MRP in Bangladeshi Taka. Free nationwide shipping on orders over ৳1,499.
+          MRP in Bangladeshi Taka. Free nationwide tracked delivery on orders above ৳2,500.
         </p>
       </div>
 
-      {/* Shade Picker */}
-      {product.shades.length > 0 && (
+      {/* Shade Picker for Cosmetics / Botanical Actives for Skincare */}
+      {product.categorySlug === 'skin' ? (
+        <div className="bg-[#EBF3EE]/80 border border-[#C2DBCB] rounded-[2px] p-3 text-xs flex flex-col gap-1.5">
+          <div className="font-bold uppercase tracking-wider text-[#274436] flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#3E6351]" />
+            <span>Clinical &amp; Botanical Barrier Care</span>
+          </div>
+          <p className="text-[11px] text-[#3D5A4C] leading-relaxed">
+            Dermatologically tested, hypoallergenic, non-comedogenic formula enriched with raw propolis, bio-identical ceramides, and antioxidant honey nectar.
+          </p>
+        </div>
+      ) : product.shades.length > 0 ? (
         <ShadePicker
           shades={product.shades}
           selectedShade={selectedShade}
           onSelectShade={setSelectedShade}
         />
-      )}
+      ) : null}
 
       {/* Quantity & Add to Bag CTA */}
       <div className="flex items-center gap-3 pt-2">

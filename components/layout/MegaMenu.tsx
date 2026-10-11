@@ -51,12 +51,20 @@ export function MegaMenu() {
               </div>
 
               {/* Featured Promo in Dropdown */}
-              <div className="col-span-1 bg-[#FFF9F5] p-4 border border-[#F0E6DD] flex flex-col justify-between rounded-[2px]">
+              <div className={`col-span-1 p-4 border rounded-[2px] flex flex-col justify-between ${
+                cat.slug === 'skin'
+                  ? 'bg-[#EBF3EE]/80 border-[#C2DBCB]'
+                  : 'bg-[#FFF9F5] border-[#F0E6DD]'
+              }`}>
                 <div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest bg-[#6A1B6D] text-white px-2 py-0.5 inline-block mb-2 rounded-xs">
-                    Featured
+                  <span className={`text-[9px] font-bold uppercase tracking-widest text-white px-2 py-0.5 inline-block mb-2 rounded-xs ${
+                    cat.slug === 'skin' ? 'bg-[#3E6351]' : 'bg-[#6A1B6D]'
+                  }`}>
+                    {cat.slug === 'skin' ? 'Clean Barrier Rituals' : 'Featured Collection'}
                   </span>
-                  <div className="text-xs font-bold text-[#6A1B6D] leading-tight mb-1.5 font-serif text-sm">
+                  <div className={`text-xs font-bold leading-tight mb-1.5 font-serif text-sm ${
+                    cat.slug === 'skin' ? 'text-[#274436]' : 'text-[#6A1B6D]'
+                  }`}>
                     {cat.name} Collection
                   </div>
                   <p className="text-[11px] text-[#666666] line-clamp-3 leading-relaxed">
@@ -66,7 +74,9 @@ export function MegaMenu() {
 
                 <Link
                   href={`/shop/${cat.slug}`}
-                  className="mt-3 text-[11px] font-bold uppercase tracking-wider text-[#6A1B6D] hover:text-[#C2188B] underline"
+                  className={`mt-3 text-[11px] font-bold uppercase tracking-wider underline ${
+                    cat.slug === 'skin' ? 'text-[#274436] hover:text-[#3E6351]' : 'text-[#6A1B6D] hover:text-[#C2188B]'
+                  }`}
                 >
                   Explore Collection
                 </Link>

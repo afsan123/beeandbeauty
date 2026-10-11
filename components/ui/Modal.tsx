@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
@@ -13,6 +14,12 @@ export interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -29,10 +36,10 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
@@ -52,14 +59,14 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       >
         <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
           {title && (
-            <h3 id="modal-title" className="text-base font-bold uppercase tracking-wider text-[#111111]">
+            <h3 id="modal-title" className="text-base font-bold uppercase tracking-wider text-[#6A1B6D]">
               {title}
             </h3>
           )}
           <button
             type="button"
             onClick={onClose}
-            className="ml-auto p-1 text-neutral-400 hover:text-neutral-900 transition-colors cursor-pointer"
+            className="ml-auto p-1 text-neutral-400 hover:text-[#6A1B6D] transition-colors cursor-pointer rounded-full hover:bg-[#FCE4EC]/50"
             aria-label="Close dialog"
           >
             <X size={18} />
@@ -68,6 +75,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
 
         <div className="pt-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

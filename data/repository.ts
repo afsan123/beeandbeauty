@@ -1,4 +1,4 @@
-import { Category, FilterState, Offer, Product, SortOption } from './types';
+import type { Category, FilterState, Offer, Product, SortOption } from './types.ts';
 
 export interface CatalogRepository {
   getProducts(filters?: Partial<FilterState>, sort?: SortOption): Promise<Product[]>;

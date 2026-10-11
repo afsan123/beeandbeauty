@@ -13,11 +13,11 @@ export function FounderNote() {
             Nature, refined.
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-[0.12em] text-[#6A1B6D] font-serif">
-            Luxury Beauty, Formulated for Bangladesh
+            Luxury Cosmetics &amp; Clean Skincare, Formulated for Bangladesh
           </h2>
           <div className="w-12 h-0.5 bg-[#D4AF37] mx-auto my-4" />
           <p className="text-xs sm:text-sm md:text-base text-[#666666] leading-relaxed font-light">
-            Bee &amp; Beauty was born from a clear conviction: you deserve makeup formulated specifically for your undertones, lifestyle, and weather &mdash; never compromised, never settling. We harmonize apicultural nectar extracts with modern featherweight pigments.
+            Bee &amp; Beauty was born from a clear conviction: you deserve both high-efficacy skincare rituals and weightless luxury cosmetics formulated specifically for South Asian undertones, skin barrier health, and humid tropical weather &mdash; never compromised, never settling. We harmonize apicultural raw honey and propolis with clinical barrier ceramides and modern velvet pigments.
           </p>
         </div>
 
@@ -29,17 +29,17 @@ export function FounderNote() {
               <span>Our Vision</span>
             </div>
             <p className="text-xs text-[#666666] leading-relaxed">
-              To become a trusted beauty and skincare destination in Bangladesh, helping customers discover products that fit their beauty needs and personal routines.
+              To become the foremost luxury cosmetics and clean skincare destination in Bangladesh, empowering customers through dermatologist-conscious formulations and transformative beauty rituals.
             </p>
           </div>
 
           <div className="bg-white p-7 rounded-[2px] border border-[#F0E6DD] shadow-2xs">
             <div className="flex items-center gap-2.5 text-[#6A1B6D] mb-2 font-serif font-bold text-lg">
-              <Target size={20} className="text-[#C2188B]" />
+              <Target size={20} className="text-[#3E6351]" />
               <span>Our Mission</span>
             </div>
             <p className="text-xs text-[#666666] leading-relaxed">
-              To make beauty shopping more convenient, transparent, and trustworthy through clear product information, responsive support, and understandable policies.
+              To unite high-performance color artistry with clinical skin barrier care through transparent ingredient standards, responsive concierge guidance, and trustworthy nationwide service.
             </p>
           </div>
         </div>
@@ -47,26 +47,26 @@ export function FounderNote() {
         {/* 4 Pillars Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white p-6 rounded-[2px] border border-[#F0E6DD] text-center flex flex-col items-center shadow-2xs">
-            <div className="w-12 h-12 rounded-full bg-[#FFF9F5] flex items-center justify-center text-[#D4AF37] mb-3">
+            <div className="w-12 h-12 rounded-full bg-[#FEF7ED] flex items-center justify-center text-[#E5A93C] mb-3">
               <Leaf size={22} />
             </div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#6A1B6D] mb-1.5 font-serif">
-              Botanical Infusion
+              Raw Propolis &amp; Nectar
             </h3>
             <p className="text-[11px] text-[#666666] leading-relaxed">
-              Enriched with ethically harvested royal jelly, honey nectar, and nourishing seed oils.
+              Enriched with ethically harvested royal jelly, raw honey propolis, and bio-identical squalane.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-[2px] border border-[#F0E6DD] text-center flex flex-col items-center shadow-2xs">
-            <div className="w-12 h-12 rounded-full bg-[#FFF9F5] flex items-center justify-center text-[#C2188B] mb-3">
-              <Heart size={22} />
+            <div className="w-12 h-12 rounded-full bg-[#EBF3EE] flex items-center justify-center text-[#3E6351] mb-3">
+              <ShieldCheck size={22} />
             </div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#6A1B6D] mb-1.5 font-serif">
-              100% Cruelty-Free
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#3E6351] mb-1.5 font-serif">
+              Dermatologist Tested
             </h3>
             <p className="text-[11px] text-[#666666] leading-relaxed">
-              Humanely certified. We never test on animals at any stage of product development.
+              Barrier-safe, non-comedogenic, and hypoallergenic formulations proven for tropical climates.
             </p>
           </div>
 
@@ -75,22 +75,22 @@ export function FounderNote() {
               <Sparkles size={22} />
             </div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#6A1B6D] mb-1.5 font-serif">
-              Custom Undertones
+              Bespoke Undertones
             </h3>
             <p className="text-[11px] text-[#666666] leading-relaxed">
-              Calibrated specifically to enhance golden, neutral, and warm South Asian undertones.
+              Calibrated specifically to enhance golden, olive, and warm South Asian complexions.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-[2px] border border-[#F0E6DD] text-center flex flex-col items-center shadow-2xs">
-            <div className="w-12 h-12 rounded-full bg-[#FFF9F5] flex items-center justify-center text-[#2E7D32] mb-3">
-              <ShieldCheck size={22} />
+            <div className="w-12 h-12 rounded-full bg-[#FCE4EC] flex items-center justify-center text-[#C2188B] mb-3">
+              <Heart size={22} />
             </div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#6A1B6D] mb-1.5 font-serif">
-              Dermatologist Tested
+              100% Cruelty-Free
             </h3>
             <p className="text-[11px] text-[#666666] leading-relaxed">
-              Hypoallergenic and non-comedogenic formulations safe for sensitive, humid-weather skin.
+              Ethically crafted with zero animal testing across every phase of formulation and production.
             </p>
           </div>
         </div>

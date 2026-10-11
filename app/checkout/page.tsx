@@ -23,13 +23,15 @@ import { Logo } from '../../components/ui/Logo';
 type PaymentMethod = 'cod' | 'bkash' | 'nagad';
 
 export default function CheckoutPage() {
-  const { items, totals, clearCart } = useCart();
+  const { items, totals, appliedCoupon, clearCart } = useCart();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [shippingData, setShippingData] = useState<ShippingFormData | null>(null);
   const [shippingZone, setShippingZone] = useState<'dhaka' | 'outside'>('dhaka');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Handle address submit from Step 1
   const handleAddressSubmit = (data: ShippingFormData) => {
@@ -49,11 +51,49 @@ export default function CheckoutPage() {
   };
 
   // Handle place order from Step 3
-  const handlePlaceOrder = () => {
-    const randomOrderId = `BB-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderNumber(randomOrderId);
-    setCurrentStep(4);
-    clearCart();
+  const handlePlaceOrder = async () => {
+    if (!shippingData) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const payload = {
+        customerName: shippingData.fullName,
+        customerEmail: shippingData.email,
+        customerPhone: shippingData.phone,
+        streetAddress: shippingData.streetAddress,
+        district: shippingData.district,
+        postalCode: shippingData.postalCode,
+        notes: shippingData.orderNotes,
+        deliveryZone: shippingZone,
+        paymentMethod,
+        couponCode: appliedCoupon || totals.appliedCoupon || undefined,
+        items: items.map((it) => ({
+          productId: it.productId,
+          shadeId: it.selectedShade?.id,
+          quantity: it.quantity,
+        })),
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to place order. Please try again.');
+      }
+
+      setOrderNumber(data.order.orderNumber);
+      setCurrentStep(4);
+      clearCart();
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : 'Checkout failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Step 4: Order Confirmation
@@ -113,6 +153,14 @@ export default function CheckoutPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href={`/track-order?orderNumber=${orderNumber}&phone=${encodeURIComponent(shippingData?.phone || '')}`}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs"
+          >
+            <Truck size={15} className="text-[#D4AF37]" />
+            <span>Track Order Live</span>
+          </Link>
+
           <a
             href={`https://wa.me/8801754502430?text=${encodeURIComponent(
               `Hello Bee & Beauty, I just placed order #${orderNumber} and wanted to confirm dispatch details.`
@@ -127,9 +175,9 @@ export default function CheckoutPage() {
 
           <Link
             href="/"
-            className="w-full sm:w-auto inline-block bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-8 rounded-[2px] transition-colors shadow-xs"
+            className="w-full sm:w-auto inline-block border border-[#6A1B6D] text-[#6A1B6D] hover:bg-[#6A1B6D]/5 text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs"
           >
-            Return to Storefront
+            Return to Store
           </Link>
         </div>
       </main>
@@ -408,21 +456,29 @@ export default function CheckoutPage() {
                   </p>
                 </div>
 
+                {submitError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-[2px]">
+                    <strong>Checkout Error:</strong> {submitError}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pt-4 border-t border-[#F0E6DD]">
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-[#6A1B6D] cursor-pointer"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-[#6A1B6D] cursor-pointer disabled:opacity-50"
                   >
                     <ArrowLeft size={14} />
                     <span>Back to Shipping</span>
                   </button>
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={handlePlaceOrder}
-                    className="bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-8 rounded-[2px] transition-all transform hover:-translate-y-0.5 cursor-pointer shadow-md"
+                    className="bg-[#6A1B6D] hover:bg-[#521354] disabled:bg-neutral-400 text-white text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-8 rounded-[2px] transition-all transform hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
                   >
-                    Complete Purchase ({formatPrice(totals.total)})
+                    {isSubmitting ? 'Securing Order...' : `Complete Purchase (${formatPrice(totals.total)})`}
                   </button>
                 </div>
               </div>
