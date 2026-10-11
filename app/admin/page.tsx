@@ -175,7 +175,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   const handleOrderUpdated = (updated: StoredOrder) => {
-    setSelectedOrder(updated);
+    setSelectedOrder((updated as any)?.order || updated);
     fetchDashboardData();
   };
 
@@ -315,10 +315,14 @@ export default function AdminDashboardPage() {
               }
             }
             onSelectOrder={async (orderNum) => {
-              const res = await fetch(`/api/admin/orders/${orderNum}`);
-              if (res.ok) {
-                const json = await res.json();
-                setSelectedOrder(json);
+              try {
+                const res = await fetch(`/api/admin/orders/${orderNum}`);
+                if (res.ok) {
+                  const json = await res.json();
+                  setSelectedOrder(json.order || json);
+                }
+              } catch (err) {
+                console.error('Failed to fetch order details:', err);
               }
             }}
           />

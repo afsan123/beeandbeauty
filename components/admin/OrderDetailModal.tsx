@@ -17,6 +17,9 @@ export function OrderDetailModal({
   onClose,
   onOrderUpdated,
 }: OrderDetailModalProps) {
+  // Gracefully resolve both raw StoredOrder and { order: StoredOrder } API wrappers
+  const resolvedOrder: StoredOrder | null = (order as any)?.order ? (order as any).order : order;
+
   const [selectedStatus, setSelectedStatus] = useState<StoredOrder['orderStatus'] | ''>('');
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<StoredOrder['paymentStatus'] | ''>('');
   const [trackingCode, setTrackingCode] = useState('');
@@ -26,16 +29,16 @@ export function OrderDetailModal({
 
   // Sync state whenever order opens
   React.useEffect(() => {
-    if (order) {
-      setSelectedStatus(order.orderStatus);
-      setSelectedPaymentStatus(order.paymentStatus);
-      setTrackingCode(order.courierTrackingCode || '');
+    if (resolvedOrder) {
+      setSelectedStatus(resolvedOrder.orderStatus);
+      setSelectedPaymentStatus(resolvedOrder.paymentStatus);
+      setTrackingCode(resolvedOrder.courierTrackingCode || '');
       setSaveSuccess(false);
       setErrorMsg('');
     }
-  }, [order]);
+  }, [resolvedOrder]);
 
-  if (!isOpen || !order) return null;
+  if (!isOpen || !resolvedOrder) return null;
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
@@ -43,12 +46,12 @@ export function OrderDetailModal({
     setSaveSuccess(false);
 
     try {
-      const res = await fetch(`/api/admin/orders/${order.id}`, {
+      const res = await fetch(`/api/admin/orders/${resolvedOrder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: selectedStatus || order.orderStatus,
-          paymentStatus: selectedPaymentStatus || order.paymentStatus,
+          status: selectedStatus || resolvedOrder.orderStatus,
+          paymentStatus: selectedPaymentStatus || resolvedOrder.paymentStatus,
           courierTrackingCode: trackingCode,
         }),
       });
@@ -59,7 +62,7 @@ export function OrderDetailModal({
       }
 
       setSaveSuccess(true);
-      onOrderUpdated(data.order);
+      onOrderUpdated(data.order || data);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error updating order.');
@@ -68,8 +71,9 @@ export function OrderDetailModal({
     }
   };
 
-  const cleanPhoneForWhatsApp = (phone: string) => {
-    const raw = phone.replace(/[\s\-\+]/g, '');
+  const cleanPhoneForWhatsApp = (phone?: string | null) => {
+    if (!phone) return '8801754502430';
+    const raw = String(phone).replace(/[\s\-\+]/g, '');
     return raw.startsWith('88') ? raw : `88${raw}`;
   };
 
@@ -78,12 +82,17 @@ export function OrderDetailModal({
       ? `Courier Tracking ID: ${trackingCode}`
       : 'Courier will contact you before delivery';
 
+    const customerName = resolvedOrder.customerName || 'Valued Customer';
+    const orderNumber = resolvedOrder.orderNumber || '';
+    const statusText = selectedStatus || resolvedOrder.orderStatus || 'confirmed';
+    const targetTimeline = resolvedOrder.targetDelivery || 'Standard Delivery';
+    const totalAmount = resolvedOrder.totalAmount || 0;
+    const paymentMethod = (resolvedOrder.paymentMethod || 'COD').toUpperCase();
+
     return encodeURIComponent(
-      `Assalamu Alaikum ${order.customerName},\n\nYour Bee & Beauty order #${order.orderNumber} is ${
-        selectedStatus || order.orderStatus
-      }.\n${trackingInfo}\nTarget Delivery: ${order.targetDelivery}.\nTotal Amount: ${formatPrice(
-        order.totalAmount
-      )} (${order.paymentMethod.toUpperCase()}).\n\nFor any inquiries, contact +8801754502430.\nThank you for choosing Bee & Beauty!`
+      `Assalamu Alaikum ${customerName},\n\nYour Bee & Beauty order #${orderNumber} is ${statusText}.\n${trackingInfo}\nTarget Delivery: ${targetTimeline}.\nTotal Amount: ${formatPrice(
+        totalAmount
+      )} (${paymentMethod}).\n\nFor any inquiries, contact +8801754502430.\nThank you for choosing Bee & Beauty!`
     );
   };
 
@@ -98,10 +107,10 @@ export function OrderDetailModal({
             </span>
             <div>
               <h2 className="text-lg font-bold font-serif text-stone-900">
-                Order #{order.orderNumber}
+                Order #{resolvedOrder.orderNumber || ''}
               </h2>
               <p className="text-xs text-stone-500">
-                Placed on {new Date(order.createdAt).toLocaleString('en-BD', { dateStyle: 'medium', timeStyle: 'short' })}
+                Placed on {resolvedOrder.createdAt ? new Date(resolvedOrder.createdAt).toLocaleString('en-BD', { dateStyle: 'medium', timeStyle: 'short' }) : 'Recent'}
               </p>
             </div>
           </div>
@@ -200,7 +209,7 @@ export function OrderDetailModal({
 
               {/* Direct WhatsApp Notice */}
               <a
-                href={`https://wa.me/${cleanPhoneForWhatsApp(order.customerPhone)}?text=${getWhatsAppMessage()}`}
+                href={`https://wa.me/${cleanPhoneForWhatsApp(resolvedOrder.customerPhone)}?text=${getWhatsAppMessage()}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1.5 rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
@@ -216,12 +225,12 @@ export function OrderDetailModal({
               <h4 className="text-xs font-bold text-stone-500 uppercase tracking-wider">
                 Customer Information
               </h4>
-              <p className="text-sm font-bold text-stone-900">{order.customerName}</p>
-              <p className="text-xs text-stone-600">📞 {order.customerPhone}</p>
-              <p className="text-xs text-stone-600">✉ {order.customerEmail}</p>
-              {order.notes && (
+              <p className="text-sm font-bold text-stone-900">{resolvedOrder.customerName || 'Valued Customer'}</p>
+              <p className="text-xs text-stone-600">📞 {resolvedOrder.customerPhone || 'Not provided'}</p>
+              <p className="text-xs text-stone-600">✉ {resolvedOrder.customerEmail || 'Not provided'}</p>
+              {resolvedOrder.notes && (
                 <div className="mt-2 rounded bg-amber-50 p-2 text-xs text-amber-800 border border-amber-200">
-                  <span className="font-semibold">Note:</span> {order.notes}
+                  <span className="font-semibold">Note:</span> {resolvedOrder.notes}
                 </div>
               )}
             </div>
@@ -231,17 +240,17 @@ export function OrderDetailModal({
                 Shipping Destination
               </h4>
               <p className="text-xs text-stone-800 font-medium">
-                {order.streetAddress}
+                {resolvedOrder.streetAddress || 'Address on file'}
               </p>
               <p className="text-xs text-stone-600">
-                {order.district} {order.postalCode ? `(${order.postalCode})` : ''}
+                {resolvedOrder.district || 'Dhaka'} {resolvedOrder.postalCode ? `(${resolvedOrder.postalCode})` : ''}
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <span className="inline-flex rounded-full bg-[var(--bb-plum)]/10 px-2 py-0.5 text-[11px] font-bold text-[var(--bb-plum)]">
-                  {order.deliveryZone === 'dhaka' ? 'Dhaka (24h Delivery)' : 'Outside Dhaka (48h Delivery)'}
+                  {resolvedOrder.deliveryZone === 'dhaka' ? 'Dhaka (24h Delivery)' : 'Outside Dhaka (48h Delivery)'}
                 </span>
                 <span className="text-[11px] font-semibold text-stone-500">
-                  Target: {order.targetDelivery}
+                  Target: {resolvedOrder.targetDelivery || 'Standard'}
                 </span>
               </div>
             </div>
@@ -250,7 +259,7 @@ export function OrderDetailModal({
           {/* Order Items Table */}
           <div>
             <h4 className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">
-              Purchased Line Items ({order.items.length})
+              Purchased Line Items ({(resolvedOrder.items || []).length})
             </h4>
             <div className="overflow-hidden rounded-xl border border-stone-200">
               <table className="w-full text-left text-xs">
@@ -264,7 +273,7 @@ export function OrderDetailModal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
-                  {order.items.map((item, index) => (
+                  {(resolvedOrder.items || []).map((item, index) => (
                     <tr key={index} className="hover:bg-stone-50/50">
                       <td className="py-2.5 px-3 font-semibold text-stone-900">
                         {item.productTitle}
@@ -282,13 +291,13 @@ export function OrderDetailModal({
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-right font-medium text-stone-700">
-                        {formatPrice(item.unitPrice)}
+                        {formatPrice(item.unitPrice || 0)}
                       </td>
                       <td className="py-2.5 px-3 text-center font-bold text-stone-900">
                         {item.quantity}
                       </td>
                       <td className="py-2.5 px-3 text-right font-bold text-stone-900">
-                        {formatPrice(item.lineTotal)}
+                        {formatPrice(item.lineTotal || 0)}
                       </td>
                     </tr>
                   ))}
@@ -302,26 +311,26 @@ export function OrderDetailModal({
             <div className="w-64 space-y-1.5 text-xs text-stone-600">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span className="font-medium text-stone-900">{formatPrice(order.subtotal)}</span>
+                <span className="font-medium text-stone-900">{formatPrice(resolvedOrder.subtotal || 0)}</span>
               </div>
-              {order.discountAmount > 0 && (
+              {(resolvedOrder.discountAmount || 0) > 0 && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Discount {order.couponCode ? `(${order.couponCode})` : ''}:</span>
-                  <span>-{formatPrice(order.discountAmount)}</span>
+                  <span>Discount {resolvedOrder.couponCode ? `(${resolvedOrder.couponCode})` : ''}:</span>
+                  <span>-{formatPrice(resolvedOrder.discountAmount || 0)}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span>Shipping Fee:</span>
                 <span className="font-medium text-stone-900">
-                  {order.shippingFee === 0 ? 'FREE' : formatPrice(order.shippingFee)}
+                  {resolvedOrder.shippingFee === 0 ? 'FREE' : formatPrice(resolvedOrder.shippingFee || 0)}
                 </span>
               </div>
               <div className="flex justify-between border-t border-stone-200 pt-2 text-sm font-bold text-stone-900">
                 <span>Grand Total:</span>
-                <span className="text-[var(--bb-plum)] font-serif">{formatPrice(order.totalAmount)}</span>
+                <span className="text-[var(--bb-plum)] font-serif">{formatPrice(resolvedOrder.totalAmount || 0)}</span>
               </div>
               <div className="text-[11px] text-right text-stone-500 pt-0.5">
-                Paid via <span className="font-bold uppercase">{order.paymentMethod}</span> ({order.paymentStatus})
+                Paid via <span className="font-bold uppercase">{resolvedOrder.paymentMethod || 'COD'}</span> ({resolvedOrder.paymentStatus || 'pending'})
               </div>
             </div>
           </div>

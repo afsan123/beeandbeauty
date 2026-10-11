@@ -94,8 +94,9 @@ function AdminOrdersContent() {
     }
   };
 
-  const cleanPhoneForWhatsApp = (phone: string) => {
-    const raw = phone.replace(/[\s\-\+]/g, '');
+  const cleanPhoneForWhatsApp = (phone?: string | null) => {
+    if (!phone) return '8801754502430';
+    const raw = String(phone).replace(/[\s\-\+]/g, '');
     return raw.startsWith('88') ? raw : `88${raw}`;
   };
 
@@ -103,8 +104,12 @@ function AdminOrdersContent() {
     const trackingMsg = order.courierTrackingCode
       ? `Tracking ID: ${order.courierTrackingCode}`
       : 'Rider will call upon arrival';
+    const customerName = order.customerName || 'Valued Customer';
+    const orderNumber = order.orderNumber || '';
+    const statusText = (order.orderStatus || 'confirmed').toUpperCase();
+    const targetTimeline = order.targetDelivery || 'Standard';
     const text = encodeURIComponent(
-      `Assalamu Alaikum ${order.customerName},\nYour Bee & Beauty order #${order.orderNumber} is currently: ${order.orderStatus.toUpperCase()}.\n${trackingMsg}\nTarget Delivery: ${order.targetDelivery}.\nThank you!`
+      `Assalamu Alaikum ${customerName},\nYour Bee & Beauty order #${orderNumber} is currently: ${statusText}.\n${trackingMsg}\nTarget Delivery: ${targetTimeline}.\nThank you!`
     );
     return `https://wa.me/${cleanPhoneForWhatsApp(order.customerPhone)}?text=${text}`;
   };

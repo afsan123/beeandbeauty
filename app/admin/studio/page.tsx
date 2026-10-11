@@ -425,8 +425,8 @@ export default function AdminStudioPage() {
                   <div className="flex flex-wrap items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 border-stone-100">
                     {/* WhatsApp Direct Chat */}
                     <a
-                      href={`https://wa.me/880${b.clientPhone.replace(/^0+/, '')}?text=${encodeURIComponent(
-                        `Assalamu Alaikum ${b.clientName}, this is Bee & Beauty Pro Beauty Studio regarding your ${b.serviceType} appointment booking.`
+                      href={`https://wa.me/880${(b.clientPhone || '').replace(/^0+/, '')}?text=${encodeURIComponent(
+                        `Assalamu Alaikum ${b.clientName || 'Client'}, this is Bee & Beauty Pro Beauty Studio regarding your ${b.serviceType} appointment booking.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

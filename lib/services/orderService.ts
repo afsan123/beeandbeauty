@@ -69,7 +69,8 @@ export interface TrackingStep {
 // In-memory fallback cache to ensure zero downtime before Supabase migrations are run
 const fallbackOrdersCache = new Map<string, StoredOrder>();
 
-function normalizePhone(phone: string): string {
+function normalizePhone(phone?: string | null): string {
+  if (!phone) return '';
   return phone.replace(/[\s\-\+]/g, '').replace(/^88/, '');
 }
 
