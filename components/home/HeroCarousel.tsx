@@ -18,7 +18,7 @@ export interface HeroSlide {
   accentColor: string;
 }
 
-const SLIDES: HeroSlide[] = [
+const DEFAULT_SLIDES: HeroSlide[] = [
   {
     id: 'slide-1',
     tagline: 'LUXURY COSMETICS | NEW LAUNCH',
@@ -70,22 +70,60 @@ const SLIDES: HeroSlide[] = [
 ];
 
 export function HeroCarousel() {
+  const [slides, setSlides] = useState<HeroSlide[]>(DEFAULT_SLIDES);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  const nextSlide = useCallback(() => {
-    setCurrentIdx((prev) => (prev + 1) % SLIDES.length);
+  useEffect(() => {
+    let isMounted = true;
+    async function loadRemoteBanners() {
+      try {
+        const res = await fetch('/api/banners');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.banners && data.banners.length > 0 && isMounted) {
+            const mapped: HeroSlide[] = data.banners.map((b: any) => ({
+              id: b.id,
+              tagline: b.tagline || 'BEE & BEAUTY EXCLUSIVE',
+              title: b.title,
+              subtitle: b.subtitle || '',
+              ctaText: b.ctaText,
+              ctaHref: b.ctaHref,
+              secondaryCtaText: b.secondaryCtaText,
+              secondaryCtaHref: b.secondaryCtaHref,
+              bgColor: b.bgColor || 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
+              accentColor: b.accentColor || '#D4AF37',
+            }));
+            setSlides(mapped);
+          }
+        }
+      } catch {
+        // Fallback to DEFAULT_SLIDES
+      }
+    }
+    loadRemoteBanners();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const totalSlides = slides.length;
+
+  const nextSlide = useCallback(() => {
+    if (totalSlides === 0) return;
+    setCurrentIdx((prev) => (prev + 1) % totalSlides);
+  }, [totalSlides]);
 
   const prevSlide = useCallback(() => {
-    setCurrentIdx((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
-  }, []);
+    if (totalSlides === 0) return;
+    setCurrentIdx((prev) => (prev - 1 + totalSlides) % totalSlides);
+  }, [totalSlides]);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || totalSlides <= 1) return;
     const interval = setInterval(nextSlide, 5500);
     return () => clearInterval(interval);
-  }, [nextSlide, isPaused]);
+  }, [nextSlide, isPaused, totalSlides]);
 
   return (
     <div
@@ -95,7 +133,7 @@ export function HeroCarousel() {
     >
       {/* Slides Container */}
       <div className="relative w-full h-full">
-        {SLIDES.map((slide, idx) => {
+        {slides.map((slide, idx) => {
           const isActive = idx === currentIdx;
 
           return (
@@ -153,41 +191,45 @@ export function HeroCarousel() {
       </div>
 
       {/* Prev / Next Arrows */}
-      <button
-        type="button"
-        onClick={prevSlide}
-        aria-label="Previous slide"
-        className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/40 hover:bg-[#6A1B6D] border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs hover:scale-105"
-      >
-        <ChevronLeft size={20} />
-      </button>
-
-      <button
-        type="button"
-        onClick={nextSlide}
-        aria-label="Next slide"
-        className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/40 hover:bg-[#6A1B6D] border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs hover:scale-105"
-      >
-        <ChevronRight size={20} />
-      </button>
-
-      {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-        {SLIDES.map((slide, idx) => (
+      {totalSlides > 1 && (
+        <>
           <button
-            key={slide.id}
             type="button"
-            onClick={() => setCurrentIdx(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
-            className={cn(
-              'h-1.5 transition-all rounded-full cursor-pointer',
-              idx === currentIdx
-                ? 'w-7 bg-[#D4AF37]'
-                : 'w-2 bg-white/40 hover:bg-white/70'
-            )}
-          />
-        ))}
-      </div>
+            onClick={prevSlide}
+            aria-label="Previous slide"
+            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/40 hover:bg-[#6A1B6D] border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs hover:scale-105"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          <button
+            type="button"
+            onClick={nextSlide}
+            aria-label="Next slide"
+            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/40 hover:bg-[#6A1B6D] border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs hover:scale-105"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          {/* Slide Indicators */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+            {slides.map((slide, idx) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setCurrentIdx(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={cn(
+                  'h-1.5 transition-all rounded-full cursor-pointer',
+                  idx === currentIdx
+                    ? 'w-7 bg-[#D4AF37]'
+                    : 'w-2 bg-white/40 hover:bg-white/70'
+                )}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

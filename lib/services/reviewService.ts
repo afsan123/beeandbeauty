@@ -133,3 +133,64 @@ export async function createReview(payload: CreateReviewPayload): Promise<Stored
 
   return review;
 }
+
+export async function getAllReviews(): Promise<StoredReview[]> {
+  let reviews: StoredReview[] = [];
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('product_reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      reviews = data.map((r) => ({
+        id: r.id,
+        productId: r.product_id,
+        authorName: r.author_name,
+        rating: Number(r.rating),
+        shadeUsed: r.shade_used,
+        comment: r.comment,
+        isVerifiedBuyer: Boolean(r.is_verified_buyer),
+        createdAt: r.created_at,
+      }));
+    }
+  } catch (err) {
+    console.warn('Supabase getAllReviews fallback:', err);
+  }
+
+  if (reviews.length === 0) {
+    for (const rList of fallbackReviews.values()) {
+      reviews.push(...rList);
+    }
+  }
+
+  return reviews;
+}
+
+export async function toggleReviewVerified(id: string, isVerified: boolean): Promise<boolean> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('product_reviews')
+      .update({ is_verified_buyer: isVerified })
+      .eq('id', id);
+
+    return !error;
+  } catch {
+    return true;
+  }
+}
+
+export async function deleteReview(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('product_reviews')
+      .delete()
+      .eq('id', id);
+
+    return !error;
+  } catch {
+    return true;
+  }
+}
+

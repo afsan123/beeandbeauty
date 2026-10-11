@@ -1,12 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { CartProvider } from '../store/cart';
-import { WishlistProvider } from '../store/wishlist';
-import { Header } from '../components/layout/Header';
-import { Footer } from '../components/layout/Footer';
-import { CartDrawer } from '../components/cart/CartDrawer';
-import { BackToTop } from '../components/layout/BackToTop';
-import { FloatingWhatsApp } from '../components/ui/FloatingWhatsApp';
+import { CartProvider } from '../store/cart.tsx';
+import { WishlistProvider } from '../store/wishlist.tsx';
+import { StorefrontWrapper } from '../components/layout/StorefrontWrapper.tsx';
+
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -66,12 +63,7 @@ export default function RootLayout({
       >
         <CartProvider>
           <WishlistProvider>
-            <Header />
-            <CartDrawer />
-            <div className="flex-1 w-full">{children}</div>
-            <Footer />
-            <BackToTop />
-            <FloatingWhatsApp />
+            <StorefrontWrapper>{children}</StorefrontWrapper>
           </WishlistProvider>
         </CartProvider>
       </body>

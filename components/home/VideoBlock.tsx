@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Play, Sparkles, X, Check } from 'lucide-react';
+import { Play, Sparkles, Calendar, CheckCircle2 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 
 interface TutorialItem {
@@ -12,11 +12,11 @@ interface TutorialItem {
   duration: string;
   description: string;
   steps: string[];
-  productSlug: string;
-  productName: string;
+  productSlug?: string;
+  productName?: string;
 }
 
-const TUTORIALS: TutorialItem[] = [
+const DEFAULT_TUTORIALS: TutorialItem[] = [
   {
     id: 'tut-1',
     title: 'The 10-Minute Luminous Honey Glow',
@@ -64,26 +64,112 @@ const TUTORIALS: TutorialItem[] = [
 ];
 
 export function VideoBlock() {
+  const [tutorials, setTutorials] = useState<TutorialItem[]>(DEFAULT_TUTORIALS);
   const [activeTutorial, setActiveTutorial] = useState<TutorialItem | null>(null);
+
+  // Booking Modal State
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [serviceType, setServiceType] = useState('Bridal & Festive Makeover');
+  const [preferredDate, setPreferredDate] = useState('');
+  const [preferredTime, setPreferredTime] = useState('Afternoon (2 PM - 5 PM)');
+  const [notes, setNotes] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchTutorials() {
+      try {
+        const res = await fetch('/api/admin/studio/tutorials');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tutorials && data.tutorials.length > 0 && isMounted) {
+            setTutorials(data.tutorials);
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    fetchTutorials();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clientName.trim() || !clientPhone.trim() || !preferredDate) {
+      setBookingError('Name, phone number, and preferred date are required.');
+      return;
+    }
+
+    setBookingSubmitting(true);
+    setBookingError('');
+
+    try {
+      const res = await fetch('/api/studio/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName: clientName.trim(),
+          clientPhone: clientPhone.trim(),
+          clientEmail: clientEmail.trim() || undefined,
+          serviceType,
+          preferredDate,
+          preferredTime,
+          notes: notes.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit booking');
+
+      setBookingSuccess(true);
+    } catch (err: any) {
+      setBookingError(err.message || 'Error submitting booking.');
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
 
   return (
     <section className="py-12 md:py-18 bg-[#3D0A3F] text-white font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37] block mb-2">
-            Pro Beauty Studio
-          </span>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-[0.14em] font-serif text-white">
-            Master The Signature Looks
-          </h2>
-          <p className="text-xs sm:text-sm text-[#FCE4EC]/80 mt-2 font-light">
-            Step-by-step masterclasses curated by our resident South Asian beauty artists.
-          </p>
+        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+          <div className="text-center md:text-left max-w-2xl">
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37] block mb-2">
+              Pro Beauty Studio
+            </span>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-[0.14em] font-serif text-white">
+              Master The Signature Looks
+            </h2>
+            <p className="text-xs sm:text-sm text-[#FCE4EC]/80 mt-2 font-light">
+              Step-by-step masterclasses curated by our resident South Asian beauty artists.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBookingSuccess(false);
+              setBookingError('');
+              setIsBookingOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-[2px] bg-[#D4AF37] hover:bg-[#B8942A] text-[#2C2C2C] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] shadow-md transition-all transform hover:-translate-y-0.5 cursor-pointer"
+          >
+            <Calendar size={14} />
+            <span>Book Studio Makeover</span>
+          </button>
         </div>
 
-        {/* 3 Tutorial Cards Grid */}
+        {/* Tutorial Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TUTORIALS.map((tut) => (
+          {tutorials.slice(0, 3).map((tut) => (
             <div
               key={tut.id}
               className="bg-[#2D072F] border border-white/10 hover:border-[#D4AF37]/60 rounded-[2px] p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 group"
@@ -119,12 +205,14 @@ export function VideoBlock() {
                   <span>View Routine</span>
                 </button>
 
-                <Link
-                  href={`/product/${tut.productSlug}`}
-                  className="text-[11px] text-[#FCE4EC]/70 hover:text-white underline underline-offset-2"
-                >
-                  Shop Product
-                </Link>
+                {tut.productSlug && (
+                  <Link
+                    href={`/product/${tut.productSlug}`}
+                    className="text-[11px] text-[#FCE4EC]/70 hover:text-white underline underline-offset-2"
+                  >
+                    Shop Product
+                  </Link>
+                )}
               </div>
             </div>
           ))}
@@ -169,19 +257,165 @@ export function VideoBlock() {
               </ol>
             </div>
 
-            <div className="pt-4 border-t border-[#F0E6DD] flex items-center justify-between gap-3">
-              <span className="text-xs font-semibold text-neutral-600 truncate">
-                Featured: {activeTutorial.productName}
-              </span>
-              <Link
-                href={`/product/${activeTutorial.productSlug}`}
-                onClick={() => setActiveTutorial(null)}
-                className="bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-[2px] shrink-0 transition-colors"
-              >
-                Shop Now
-              </Link>
-            </div>
+            {activeTutorial.productSlug && (
+              <div className="pt-4 border-t border-[#F0E6DD] flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-neutral-600 truncate">
+                  Featured: {activeTutorial.productName || 'Signature Product'}
+                </span>
+                <Link
+                  href={`/product/${activeTutorial.productSlug}`}
+                  onClick={() => setActiveTutorial(null)}
+                  className="bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-[2px] shrink-0 transition-colors"
+                >
+                  Shop Now
+                </Link>
+              </div>
+            )}
           </div>
+        </Modal>
+      )}
+
+      {/* Book Studio Makeover Modal */}
+      {isBookingOpen && (
+        <Modal
+          isOpen={isBookingOpen}
+          onClose={() => setIsBookingOpen(false)}
+          title="Book Pro Studio Makeover & Consultation"
+          className="max-w-md"
+        >
+          {bookingSuccess ? (
+            <div className="text-center py-6 space-y-3 font-sans text-stone-800">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
+                <CheckCircle2 size={28} />
+              </div>
+              <h3 className="text-base font-bold font-serif text-stone-900">
+                Appointment Request Confirmed!
+              </h3>
+              <p className="text-xs text-stone-600 leading-relaxed max-w-sm mx-auto">
+                Thank you, {clientName}. Our studio concierge will contact you via WhatsApp / phone ({clientPhone}) to finalize your slot time.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsBookingOpen(false)}
+                className="mt-4 rounded-xl bg-[var(--bb-plum)] text-white px-5 py-2 text-xs font-semibold hover:bg-[#831843] transition-colors"
+              >
+                Close Window
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleBookingSubmit} className="space-y-3.5 text-xs font-sans text-stone-800">
+              {bookingError && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700 font-semibold">
+                  ⚠ {bookingError}
+                </div>
+              )}
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Your Full Name *</label>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="e.g. Nusrat Jahan"
+                  required
+                  className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">WhatsApp / Phone *</label>
+                  <input
+                    type="tel"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    placeholder="017XXXXXXXX"
+                    required
+                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Email (Optional)</label>
+                  <input
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Service Type *</label>
+                <select
+                  value={serviceType}
+                  onChange={(e) => setServiceType(e.target.value)}
+                  className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none font-medium"
+                >
+                  <option value="Bridal & Festive Makeover">Bridal & Festive Makeover</option>
+                  <option value="Skin Analysis & Shade Matching">Skin Analysis & Foundation Match</option>
+                  <option value="Editorial Glam & Evening Look">Editorial Glam & Evening Look</option>
+                  <option value="Personal 1-on-1 Beauty Masterclass">Personal 1-on-1 Beauty Masterclass</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Preferred Date *</label>
+                  <input
+                    type="date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    required
+                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Preferred Time Window</label>
+                  <select
+                    value={preferredTime}
+                    onChange={(e) => setPreferredTime(e.target.value)}
+                    className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none font-medium"
+                  >
+                    <option value="Morning (10 AM - 1 PM)">Morning (10 AM - 1 PM)</option>
+                    <option value="Afternoon (2 PM - 5 PM)">Afternoon (2 PM - 5 PM)</option>
+                    <option value="Evening (5 PM - 8 PM)">Evening (5 PM - 8 PM)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Special Notes / Undertone Info</label>
+                <textarea
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="e.g. Looking for warm olive match, event on Friday..."
+                  className="w-full rounded-xl border border-stone-200 p-2.5 text-xs focus:border-[var(--bb-plum)] outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setIsBookingOpen(false)}
+                  className="rounded-xl border border-stone-200 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={bookingSubmitting}
+                  className="rounded-xl bg-[var(--bb-plum)] hover:bg-[#831843] text-white px-5 py-2 text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                >
+                  {bookingSubmitting ? 'Submitting...' : 'Request Appointment'}
+                </button>
+              </div>
+            </form>
+          )}
         </Modal>
       )}
     </section>

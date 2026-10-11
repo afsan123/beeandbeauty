@@ -36,3 +36,37 @@ export async function subscribeNewsletter(email: string): Promise<NewsletterSubs
     message: 'Welcome to the Bee & Beauty inner circle! Check your inbox for exclusive beauty drops.',
   };
 }
+
+export interface StoredSubscriber {
+  id?: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export async function getAllSubscribers(): Promise<StoredSubscriber[]> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      return data.map((d) => ({
+        id: d.id,
+        email: d.email,
+        isActive: Boolean(d.is_active),
+        createdAt: d.created_at,
+      }));
+    }
+  } catch (err) {
+    console.warn('Supabase getAllSubscribers fallback:', err);
+  }
+
+  return Array.from(fallbackSubscribers).map((email) => ({
+    email,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  }));
+}
+

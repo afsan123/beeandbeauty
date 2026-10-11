@@ -1,13 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Tag, Copy, Check, Gift, Truck, Percent } from 'lucide-react';
 import { OFFERS } from '../../data/mock/catalogData';
 import { Accordion } from '../../components/ui/Accordion';
+import type { Offer } from '../../data/types';
 
 export default function OffersPage() {
+  const [offers, setOffers] = useState<Offer[]>(OFFERS);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadOffers() {
+      try {
+        const res = await fetch('/api/offers');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.offers && data.offers.length > 0 && isMounted) {
+            setOffers(data.offers);
+          }
+        }
+      } catch {
+        // Fallback to initial OFFERS
+      }
+    }
+    loadOffers();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -30,7 +53,7 @@ export default function OffersPage() {
       title: 'Free Shipping Threshold Terms',
       content: (
         <p className="text-xs text-neutral-600 leading-relaxed font-sans">
-          All orders with a final merchandise subtotal of ৳1,499 or more automatically receive free tracked delivery across all 64 districts in Bangladesh (Inside Dhaka 24h &bull; Outside Dhaka 48h). No coupon code required.
+          All orders with a final merchandise subtotal of ৳2,500 or more automatically receive free tracked delivery across all 64 districts in Bangladesh (Inside Dhaka 24h &bull; Outside Dhaka 48h via Steadfast / Pathao). Regular delivery is ৳70 inside Dhaka and ৳130 outside Dhaka. No coupon code required.
         </p>
       ),
     },
@@ -39,7 +62,7 @@ export default function OffersPage() {
       title: 'Stacking & Combining Offers',
       content: (
         <p className="text-xs text-neutral-600 leading-relaxed font-sans">
-          Only one promotional code may be applied per transaction. In addition, orders eligible for free shipping will retain free shipping even after coupon discounts are subtracted.
+          Only one promotional voucher may be applied per transaction. In addition, orders eligible for free shipping (subtotal &ge; ৳2,500) retain free shipping even after coupon discounts are subtracted.
         </p>
       ),
     },
@@ -71,7 +94,7 @@ export default function OffersPage() {
 
       {/* Offers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-        {OFFERS.map((offer) => {
+        {offers.map((offer) => {
           const isCopied = copiedCode === offer.code;
 
           return (
@@ -148,7 +171,7 @@ export default function OffersPage() {
               Fast Nationwide Delivery
             </h3>
             <p className="text-[11px] text-[#666666] mt-0.5">
-              Inside Dhaka 24h &bull; Outside Dhaka 48h. Free over ৳1,499.
+              Inside Dhaka 24h (৳70) &bull; Outside Dhaka 48h (৳130). Free over ৳2,500.
             </p>
           </div>
         </div>

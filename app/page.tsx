@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { catalogRepository } from '../data/mock/mockRepository';
 import { HeroCarousel } from '../components/home/HeroCarousel';
 import { CategoryTiles } from '../components/home/CategoryTiles';
@@ -7,7 +7,9 @@ import { OfferBanner } from '../components/home/OfferBanner';
 import { FounderNote } from '../components/home/FounderNote';
 import { VideoBlock } from '../components/home/VideoBlock';
 
-export default async function HomePage() {
+export const instant = false;
+
+async function HomePageContent() {
   const [categories, bestsellers, newLaunches, skincare, under499] = await Promise.all([
     catalogRepository.getCategories(),
     catalogRepository.getFeaturedProducts('bestseller'),
@@ -17,10 +19,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main className="w-full">
-      {/* 1. Hero Carousel */}
-      <HeroCarousel />
-
+    <>
       {/* 2. Category Navigation Tiles */}
       <CategoryTiles categories={categories} />
 
@@ -67,7 +66,7 @@ export default async function HomePage() {
       {/* 7. Signature Masterclass Video Tutorials */}
       <VideoBlock />
 
-      {/* 7. Under ৳499 Value Rail */}
+      {/* 8. Under ৳499 Value Rail */}
       <ProductRail
         title="Under ৳499 Essentials"
         subtitle="High-impact beauty that fits everyday vanity routines without compromise."
@@ -77,8 +76,34 @@ export default async function HomePage() {
         limit={4}
       />
 
-      {/* 8. Founder's Note & Clean Formulation Ethos */}
+      {/* 9. Founder's Note & Clean Formulation Ethos */}
       <FounderNote />
+    </>
+  );
+}
+
+function HomePageSkeleton() {
+  return (
+    <div className="max-w-[1360px] mx-auto px-4 md:px-8 py-10 space-y-12 animate-pulse">
+      <div className="h-28 bg-[#F0E6DD]/60 rounded-xl" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="aspect-square bg-[#F0E6DD]/40 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <main className="w-full">
+      {/* 1. Hero Carousel */}
+      <HeroCarousel />
+
+      <Suspense fallback={<HomePageSkeleton />}>
+        <HomePageContent />
+      </Suspense>
     </main>
   );
 }

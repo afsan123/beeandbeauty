@@ -69,3 +69,93 @@ export async function createInquiry(payload: CreateInquiryPayload): Promise<Stor
 
   return stored;
 }
+
+export async function getAllInquiries(statusFilter?: string): Promise<StoredInquiry[]> {
+  let inquiries: StoredInquiry[] = [];
+
+  try {
+    let query = supabaseAdmin
+      .from('contact_inquiries')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (statusFilter && statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data, error } = await query;
+    if (!error && data && data.length > 0) {
+      inquiries = data.map((d) => ({
+        id: d.id,
+        ticketNumber: d.ticket_number,
+        fullName: d.full_name,
+        email: d.email,
+        phone: d.phone,
+        subject: d.subject,
+        message: d.message,
+        status: d.status,
+        createdAt: d.created_at,
+      }));
+    }
+  } catch (err) {
+    console.warn('Supabase getAllInquiries fallback:', err);
+  }
+
+  if (inquiries.length === 0 && fallbackInquiries.size > 0) {
+    inquiries = Array.from(fallbackInquiries.values());
+    if (statusFilter && statusFilter !== 'all') {
+      inquiries = inquiries.filter((i) => i.status === statusFilter);
+    }
+  }
+
+  return inquiries;
+}
+
+export async function updateInquiryStatus(
+  idOrTicket: string,
+  status: 'new' | 'in_progress' | 'resolved'
+): Promise<StoredInquiry | null> {
+  const clean = idOrTicket.trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+  let matched: StoredInquiry | null = null;
+
+  try {
+    let query = supabaseAdmin.from('contact_inquiries').update({ status });
+    if (isUuid) {
+      query = query.or(`id.eq.${clean},ticket_number.eq.${clean}`);
+    } else {
+      query = query.eq('ticket_number', clean);
+    }
+
+    const { data, error } = await query.select().maybeSingle();
+
+
+    if (!error && data) {
+      matched = {
+        id: data.id,
+        ticketNumber: data.ticket_number,
+        fullName: data.full_name,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+        status: data.status,
+        createdAt: data.created_at,
+      };
+    }
+  } catch (err) {
+    console.warn('Supabase updateInquiryStatus fallback:', err);
+  }
+
+  // Fallback cache update
+  for (const item of fallbackInquiries.values()) {
+    if (item.id === idOrTicket || item.ticketNumber === idOrTicket) {
+      item.status = status;
+      matched = item;
+      break;
+    }
+  }
+
+  return matched;
+}
+

@@ -239,16 +239,23 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
 }
 
 export async function getOrderById(id: string): Promise<StoredOrder | null> {
+  const cleanId = id.trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+
   // Check Supabase first
   try {
-    const { data: orderData, error } = await supabaseAdmin
-      .from('orders')
-      .select('*')
-      .or(`id.eq.${id},order_number.eq.${id}`)
-      .maybeSingle();
+    let query = supabaseAdmin.from('orders').select('*');
+    if (isUuid) {
+      query = query.or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
+    } else {
+      query = query.eq('order_number', cleanId);
+    }
+
+    const { data: orderData, error } = await query.maybeSingle();
 
     if (!error && orderData) {
       const { data: itemsData } = await supabaseAdmin
+
         .from('order_items')
         .select('*')
         .eq('order_id', orderData.id);
@@ -355,3 +362,246 @@ export async function trackOrderByPhone(
 
   return { order, timeline };
 }
+
+export interface OrderFilters {
+  status?: string;
+  paymentStatus?: string;
+  search?: string;
+  zone?: string;
+}
+
+export async function getAllOrders(filters?: OrderFilters): Promise<StoredOrder[]> {
+  let orders: StoredOrder[] = [];
+
+  try {
+    let query = supabaseAdmin
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (filters?.status && filters.status !== 'all') {
+      query = query.eq('order_status', filters.status);
+    }
+    if (filters?.paymentStatus && filters.paymentStatus !== 'all') {
+      query = query.eq('payment_status', filters.paymentStatus);
+    }
+    if (filters?.zone && filters.zone !== 'all') {
+      query = query.eq('delivery_zone', filters.zone);
+    }
+
+    const { data: ordersData, error } = await query;
+
+    if (!error && ordersData && ordersData.length > 0) {
+      const orderIds = ordersData.map((o) => o.id);
+      const { data: allItemsData } = await supabaseAdmin
+        .from('order_items')
+        .select('*')
+        .in('order_id', orderIds);
+
+      const itemsByOrderId = new Map<string, StoredOrderItem[]>();
+      (allItemsData || []).forEach((it) => {
+        const list = itemsByOrderId.get(it.order_id) || [];
+        list.push({
+          id: it.id,
+          productId: it.product_id,
+          productTitle: it.product_title,
+          shadeName: it.shade_name,
+          shadeCode: it.shade_code,
+          unitPrice: Number(it.unit_price),
+          quantity: Number(it.quantity),
+          lineTotal: Number(it.line_total),
+        });
+        itemsByOrderId.set(it.order_id, list);
+      });
+
+      orders = ordersData.map((orderData) => ({
+        id: orderData.id,
+        orderNumber: orderData.order_number,
+        customerName: orderData.customer_name,
+        customerEmail: orderData.customer_email,
+        customerPhone: orderData.customer_phone,
+        streetAddress: orderData.street_address,
+        district: orderData.district,
+        postalCode: orderData.postal_code,
+        deliveryZone: orderData.delivery_zone,
+        subtotal: Number(orderData.subtotal),
+        discountAmount: Number(orderData.discount_amount || 0),
+        shippingFee: Number(orderData.shipping_fee),
+        totalAmount: Number(orderData.total_amount),
+        couponCode: orderData.coupon_code,
+        paymentMethod: orderData.payment_method,
+        paymentStatus: orderData.payment_status,
+        orderStatus: orderData.order_status,
+        targetDelivery: orderData.target_delivery,
+        courierTrackingCode: orderData.courier_tracking_code,
+        notes: orderData.notes,
+        createdAt: orderData.created_at,
+        items: itemsByOrderId.get(orderData.id) || [],
+      }));
+    }
+  } catch (err) {
+    console.warn('Supabase getAllOrders fallback triggered:', err);
+  }
+
+  // Backfill / fallback with in-memory cache if needed
+  if (orders.length === 0 && fallbackOrdersCache.size > 0) {
+    orders = Array.from(new Set(fallbackOrdersCache.values()));
+  }
+
+  // Client-side / fallback search filtering
+  if (filters?.search?.trim()) {
+    const q = filters.search.trim().toLowerCase();
+    orders = orders.filter(
+      (o) =>
+        o.orderNumber.toLowerCase().includes(q) ||
+        o.customerName.toLowerCase().includes(q) ||
+        o.customerPhone.includes(q) ||
+        o.customerEmail.toLowerCase().includes(q)
+    );
+  }
+
+  return orders;
+}
+
+export async function updateOrderStatus(
+  orderIdOrNumber: string,
+  newStatus: StoredOrder['orderStatus'],
+  courierTrackingCode?: string
+): Promise<StoredOrder | null> {
+  const existing = await getOrderById(orderIdOrNumber);
+  if (!existing) return null;
+
+  const updatePayload: Record<string, any> = {
+    order_status: newStatus,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (courierTrackingCode !== undefined) {
+    updatePayload.courier_tracking_code = courierTrackingCode.trim();
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .update(updatePayload)
+      .eq('id', existing.id)
+      .select()
+      .maybeSingle();
+
+    if (!error && data) {
+      existing.orderStatus = data.order_status;
+      if (data.courier_tracking_code) {
+        existing.courierTrackingCode = data.courier_tracking_code;
+      }
+    }
+  } catch (err) {
+    console.warn('Supabase updateOrderStatus fallback:', err);
+  }
+
+  // Update in cache
+  existing.orderStatus = newStatus;
+  if (courierTrackingCode !== undefined) {
+    existing.courierTrackingCode = courierTrackingCode.trim();
+  }
+  fallbackOrdersCache.set(existing.id, existing);
+  fallbackOrdersCache.set(existing.orderNumber, existing);
+
+  return existing;
+}
+
+export async function updatePaymentStatus(
+  orderIdOrNumber: string,
+  newPaymentStatus: StoredOrder['paymentStatus']
+): Promise<StoredOrder | null> {
+  const existing = await getOrderById(orderIdOrNumber);
+  if (!existing) return null;
+
+  try {
+    await supabaseAdmin
+      .from('orders')
+      .update({
+        payment_status: newPaymentStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id);
+  } catch (err) {
+    console.warn('Supabase updatePaymentStatus fallback:', err);
+  }
+
+  existing.paymentStatus = newPaymentStatus;
+  fallbackOrdersCache.set(existing.id, existing);
+  fallbackOrdersCache.set(existing.orderNumber, existing);
+
+  return existing;
+}
+
+export interface OrderMetrics {
+  totalRevenue: number;
+  totalOrders: number;
+  pendingCount: number;
+  processingCount: number;
+  shippedCount: number;
+  deliveredCount: number;
+  cancelledCount: number;
+  aov: number;
+  paymentBreakdown: {
+    cod: number;
+    bkash: number;
+    nagad: number;
+  };
+  zoneBreakdown: {
+    dhaka: number;
+    outside: number;
+  };
+}
+
+export async function getOrderMetrics(): Promise<OrderMetrics> {
+  const allOrders = await getAllOrders();
+
+  let totalRevenue = 0;
+  let pendingCount = 0;
+  let processingCount = 0;
+  let shippedCount = 0;
+  let deliveredCount = 0;
+  let cancelledCount = 0;
+
+  const paymentBreakdown = { cod: 0, bkash: 0, nagad: 0 };
+  const zoneBreakdown = { dhaka: 0, outside: 0 };
+
+  allOrders.forEach((o) => {
+    // Only count non-cancelled orders towards revenue
+    if (o.orderStatus !== 'cancelled') {
+      totalRevenue += o.totalAmount;
+    }
+
+    if (o.orderStatus === 'pending' || o.orderStatus === 'confirmed') pendingCount++;
+    else if (o.orderStatus === 'processing') processingCount++;
+    else if (o.orderStatus === 'shipped') shippedCount++;
+    else if (o.orderStatus === 'delivered') deliveredCount++;
+    else if (o.orderStatus === 'cancelled') cancelledCount++;
+
+    if (o.paymentMethod === 'cod') paymentBreakdown.cod++;
+    else if (o.paymentMethod === 'bkash') paymentBreakdown.bkash++;
+    else if (o.paymentMethod === 'nagad') paymentBreakdown.nagad++;
+
+    if (o.deliveryZone === 'dhaka') zoneBreakdown.dhaka++;
+    else zoneBreakdown.outside++;
+  });
+
+  const validOrdersCount = allOrders.length - cancelledCount;
+  const aov = validOrdersCount > 0 ? Math.round(totalRevenue / validOrdersCount) : 0;
+
+  return {
+    totalRevenue,
+    totalOrders: allOrders.length,
+    pendingCount,
+    processingCount,
+    shippedCount,
+    deliveredCount,
+    cancelledCount,
+    aov,
+    paymentBreakdown,
+    zoneBreakdown,
+  };
+}
+
