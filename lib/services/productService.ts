@@ -77,7 +77,11 @@ export async function getAllCatalogProducts(forceRefresh = false): Promise<Produ
     await fetchRemoteInventoryOverrides();
   }
 
-  const base = remoteProducts.length > 0 ? remoteProducts : PRODUCTS;
+  // The bundled mock catalog (used only when Supabase is unreachable or not
+  // configured) carries made-up ratings; never show them as real reviews.
+  const base = remoteProducts.length > 0
+    ? remoteProducts
+    : PRODUCTS.map((p) => ({ ...p, rating: 0, reviewCount: 0 }));
   const combinedMap = new Map<string, Product>();
   base.forEach((p) => combinedMap.set(p.id, p));
   localProductOverrides.forEach((p) => combinedMap.set(p.id, p));
