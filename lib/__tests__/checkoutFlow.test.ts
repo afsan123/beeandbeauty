@@ -6,7 +6,7 @@ import {
   calculateSubtotal,
 } from '../cart.ts';
 import type { CartItem } from '../../data/types.ts';
-import { createOrder } from '../services/orderService.ts';
+import { createOrder, clearTestOrders } from '../services/orderService.ts';
 
 describe('Checkout Flow Reload & State Reset Engine', () => {
   it('clears cart and verifies empty state after order confirmation', async () => {
@@ -110,6 +110,9 @@ describe('Checkout Flow Reload & State Reset Engine', () => {
     assert.equal(secondOrder.customerName, 'Customer Two (Different Recipient)');
     assert.equal(secondOrder.district, 'Chittagong');
     assert.equal(secondOrder.shippingFee, 130, 'Correct outside Dhaka shipping fee applied');
+
+    // Clean up test orders to keep production database clean
+    await clearTestOrders();
   });
 
   it('allows manual trigger of resetCheckoutFlow from confirmation actions', () => {

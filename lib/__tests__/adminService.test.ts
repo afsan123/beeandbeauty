@@ -13,6 +13,7 @@ import {
   updateOrderStatus,
   updatePaymentStatus,
   getOrderMetrics,
+  clearTestOrders,
 } from '../services/orderService.ts';
 import {
   getAllCoupons,
@@ -103,6 +104,9 @@ describe('Executive Order Management & Metrics Service', () => {
     assert.ok(metrics.shippedCount >= 1);
     assert.ok(typeof metrics.aov === 'number');
     assert.ok(metrics.zoneBreakdown.dhaka >= 1);
+
+    // Clean up test order to keep database clean
+    await clearTestOrders();
   });
 });
 

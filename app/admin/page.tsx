@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation.js';
 import { AdminHeader } from '../../components/admin/AdminHeader.tsx';
 import { KPICard } from '../../components/admin/KPICard.tsx';
-import { LaunchPreparationCard } from '../../components/admin/LaunchPreparationCard.tsx';
 import { ExecutiveActionHub } from '../../components/admin/ExecutiveActionHub.tsx';
 import { ExecutiveSalesAnalytics } from '../../components/admin/ExecutiveSalesAnalytics.tsx';
 import { ExecutiveMerchandisingAnalytics } from '../../components/admin/ExecutiveMerchandisingAnalytics.tsx';
@@ -256,9 +255,6 @@ export default function AdminDashboardPage() {
         </div>
       ) : data ? (
         <>
-          {/* Pre-Launch Verification & Operations Center */}
-          <LaunchPreparationCard onRefreshParent={fetchDashboardData} />
-
           {/* Top 4 Hero Financial & Operational KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <KPICard

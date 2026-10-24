@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { createOrder, getOrderById, trackOrderByPhone } from '../services/orderService.ts';
+import { createOrder, getOrderById, trackOrderByPhone, clearTestOrders } from '../services/orderService.ts';
 
 describe('Order Service & Server-Side Security', () => {
   it('creates an order, recalculates prices from catalog, and enforces canonical totals', async () => {
@@ -82,5 +82,8 @@ describe('Order Service & Server-Side Security', () => {
     // Reject tracking with wrong phone
     const wrongPhone = await trackOrderByPhone(newOrder.orderNumber, '01700000000');
     assert.strictEqual(wrongPhone, null);
+
+    // Clean up test orders to keep production database clean
+    await clearTestOrders();
   });
 });
