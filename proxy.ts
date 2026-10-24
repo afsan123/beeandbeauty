@@ -7,6 +7,7 @@ import {
 import { applySecurityHeaders } from './lib/security/headers.ts';
 import { refreshCustomerSession } from './lib/supabase/proxySession.ts';
 import { csrfFailureResponse, isSameOriginRequest } from './lib/security/csrf.ts';
+import { catalogPathExists, matchCatalogPath } from './lib/catalogPathGuard.ts';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -54,6 +55,14 @@ export async function proxy(request: NextRequest) {
     }
 
     return applySecurityHeaders(NextResponse.next());
+  }
+
+  // Real 404 status for unknown products/categories. The page streams its
+  // shell first, so notFound() inside it can only send a 200 + noindex.
+  const catalogPath = matchCatalogPath(pathname);
+  if (catalogPath && !(await catalogPathExists(catalogPath.kind, catalogPath.slug))) {
+    // Rewriting to an unmatched path renders app/not-found.tsx with a 404.
+    return applySecurityHeaders(NextResponse.rewrite(new URL('/__not-found', request.url)));
   }
 
   const customerResponse = await refreshCustomerSession(request);
