@@ -10,7 +10,7 @@ import { CartLineItem } from './CartLineItem';
 import { CartUpsell } from './CartUpsell';
 import { formatPrice } from '../../lib/formatters';
 import { applyCoupon } from '../../lib/cart';
-import { catalogRepository } from '../../data/mock/mockRepository';
+import { fetchPublicProducts } from '../../lib/catalog/publicApi';
 import { Product } from '../../data/types';
 
 export function CartDrawer() {
@@ -36,7 +36,7 @@ export function CartDrawer() {
 
   useEffect(() => {
     let isMounted = true;
-    catalogRepository.getFeaturedProducts('under499').then((prods) => {
+    fetchPublicProducts({ category: 'under499' }).then((prods) => {
       if (isMounted) {
         setUpsellProducts(prods);
       }

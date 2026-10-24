@@ -1,7 +1,12 @@
-import { supabaseAdmin } from '../supabase/admin.ts';
-import { catalogRepository } from '../../data/mock/mockRepository.ts';
+import { isSupabaseAdminReady, supabaseAdmin } from '../supabase/admin.ts';
+import { ServiceError } from './serviceError.ts';
+import { notifyAdminOrderCreated } from './adminOrderSignal.ts';
+import { generateOrderNumber, randomToken, timingSafeEqualString } from '../security/crypto.ts';
+import { normalizeBdPhone, phonesMatch } from '../security/phone.ts';
+import { getAllCatalogProducts } from './productService.ts';
 import { calculateShipping } from './shippingService.ts';
 import { validateCoupon } from './couponService.ts';
+import { provisionCustomerForOrder } from './customerAccount.ts';
 
 export interface OrderItemInput {
   productId: string;
@@ -57,6 +62,13 @@ export interface StoredOrder {
   notes?: string;
   createdAt: string;
   items: StoredOrderItem[];
+  customerId?: string;
+  accessToken?: string;
+  account?: {
+    created: boolean;
+    emailSent: boolean;
+    channel: 'resend' | 'supabase' | 'none';
+  };
 }
 
 export interface TrackingStep {
@@ -66,13 +78,126 @@ export interface TrackingStep {
   status: 'completed' | 'current' | 'upcoming';
 }
 
-// In-memory fallback cache to ensure zero downtime before Supabase migrations are run
+// Local-only order store, used ONLY when Supabase is not configured (unit tests
+// and local dev without env). When Supabase is configured the database is the
+// single source of truth and write failures are surfaced to the caller.
 const fallbackOrdersCache = new Map<string, StoredOrder>();
 
-function normalizePhone(phone?: string | null): string {
-  if (!phone) return '';
-  return phone.replace(/[\s\-\+]/g, '').replace(/^88/, '');
+function useLocalOrderStore(): boolean {
+  return !isSupabaseAdminReady();
 }
+
+function mapOrderItemRow(it: Record<string, any>): StoredOrderItem {
+  return {
+    id: it.id,
+    productId: it.product_id,
+    productTitle: it.product_title,
+    shadeName: it.shade_name ?? undefined,
+    shadeCode: it.shade_code ?? undefined,
+    unitPrice: Number(it.unit_price),
+    quantity: Number(it.quantity),
+    lineTotal: Number(it.line_total),
+  };
+}
+
+function mapOrderRow(orderData: Record<string, any>, items: StoredOrderItem[]): StoredOrder {
+  return {
+    id: orderData.id,
+    orderNumber: orderData.order_number,
+    customerName: orderData.customer_name,
+    customerEmail: orderData.customer_email,
+    customerPhone: orderData.customer_phone,
+    streetAddress: orderData.street_address,
+    district: orderData.district,
+    postalCode: orderData.postal_code ?? undefined,
+    deliveryZone: orderData.delivery_zone,
+    subtotal: Number(orderData.subtotal),
+    discountAmount: Number(orderData.discount_amount || 0),
+    shippingFee: Number(orderData.shipping_fee),
+    totalAmount: Number(orderData.total_amount),
+    couponCode: orderData.coupon_code ?? undefined,
+    paymentMethod: orderData.payment_method,
+    paymentStatus: orderData.payment_status,
+    orderStatus: orderData.order_status,
+    targetDelivery: orderData.target_delivery,
+    courierTrackingCode: orderData.courier_tracking_code ?? undefined,
+    notes: orderData.notes ?? undefined,
+    createdAt: orderData.created_at,
+    items,
+    customerId: orderData.customer_id || undefined,
+    accessToken: orderData.access_token || undefined,
+  };
+}
+
+/**
+ * Persist the order and its line items. If the items insert fails the order
+ * row is removed again so we never keep a half-written order.
+ */
+async function persistOrder(order: StoredOrder): Promise<void> {
+  const { error: orderError } = await supabaseAdmin.from('orders').insert({
+    id: order.id,
+    order_number: order.orderNumber,
+    customer_name: order.customerName,
+    customer_email: order.customerEmail,
+    customer_phone: order.customerPhone,
+    street_address: order.streetAddress,
+    district: order.district,
+    postal_code: order.postalCode,
+    delivery_zone: order.deliveryZone,
+    subtotal: order.subtotal,
+    discount_amount: order.discountAmount,
+    shipping_fee: order.shippingFee,
+    total_amount: order.totalAmount,
+    coupon_code: order.couponCode,
+    payment_method: order.paymentMethod,
+    payment_status: order.paymentStatus,
+    order_status: order.orderStatus,
+    target_delivery: order.targetDelivery,
+    courier_tracking_code: order.courierTrackingCode,
+    notes: order.notes,
+    access_token: order.accessToken,
+    created_at: order.createdAt,
+  });
+
+  if (orderError) {
+    console.error('[orders] Order insert failed:', orderError.code, orderError.message);
+    throw new ServiceError(
+      'We could not place your order right now. Nothing was charged — please try again in a moment.',
+      503,
+      orderError.code
+    );
+  }
+
+  const { error: itemsError } = await supabaseAdmin.from('order_items').insert(
+    order.items.map((item) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      product_title: item.productTitle,
+      shade_name: item.shadeName,
+      shade_code: item.shadeCode,
+      unit_price: item.unitPrice,
+      quantity: item.quantity,
+      line_total: item.lineTotal,
+    }))
+  );
+
+  if (itemsError) {
+    console.error('[orders] Order items insert failed:', itemsError.code, itemsError.message);
+    const { error: rollbackError } = await supabaseAdmin.from('orders').delete().eq('id', order.id);
+    if (rollbackError) {
+      console.error('[orders] Rollback of partial order failed:', order.id, rollbackError.message);
+    }
+    throw new ServiceError(
+      itemsError.code === '23503'
+        ? 'One of the products in your cart is no longer available. Please refresh your cart and try again.'
+        : 'We could not place your order right now. Nothing was charged — please try again in a moment.',
+      itemsError.code === '23503' ? 409 : 503,
+      itemsError.code
+    );
+  }
+}
+
+export { normalizeBdPhone as normalizePhone };
 
 export async function createOrder(payload: CreateOrderPayload): Promise<StoredOrder> {
   // 1. Validate required customer details
@@ -95,8 +220,7 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
     throw new Error('Cart must contain at least one product.');
   }
 
-  // 2. Fetch canonical products and recalculate prices on server side
-  const allProducts = await catalogRepository.getProducts();
+  const allProducts = await getAllCatalogProducts(true);
   const productsMap = new Map(allProducts.map((p) => [p.id, p]));
 
   const orderItems: StoredOrderItem[] = [];
@@ -157,9 +281,9 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
 
   const totalAmount = Math.max(0, calculatedSubtotal - discountAmount + shippingFee);
 
-  // 5. Generate unique Human-Readable Order Number
-  const orderNumber = `BB-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+  const orderNumber = generateOrderNumber();
   const orderId = crypto.randomUUID();
+  const accessToken = randomToken(24);
   const now = new Date().toISOString();
 
   const storedOrder: StoredOrder = {
@@ -185,123 +309,100 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
     notes: payload.notes?.trim(),
     createdAt: now,
     items: orderItems,
+    accessToken,
+    account: { created: false, emailSent: false, channel: 'none' },
   };
 
-  // Always save to fallback cache
-  fallbackOrdersCache.set(storedOrder.orderNumber, storedOrder);
-  fallbackOrdersCache.set(storedOrder.id, storedOrder);
+  if (useLocalOrderStore()) {
+    fallbackOrdersCache.set(storedOrder.orderNumber, storedOrder);
+    fallbackOrdersCache.set(storedOrder.id, storedOrder);
+  } else {
+    // Throws a real error if the database write fails — no silent data loss.
+    await persistOrder(storedOrder);
+    // PII-free ping so open admin dashboards refresh immediately.
+    await notifyAdminOrderCreated();
+  }
 
-  // 6. Attempt atomic insert into Supabase PostgreSQL
+  // The order is saved at this point. Account creation / email is best effort
+  // and must never fail an otherwise-saved order.
   try {
-    const { error: orderError } = await supabaseAdmin.from('orders').insert({
-      id: storedOrder.id,
-      order_number: storedOrder.orderNumber,
-      customer_name: storedOrder.customerName,
-      customer_email: storedOrder.customerEmail,
-      customer_phone: storedOrder.customerPhone,
-      street_address: storedOrder.streetAddress,
-      district: storedOrder.district,
-      postal_code: storedOrder.postalCode,
-      delivery_zone: storedOrder.deliveryZone,
-      subtotal: storedOrder.subtotal,
-      discount_amount: storedOrder.discountAmount,
-      shipping_fee: storedOrder.shippingFee,
-      total_amount: storedOrder.totalAmount,
-      coupon_code: storedOrder.couponCode,
-      payment_method: storedOrder.paymentMethod,
-      payment_status: storedOrder.paymentStatus,
-      order_status: storedOrder.orderStatus,
-      target_delivery: storedOrder.targetDelivery,
-      courier_tracking_code: storedOrder.courierTrackingCode,
-      notes: storedOrder.notes,
-      created_at: storedOrder.createdAt,
+    const account = await provisionCustomerForOrder({
+      orderId: storedOrder.id,
+      orderNumber: storedOrder.orderNumber,
+      email: storedOrder.customerEmail,
+      fullName: storedOrder.customerName,
+      phone: storedOrder.customerPhone,
     });
-
-    if (!orderError) {
-      // Insert items
-      const itemsToInsert = storedOrder.items.map((item) => ({
-        order_id: storedOrder.id,
-        product_id: item.productId,
-        product_title: item.productTitle,
-        shade_name: item.shadeName,
-        shade_code: item.shadeCode,
-        unit_price: item.unitPrice,
-        quantity: item.quantity,
-        line_total: item.lineTotal,
-      }));
-
-      await supabaseAdmin.from('order_items').insert(itemsToInsert);
-    }
+    storedOrder.customerId = account.linked ? account.customerId || undefined : undefined;
+    storedOrder.account = {
+      created: account.accountCreated,
+      emailSent: account.emailSent,
+      channel: account.emailChannel,
+    };
   } catch (err) {
-    console.warn('Supabase insert skipped or failed, fallback cached:', err);
+    console.error('[orders] Customer account provisioning failed (order kept):', err);
   }
 
   return storedOrder;
+}
+
+export async function getOrdersForCustomer(customerId: string): Promise<StoredOrder[]> {
+  if (useLocalOrderStore()) {
+    const all = await getAllOrders();
+    return all.filter((order) => order.customerId === customerId);
+  }
+
+  const { data: ordersData, error } = await supabaseAdmin
+    .from('orders')
+    .select('*, order_items(*)')
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('[orders] getOrdersForCustomer failed:', error.message);
+    throw new ServiceError('Could not load your orders right now.', 503, error.code);
+  }
+  return (ordersData || []).map((row) =>
+    mapOrderRow(row, Array.isArray(row.order_items) ? row.order_items.map(mapOrderItemRow) : [])
+  );
+}
+
+export function orderMatchesAccessToken(order: StoredOrder, token?: string | null): boolean {
+  if (!token || !order.accessToken) return false;
+  return timingSafeEqualString(order.accessToken, token);
 }
 
 export async function getOrderById(id: string): Promise<StoredOrder | null> {
   const cleanId = id.trim();
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
 
-  // Check Supabase first
-  try {
-    let query = supabaseAdmin.from('orders').select('*');
-    if (isUuid) {
-      query = query.or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
-    } else {
-      query = query.eq('order_number', cleanId);
-    }
-
-    const { data: orderData, error } = await query.maybeSingle();
-
-    if (!error && orderData) {
-      const { data: itemsData } = await supabaseAdmin
-
-        .from('order_items')
-        .select('*')
-        .eq('order_id', orderData.id);
-
-      const items: StoredOrderItem[] = (itemsData || []).map((it) => ({
-        id: it.id,
-        productId: it.product_id,
-        productTitle: it.product_title,
-        shadeName: it.shade_name,
-        shadeCode: it.shade_code,
-        unitPrice: Number(it.unit_price),
-        quantity: Number(it.quantity),
-        lineTotal: Number(it.line_total),
-      }));
-
-      return {
-        id: orderData.id,
-        orderNumber: orderData.order_number,
-        customerName: orderData.customer_name,
-        customerEmail: orderData.customer_email,
-        customerPhone: orderData.customer_phone,
-        streetAddress: orderData.street_address,
-        district: orderData.district,
-        postalCode: orderData.postal_code,
-        deliveryZone: orderData.delivery_zone,
-        subtotal: Number(orderData.subtotal),
-        discountAmount: Number(orderData.discount_amount || 0),
-        shippingFee: Number(orderData.shipping_fee),
-        totalAmount: Number(orderData.total_amount),
-        couponCode: orderData.coupon_code,
-        paymentMethod: orderData.payment_method,
-        paymentStatus: orderData.payment_status,
-        orderStatus: orderData.order_status,
-        targetDelivery: orderData.target_delivery,
-        courierTrackingCode: orderData.courier_tracking_code,
-        notes: orderData.notes,
-        createdAt: orderData.created_at,
-        items,
-      };
-    }
-  } catch {
-    // Fallback cache
+  if (useLocalOrderStore()) {
+    return fallbackOrdersCache.get(cleanId) || null;
   }
 
-  return fallbackOrdersCache.get(id) || null;
+  let query = supabaseAdmin.from('orders').select('*');
+  if (isUuid) {
+    query = query.or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
+  } else {
+    query = query.eq('order_number', cleanId);
+  }
+
+  const { data: orderData, error } = await query.maybeSingle();
+  if (error) {
+    console.error('[orders] getOrderById failed:', error.message);
+    throw new ServiceError('Could not load the order right now.', 503, error.code);
+  }
+  if (!orderData) return null;
+
+  const { data: itemsData, error: itemsError } = await supabaseAdmin
+    .from('order_items')
+    .select('*')
+    .eq('order_id', orderData.id);
+  if (itemsError) {
+    console.error('[orders] getOrderById items failed:', itemsError.message);
+    throw new ServiceError('Could not load the order right now.', 503, itemsError.code);
+  }
+
+  return mapOrderRow(orderData, (itemsData || []).map(mapOrderItemRow));
 }
 
 export async function trackOrderByPhone(
@@ -309,16 +410,13 @@ export async function trackOrderByPhone(
   phone: string
 ): Promise<{ order: StoredOrder; timeline: TrackingStep[] } | null> {
   const cleanOrderNum = orderNumber.trim().toUpperCase();
-  const cleanPhone = normalizePhone(phone);
 
   const order = await getOrderById(cleanOrderNum);
   if (!order) {
     return null;
   }
 
-  // Verify phone matches
-  const orderPhoneNormalized = normalizePhone(order.customerPhone);
-  if (!orderPhoneNormalized.includes(cleanPhone) && !cleanPhone.includes(orderPhoneNormalized)) {
+  if (!phonesMatch(order.customerPhone, phone)) {
     return null;
   }
 
@@ -374,7 +472,12 @@ export interface OrderFilters {
 export async function getAllOrders(filters?: OrderFilters): Promise<StoredOrder[]> {
   let orders: StoredOrder[] = [];
 
-  try {
+  if (useLocalOrderStore()) {
+    orders = Array.from(new Set(fallbackOrdersCache.values()));
+    if (filters?.status && filters.status !== 'all') orders = orders.filter((o) => o.orderStatus === filters.status);
+    if (filters?.paymentStatus && filters.paymentStatus !== 'all') orders = orders.filter((o) => o.paymentStatus === filters.paymentStatus);
+    if (filters?.zone && filters.zone !== 'all') orders = orders.filter((o) => o.deliveryZone === filters.zone);
+  } else {
     let query = supabaseAdmin
       .from('orders')
       .select('*')
@@ -391,62 +494,31 @@ export async function getAllOrders(filters?: OrderFilters): Promise<StoredOrder[
     }
 
     const { data: ordersData, error } = await query;
+    if (error) {
+      console.error('[orders] getAllOrders failed:', error.message);
+      throw new ServiceError('Could not load orders right now.', 503, error.code);
+    }
 
-    if (!error && ordersData && ordersData.length > 0) {
+    if (ordersData && ordersData.length > 0) {
       const orderIds = ordersData.map((o) => o.id);
-      const { data: allItemsData } = await supabaseAdmin
+      const { data: allItemsData, error: itemsError } = await supabaseAdmin
         .from('order_items')
         .select('*')
         .in('order_id', orderIds);
+      if (itemsError) {
+        console.error('[orders] getAllOrders items failed:', itemsError.message);
+        throw new ServiceError('Could not load orders right now.', 503, itemsError.code);
+      }
 
       const itemsByOrderId = new Map<string, StoredOrderItem[]>();
       (allItemsData || []).forEach((it) => {
         const list = itemsByOrderId.get(it.order_id) || [];
-        list.push({
-          id: it.id,
-          productId: it.product_id,
-          productTitle: it.product_title,
-          shadeName: it.shade_name,
-          shadeCode: it.shade_code,
-          unitPrice: Number(it.unit_price),
-          quantity: Number(it.quantity),
-          lineTotal: Number(it.line_total),
-        });
+        list.push(mapOrderItemRow(it));
         itemsByOrderId.set(it.order_id, list);
       });
 
-      orders = ordersData.map((orderData) => ({
-        id: orderData.id,
-        orderNumber: orderData.order_number,
-        customerName: orderData.customer_name,
-        customerEmail: orderData.customer_email,
-        customerPhone: orderData.customer_phone,
-        streetAddress: orderData.street_address,
-        district: orderData.district,
-        postalCode: orderData.postal_code,
-        deliveryZone: orderData.delivery_zone,
-        subtotal: Number(orderData.subtotal),
-        discountAmount: Number(orderData.discount_amount || 0),
-        shippingFee: Number(orderData.shipping_fee),
-        totalAmount: Number(orderData.total_amount),
-        couponCode: orderData.coupon_code,
-        paymentMethod: orderData.payment_method,
-        paymentStatus: orderData.payment_status,
-        orderStatus: orderData.order_status,
-        targetDelivery: orderData.target_delivery,
-        courierTrackingCode: orderData.courier_tracking_code,
-        notes: orderData.notes,
-        createdAt: orderData.created_at,
-        items: itemsByOrderId.get(orderData.id) || [],
-      }));
+      orders = ordersData.map((orderData) => mapOrderRow(orderData, itemsByOrderId.get(orderData.id) || []));
     }
-  } catch (err) {
-    console.warn('Supabase getAllOrders fallback triggered:', err);
-  }
-
-  // Backfill / fallback with in-memory cache if needed
-  if (orders.length === 0 && fallbackOrdersCache.size > 0) {
-    orders = Array.from(new Set(fallbackOrdersCache.values()));
   }
 
   // Client-side / fallback search filtering
@@ -481,31 +553,25 @@ export async function updateOrderStatus(
     updatePayload.courier_tracking_code = courierTrackingCode.trim();
   }
 
-  try {
-    const { data, error } = await supabaseAdmin
+  if (!useLocalOrderStore()) {
+    const { error } = await supabaseAdmin
       .from('orders')
       .update(updatePayload)
-      .eq('id', existing.id)
-      .select()
-      .maybeSingle();
-
-    if (!error && data) {
-      existing.orderStatus = data.order_status;
-      if (data.courier_tracking_code) {
-        existing.courierTrackingCode = data.courier_tracking_code;
-      }
+      .eq('id', existing.id);
+    if (error) {
+      console.error('[orders] updateOrderStatus failed:', error.message);
+      throw new ServiceError('Could not update the order status.', 503, error.code);
     }
-  } catch (err) {
-    console.warn('Supabase updateOrderStatus fallback:', err);
   }
 
-  // Update in cache
   existing.orderStatus = newStatus;
   if (courierTrackingCode !== undefined) {
     existing.courierTrackingCode = courierTrackingCode.trim();
   }
-  fallbackOrdersCache.set(existing.id, existing);
-  fallbackOrdersCache.set(existing.orderNumber, existing);
+  if (useLocalOrderStore()) {
+    fallbackOrdersCache.set(existing.id, existing);
+    fallbackOrdersCache.set(existing.orderNumber, existing);
+  }
 
   return existing;
 }
@@ -517,21 +583,25 @@ export async function updatePaymentStatus(
   const existing = await getOrderById(orderIdOrNumber);
   if (!existing) return null;
 
-  try {
-    await supabaseAdmin
+  if (!useLocalOrderStore()) {
+    const { error } = await supabaseAdmin
       .from('orders')
       .update({
         payment_status: newPaymentStatus,
         updated_at: new Date().toISOString(),
       })
       .eq('id', existing.id);
-  } catch (err) {
-    console.warn('Supabase updatePaymentStatus fallback:', err);
+    if (error) {
+      console.error('[orders] updatePaymentStatus failed:', error.message);
+      throw new ServiceError('Could not update the payment status.', 503, error.code);
+    }
   }
 
   existing.paymentStatus = newPaymentStatus;
-  fallbackOrdersCache.set(existing.id, existing);
-  fallbackOrdersCache.set(existing.orderNumber, existing);
+  if (useLocalOrderStore()) {
+    fallbackOrdersCache.set(existing.id, existing);
+    fallbackOrdersCache.set(existing.orderNumber, existing);
+  }
 
   return existing;
 }
@@ -607,25 +677,21 @@ export async function getOrderMetrics(): Promise<OrderMetrics> {
 }
 
 export async function clearTestOrders(): Promise<{ success: boolean; deletedCount: number }> {
-  let count = fallbackOrdersCache.size;
-  fallbackOrdersCache.clear();
-
-  try {
-    // Delete line items first
-    await supabaseAdmin.from('order_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    // Delete orders
-    const { data } = await supabaseAdmin
-      .from('orders')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000')
-      .select('id');
-    if (data) {
-      count = Math.max(count, data.length);
-    }
-  } catch (err) {
-    console.warn('Supabase clearTestOrders fallback:', err);
+  if (useLocalOrderStore()) {
+    const count = new Set(fallbackOrdersCache.values()).size;
+    fallbackOrdersCache.clear();
+    return { success: true, deletedCount: count };
   }
 
-  return { success: true, deletedCount: count };
+  // order_items cascade on order delete.
+  const { data, error } = await supabaseAdmin
+    .from('orders')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
+    .select('id');
+  if (error) {
+    console.error('[orders] clearTestOrders failed:', error.message);
+    throw new ServiceError('Could not clear orders.', 503, error.code);
+  }
+  return { success: true, deletedCount: data?.length || 0 };
 }
-

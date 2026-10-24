@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server.js';
+import { errorStatus } from '../../../../../lib/services/serviceError.ts';
 import { getCurrentAdminUser } from '../../../../../lib/services/adminAuth.ts';
 import { bulkCreateCatalogProducts } from '../../../../../lib/services/productService.ts';
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error executing bulk product upload.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }

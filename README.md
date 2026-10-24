@@ -100,11 +100,13 @@ Create a `.env.local` file in the root directory:
 ```env
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://xhhjowchwnaglimgpygr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx   # legacy NEXT_PUBLIC_SUPABASE_ANON_KEY is a fallback
+SUPABASE_SECRET_KEY=sb_secret_xxx                         # legacy SUPABASE_SERVICE_ROLE_KEY is a fallback
 
-# Admin Authentication
-ADMIN_SECRET_KEY=your_secure_admin_jwt_secret
+# Admin Authentication (see .env.example for the full list)
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=long-random-password
+ADMIN_SESSION_SECRET=64-char-random-secret
 ```
 
 ### 4. Running the Development Server

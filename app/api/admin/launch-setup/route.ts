@@ -81,13 +81,20 @@ export async function GET() {
   }
 }
 
-export async function POST() {
-  const user = await getCurrentAdminUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized executive access.' }, { status: 401 });
-  }
+export async function POST(request: Request) {
+  const { isAdminGuardResponse, requireAdmin } = await import('../../../../lib/security/requireAdmin.ts');
+  const guard = await requireAdmin(request, { role: 'superadmin' });
+  if (isAdminGuardResponse(guard)) return guard.response;
 
   try {
+    const body = await request.json().catch(() => ({}));
+    if (body?.confirm !== true) {
+      return NextResponse.json(
+        { error: 'Launch setup requires an explicit confirm: true payload from a superadmin.' },
+        { status: 400 }
+      );
+    }
+
     // 1. Purge dummy/mock operational records (orders, inquiries, reviews, bookings)
     const [ordersResult, inquiriesResult, reviewsResult, bookingsResult] = await Promise.all([
       clearTestOrders(),

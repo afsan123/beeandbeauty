@@ -1,6 +1,4 @@
-import type { Category, Product, Shade, Offer } from '../../data/types.ts';
-import type { BannerSlide } from '../services/bannerService.ts';
-import type { StudioTutorial } from '../services/studioService.ts';
+import type { BannerSlide, Category, Offer, Product, Shade, StudioTutorial } from '../../data/types.ts';
 import { createProductSvg } from '../../data/mock/imagePlaceholders.ts';
 
 export const LAUNCH_CATEGORIES: Category[] = [

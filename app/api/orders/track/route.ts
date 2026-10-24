@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { trackOrderByPhone } from '../../../../lib/services/orderService';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '../../../../lib/security/rateLimit.ts';
 
 export async function POST(req: NextRequest) {
+  const limit = checkRateLimit(`track:${getClientIp(req)}`, 20, 10 * 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(rateLimitResponse(limit.retryAfterSeconds), {
+      status: 429,
+      headers: { 'Retry-After': String(limit.retryAfterSeconds) },
+    });
+  }
+
   try {
     const { orderNumber, phone } = await req.json();
 
@@ -40,7 +49,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      order: result.order,
+      order: {
+        ...result.order,
+        accessToken: undefined,
+      },
       timeline: result.timeline,
     });
   } catch (err: unknown) {

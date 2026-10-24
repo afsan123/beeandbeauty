@@ -4,42 +4,33 @@ import {
   verifyAdminToken,
   SESSION_COOKIE_NAME,
 } from './lib/services/adminAuthToken.ts';
+import { applySecurityHeaders } from './lib/security/headers.ts';
+import { refreshCustomerSession } from './lib/supabase/proxySession.ts';
+import { csrfFailureResponse, isSameOriginRequest } from './lib/security/csrf.ts';
+import { catalogPathExists, matchCatalogPath } from './lib/catalogPathGuard.ts';
 
-function applySecurityHeaders(res: NextResponse): NextResponse {
-  res.headers.set('X-Frame-Options', 'SAMEORIGIN');
-  res.headers.set('X-Content-Type-Options', 'nosniff');
-  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  res.headers.set('X-DNS-Prefetch-Control', 'on');
-  return res;
-}
-
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Executive Admin Web Routes Protection
   if (pathname.startsWith('/admin')) {
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     const user = verifyAdminToken(token);
 
-    // If accessing /admin/login while already authenticated -> redirect to dashboard
     if (pathname === '/admin/login') {
       if (user) {
-        return NextResponse.redirect(new URL('/admin', request.url));
+        return applySecurityHeaders(NextResponse.redirect(new URL('/admin', request.url)));
       }
       return applySecurityHeaders(NextResponse.next());
     }
 
-    // Unauthenticated access to any protected /admin route -> redirect to login
     if (!user) {
-      const loginUrl = new URL('/admin/login', request.url);
-      return NextResponse.redirect(loginUrl);
+      return applySecurityHeaders(NextResponse.redirect(new URL('/admin/login', request.url)));
     }
+
+    return applySecurityHeaders(NextResponse.next());
   }
 
-  // 2. Executive Admin API Routes Protection
   if (pathname.startsWith('/api/admin')) {
-    // Whitelist login authentication and session telemetry routes
     const isPublicAuthRoute =
       pathname === '/api/admin/auth/login' || pathname === '/api/admin/auth/me';
 
@@ -55,22 +46,31 @@ export function proxy(request: NextRequest) {
           )
         );
       }
+
+      if (!isSameOriginRequest(request)) {
+        return applySecurityHeaders(
+          NextResponse.json(csrfFailureResponse(), { status: 403 })
+        );
+      }
     }
+
+    return applySecurityHeaders(NextResponse.next());
   }
 
-  return applySecurityHeaders(NextResponse.next());
+  // Real 404 status for unknown products/categories. The page streams its
+  // shell first, so notFound() inside it can only send a 200 + noindex.
+  const catalogPath = matchCatalogPath(pathname);
+  if (catalogPath && !(await catalogPathExists(catalogPath.kind, catalogPath.slug))) {
+    // Rewriting to an unmatched path renders app/not-found.tsx with a 404.
+    return applySecurityHeaders(NextResponse.rewrite(new URL('/__not-found', request.url)));
+  }
+
+  const customerResponse = await refreshCustomerSession(request);
+  return applySecurityHeaders(customerResponse);
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - icon.svg (icon file)
-     * - public asset extensions (svg, png, jpg, jpeg, gif, webp, mp4, etc.)
-     */
     '/((?!_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)',
   ],
 };

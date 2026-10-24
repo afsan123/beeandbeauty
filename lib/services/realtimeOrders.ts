@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '../supabase/client.ts';
+import { createBrowserSupabaseClient } from '../supabase/client.ts';
 import type { StoredOrder } from './orderService.ts';
 
 const SOUND_PREF_KEY = 'bb_admin_sound_muted';
@@ -69,10 +69,16 @@ export interface RealtimeOrderSubscriptionOptions {
   pollIntervalMs?: number;
 }
 
+const ADMIN_ORDERS_CHANNEL = 'admin-orders';
+const ADMIN_ORDER_CREATED_EVENT = 'order_created';
+
 /**
- * Dual-Engine Real-Time Order Subscription:
- * 1. Supabase Realtime WebSocket changes (instant push)
- * 2. Smart background polling heartbeat (every 8s fallback)
+ * Admin order alerts:
+ * 1. Polls the authenticated /api/admin/orders route (default every 8s).
+ * 2. Listens for a PII-free server broadcast ('admin-orders' / 'order_created')
+ *    and re-fetches immediately when it arrives.
+ * Order data is only ever read through the admin API — never from Realtime,
+ * so customer details are not exposed to anon Realtime subscribers.
  */
 export function subscribeToRealtimeOrders({
   onNewOrder,
@@ -82,143 +88,68 @@ export function subscribeToRealtimeOrders({
 }: RealtimeOrderSubscriptionOptions): () => void {
   if (typeof window === 'undefined') return () => {};
 
-  const knownOrderIds = new Set<string>();
+  const knownOrders = new Map<string, string>();
   let isSubscribed = true;
   let isFirstFetch = true;
+  let inFlight = false;
 
-  // Polling fetch function
-  const checkOrders = async () => {
-    if (!isSubscribed) return;
-    // Don't poll if browser tab is hidden to save mobile battery
-    if (document.hidden) return;
+  const fingerprint = (o: StoredOrder) => `${o.orderStatus}|${o.paymentStatus}`;
 
+  const checkOrders = async (force = false) => {
+    if (!isSubscribed || inFlight) return;
+    // Don't poll while the tab is hidden (saves mobile battery).
+    if (!force && document.hidden) return;
+
+    inFlight = true;
     try {
-      const res = await fetch('/api/admin/orders');
+      const res = await fetch('/api/admin/orders', { cache: 'no-store' });
       if (!res.ok) return;
 
       const data = await res.json();
       const currentOrders: StoredOrder[] = data.orders || [];
 
       if (isFirstFetch) {
-        currentOrders.forEach((o) => knownOrderIds.add(o.id || o.orderNumber));
+        currentOrders.forEach((o) => knownOrders.set(o.id || o.orderNumber, fingerprint(o)));
         isFirstFetch = false;
         return;
       }
 
-      // Check for newly placed orders
       for (const order of currentOrders) {
         const key = order.id || order.orderNumber;
-        if (!knownOrderIds.has(key)) {
-          knownOrderIds.add(key);
-          if (playAudio) {
-            playLuxuryOrderChime();
-          }
+        const previous = knownOrders.get(key);
+        knownOrders.set(key, fingerprint(order));
+        if (previous === undefined) {
+          if (playAudio) playLuxuryOrderChime();
           onNewOrder(order);
+        } else if (previous !== fingerprint(order)) {
+          onOrderUpdated?.(order);
         }
       }
     } catch {
       // Ignore background network errors
+    } finally {
+      inFlight = false;
     }
   };
 
-  // 1. Initial hydration
-  checkOrders();
+  checkOrders(true);
+  const timer = setInterval(() => checkOrders(), pollIntervalMs);
 
-  // 2. Setup periodic polling heartbeat
-  const timer = setInterval(checkOrders, pollIntervalMs);
+  const supabase = createBrowserSupabaseClient();
+  const channel = supabase
+    ? supabase
+        .channel(ADMIN_ORDERS_CHANNEL)
+        .on('broadcast', { event: ADMIN_ORDER_CREATED_EVENT }, () => {
+          checkOrders(true);
+        })
+        .subscribe()
+    : null;
 
-  // 3. Setup Supabase Realtime channel if available
-  let realtimeChannel: any = null;
-  try {
-    realtimeChannel = supabase
-      .channel('realtime-orders-admin')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'orders' },
-        (payload) => {
-          if (!isSubscribed) return;
-          const newRow = payload.new as any;
-          if (newRow) {
-            const mappedOrder: StoredOrder = {
-              id: newRow.id,
-              orderNumber: newRow.order_number,
-              customerName: newRow.customer_name,
-              customerEmail: newRow.customer_email,
-              customerPhone: newRow.customer_phone,
-              streetAddress: newRow.street_address,
-              district: newRow.district,
-              postalCode: newRow.postal_code,
-              deliveryZone: newRow.delivery_zone || 'dhaka',
-              subtotal: Number(newRow.subtotal || 0),
-              discountAmount: Number(newRow.discount_amount || 0),
-              shippingFee: Number(newRow.shipping_fee || 0),
-              totalAmount: Number(newRow.total_amount || 0),
-              paymentMethod: newRow.payment_method || 'cod',
-              paymentStatus: newRow.payment_status || 'pending',
-              orderStatus: newRow.order_status || 'confirmed',
-              targetDelivery: newRow.target_delivery || 'Inside Dhaka: Target 24h',
-              courierTrackingCode: newRow.courier_tracking_code,
-              notes: newRow.notes,
-              createdAt: newRow.created_at || new Date().toISOString(),
-              items: [],
-            };
-
-            const key = mappedOrder.id || mappedOrder.orderNumber;
-            if (!knownOrderIds.has(key)) {
-              knownOrderIds.add(key);
-              if (playAudio) {
-                playLuxuryOrderChime();
-              }
-              onNewOrder(mappedOrder);
-            }
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders' },
-        (payload) => {
-          if (!isSubscribed) return;
-          const updatedRow = payload.new as any;
-          if (updatedRow && onOrderUpdated) {
-            const mappedOrder: StoredOrder = {
-              id: updatedRow.id,
-              orderNumber: updatedRow.order_number,
-              customerName: updatedRow.customer_name,
-              customerEmail: updatedRow.customer_email,
-              customerPhone: updatedRow.customer_phone,
-              streetAddress: updatedRow.street_address,
-              district: updatedRow.district,
-              postalCode: updatedRow.postal_code,
-              deliveryZone: updatedRow.delivery_zone || 'dhaka',
-              subtotal: Number(updatedRow.subtotal || 0),
-              discountAmount: Number(updatedRow.discount_amount || 0),
-              shippingFee: Number(updatedRow.shipping_fee || 0),
-              totalAmount: Number(updatedRow.total_amount || 0),
-              paymentMethod: updatedRow.payment_method || 'cod',
-              paymentStatus: updatedRow.payment_status || 'pending',
-              orderStatus: updatedRow.order_status || 'confirmed',
-              targetDelivery: updatedRow.target_delivery || 'Inside Dhaka: Target 24h',
-              courierTrackingCode: updatedRow.courier_tracking_code,
-              notes: updatedRow.notes,
-              createdAt: updatedRow.created_at,
-              items: [],
-            };
-            onOrderUpdated(mappedOrder);
-          }
-        }
-      )
-      .subscribe();
-  } catch {
-    // Fallback solely to polling heartbeat
-  }
-
-  // Cleanup on unmount
   return () => {
     isSubscribed = false;
     clearInterval(timer);
-    if (realtimeChannel) {
-      supabase.removeChannel(realtimeChannel);
+    if (channel && supabase) {
+      supabase.removeChannel(channel).catch(() => {});
     }
   };
 }

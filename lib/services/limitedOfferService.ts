@@ -14,11 +14,11 @@ const DEFAULT_LIMITED_OFFERS: LimitedOffer[] = OFFERS.map((o) => ({
   isActive: true,
 }));
 
-let inMemoryOffers: LimitedOffer[] = [...DEFAULT_LIMITED_OFFERS];
+let inMemoryOffers: LimitedOffer[] = [];
 let isOffersLoaded = false;
 
 export function clearOfferCache(): void {
-  inMemoryOffers = [...DEFAULT_LIMITED_OFFERS];
+  inMemoryOffers = [];
   isOffersLoaded = false;
 }
 
@@ -51,7 +51,8 @@ export async function getAllOffers(forceRefresh = false): Promise<LimitedOffer[]
   if (!isOffersLoaded || forceRefresh) {
     await fetchRemoteOffers();
   }
-  return [...inMemoryOffers];
+  const source = inMemoryOffers.length > 0 ? inMemoryOffers : DEFAULT_LIMITED_OFFERS;
+  return [...source];
 }
 
 export async function getActiveOffers(forceRefresh = false): Promise<LimitedOffer[]> {

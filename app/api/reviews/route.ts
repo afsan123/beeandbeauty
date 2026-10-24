@@ -34,6 +34,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const { checkRateLimit, getClientIp, rateLimitResponse } = await import('../../../lib/security/rateLimit.ts');
+  const limit = checkRateLimit(`reviews:${getClientIp(req)}`, 8, 15 * 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(rateLimitResponse(limit.retryAfterSeconds), {
+      status: 429,
+      headers: { 'Retry-After': String(limit.retryAfterSeconds) },
+    });
+  }
+
   try {
     const body: CreateReviewPayload = await req.json();
 

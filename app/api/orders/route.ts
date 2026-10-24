@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOrder, CreateOrderPayload } from '../../../lib/services/orderService';
+import { errorStatus } from '../../../lib/services/serviceError.ts';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '../../../lib/security/rateLimit.ts';
 
 export async function POST(req: NextRequest) {
+  const limit = checkRateLimit(`orders:${getClientIp(req)}`, 8, 10 * 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(rateLimitResponse(limit.retryAfterSeconds), {
+      status: 429,
+      headers: { 'Retry-After': String(limit.retryAfterSeconds) },
+    });
+  }
+
   try {
     const body: CreateOrderPayload = await req.json();
     const order = await createOrder(body);
@@ -9,7 +19,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        order,
+        order: {
+          ...order,
+          accessToken: undefined,
+        },
+        notifications: {
+          emailSent: order.account?.emailSent === true,
+          smsSent: false,
+          accountCreated: order.account?.created === true,
+          channel: order.account?.channel || 'none',
+        },
       },
       { status: 201 }
     );
@@ -20,7 +39,8 @@ export async function POST(req: NextRequest) {
         success: false,
         error: message,
       },
-      { status: 400 }
+      // Validation problems are 400; database failures carry their own status.
+      { status: errorStatus(err, 400) }
     );
   }
 }

@@ -32,7 +32,7 @@ For the full architectural knowledge base, market specifications, and design sys
    - Outside Dhaka: 48-hour delivery target (`৳130`) via Steadfast / Pathao
 5. **Next.js 16 Prerendering & PPR Constraints**:
    - Do NOT use dynamic runtime dates (`new Date().getFullYear()`) inside Client Components during static builds. Use static constants (e.g. `2026`).
-   - Dynamic route pages (`app/shop/[category]/page.tsx`, `app/product/[slug]/page.tsx`, `app/search/page.tsx`) must wrap async data access (`await params` / `await searchParams`) inside `<Suspense fallback={<Skeleton />}>` rather than awaiting at the root of the page component, preserving instant static shells under Partial Prerendering.
+   - Dynamic route pages (`app/shop/[category]/page.tsx`, `app/product/[slug]/page.tsx`, `app/search/page.tsx`) must wrap async data access (`await params` / `await searchParams`) inside `<Suspense fallback={<Skeleton />}>` rather than awaiting at the root of the page component, preserving instant static shells under Partial Prerendering. Because the shell streams first, `notFound()` inside those boundaries can only send a 200 + noindex; real 404 status codes for unknown products/categories come from the slug check in `proxy.ts` (`lib/catalogPathGuard.ts`). Keep both.
 6. **Verification Requirements**:
    - Always run `npm test` and `npm run build` before completing tasks.
 7. **Admin Panel & Bulk Operations**:

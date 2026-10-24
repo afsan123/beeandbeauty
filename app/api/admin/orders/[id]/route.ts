@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server.js';
+import { errorStatus } from '../../../../../lib/services/serviceError.ts';
 import { getCurrentAdminUser } from '../../../../../lib/services/adminAuth.ts';
 import {
   getOrderById,
@@ -62,7 +63,7 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error updating order.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }

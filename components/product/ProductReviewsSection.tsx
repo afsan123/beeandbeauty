@@ -26,7 +26,7 @@ export function ProductReviewsSection({
   shades,
 }: ProductReviewsSectionProps) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
-  const [averageRating, setAverageRating] = useState<number>(5.0);
+  const [averageRating, setAverageRating] = useState<number>(0);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,7 +48,7 @@ export function ProductReviewsSection({
         const data = await res.json();
         if (data.success) {
           setReviews(data.reviews || []);
-          setAverageRating(data.averageRating || 5.0);
+          setAverageRating(Number(data.averageRating) || 0);
           setTotalCount(data.totalCount || 0);
         }
       } catch {
@@ -125,20 +125,21 @@ export function ProductReviewsSection({
 
       {/* Summary Score */}
       <div className="bg-[#FFF9F5] p-5 rounded-[2px] border border-[#F0E6DD] flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-3">
-          <span className="text-3xl font-serif font-bold text-[#6A1B6D]">{averageRating}</span>
-          <div>
-            <Rating rating={averageRating} reviewCount={totalCount} size="md" />
-            <span className="text-[11px] text-neutral-500 block mt-0.5">
-              Based on {totalCount} verified buyer reviews
-            </span>
+        {totalCount > 0 ? (
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-serif font-bold text-[#6A1B6D]">{averageRating.toFixed(1)}</span>
+            <div>
+              <Rating rating={averageRating} reviewCount={totalCount} size="md" />
+              <span className="text-[11px] text-neutral-500 block mt-0.5">
+                Based on {totalCount} {totalCount === 1 ? 'review' : 'reviews'}
+              </span>
+            </div>
           </div>
-        </div>
-
-        <div className="text-xs text-[#2E7D32] font-semibold flex items-center gap-1.5 bg-[#E8F5E9] px-3 py-1.5 rounded-full border border-[#C8E6C9]">
-          <CheckCircle size={14} />
-          <span>Dermatologist Tested &amp; Authentic Formula Guarantee</span>
-        </div>
+        ) : (
+          <p className="text-sm text-neutral-600">
+            No reviews yet. Be the first to share your experience.
+          </p>
+        )}
       </div>
 
       {/* Write Review Form Collapsible */}

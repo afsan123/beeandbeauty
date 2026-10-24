@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Search as SearchIcon, X } from 'lucide-react';
 import { Product } from '../../data/types';
 import { ProductCard } from '../catalog/ProductCard';
-import { catalogRepository } from '../../data/mock/mockRepository';
+import { fetchPublicProducts } from '../../lib/catalog/publicApi';
 
 const POPULAR_SEARCHES = [
   'Velvet Matte',
@@ -36,7 +36,7 @@ export function SearchClient() {
     let isMounted = true;
     if (query.trim()) {
       setIsLoading(true);
-      catalogRepository.searchProducts(query.trim()).then((res) => {
+      fetchPublicProducts({ search: query.trim() }).then((res) => {
         if (isMounted) {
           setResults(res);
           setIsLoading(false);

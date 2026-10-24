@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../supabase/admin.ts';
-import { catalogRepository } from '../../data/mock/mockRepository.ts';
+import { isSupabaseAdminReady, supabaseAdmin } from '../supabase/admin.ts';
+import { normalizeBdPhone, phonesMatch } from '../security/phone.ts';
 
 export interface CreateReviewPayload {
   productId: string;
@@ -7,6 +7,8 @@ export interface CreateReviewPayload {
   rating: number;
   shadeUsed?: string;
   comment: string;
+  authorEmail?: string;
+  authorPhone?: string;
 }
 
 export interface StoredReview {
@@ -20,7 +22,56 @@ export interface StoredReview {
   createdAt: string;
 }
 
+// Local-only store used when Supabase is NOT configured (tests / local dev).
+// When Supabase is configured the database is the only source of truth, so
+// reviews are never invented or silently kept in memory.
 const fallbackReviews = new Map<string, StoredReview[]>();
+
+function mapReviewRow(r: Record<string, any>): StoredReview {
+  return {
+    id: r.id,
+    productId: r.product_id,
+    authorName: r.author_name,
+    rating: Number(r.rating),
+    shadeUsed: r.shade_used || undefined,
+    comment: r.comment,
+    isVerifiedBuyer: Boolean(r.is_verified_buyer),
+    createdAt: r.created_at,
+  };
+}
+
+async function hasPurchasedProduct(
+  productId: string,
+  email?: string,
+  phone?: string
+): Promise<boolean> {
+  const cleanEmail = email?.trim().toLowerCase();
+  const cleanPhone = normalizeBdPhone(phone);
+  if (!cleanEmail && !cleanPhone) return false;
+
+  try {
+    let query = supabaseAdmin
+      .from('orders')
+      .select('id, customer_email, customer_phone, order_items!inner(product_id)')
+      .eq('order_items.product_id', productId)
+      .neq('order_status', 'cancelled');
+
+    if (cleanEmail) {
+      query = query.eq('customer_email', cleanEmail);
+    }
+
+    const { data, error } = await query.limit(20);
+    if (error || !data) return false;
+
+    return data.some((row) => {
+      const emailMatch = cleanEmail ? row.customer_email?.toLowerCase() === cleanEmail : false;
+      const phoneMatch = cleanPhone ? phonesMatch(row.customer_phone, cleanPhone) : false;
+      return emailMatch || phoneMatch;
+    });
+  } catch {
+    return false;
+  }
+}
 
 export async function getReviews(productId: string): Promise<{
   reviews: StoredReview[];
@@ -29,66 +80,27 @@ export async function getReviews(productId: string): Promise<{
 }> {
   let reviews: StoredReview[] = [];
 
-  try {
+  if (isSupabaseAdminReady()) {
     const { data, error } = await supabaseAdmin
       .from('product_reviews')
       .select('*')
       .eq('product_id', productId)
+      .eq('is_approved', true)
       .order('created_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      reviews = data.map((r) => ({
-        id: r.id,
-        productId: r.product_id,
-        authorName: r.author_name,
-        rating: Number(r.rating),
-        shadeUsed: r.shade_used,
-        comment: r.comment,
-        isVerifiedBuyer: Boolean(r.is_verified_buyer),
-        createdAt: r.created_at,
-      }));
+    if (error) {
+      console.error('[reviews] Failed to load reviews:', error.message);
+      throw new Error('Could not load reviews right now.');
     }
-  } catch {
-    // Check fallback
-  }
-
-  if (reviews.length === 0 && fallbackReviews.has(productId)) {
+    reviews = (data || []).map(mapReviewRow);
+  } else {
     reviews = fallbackReviews.get(productId) || [];
-  }
-
-  // If still empty, pull initial seed reviews from catalogRepository
-  if (reviews.length === 0) {
-    const product = await catalogRepository.getProductById(productId);
-    if (product) {
-      // Mock seed review
-      reviews = [
-        {
-          id: 'seed-1',
-          productId: product.id,
-          authorName: 'Ayesha Rahman',
-          rating: 5,
-          shadeUsed: product.shades?.[0]?.name,
-          comment: 'Outstanding velvet finish that lasts through Dhaka humidity without drying out lips!',
-          isVerifiedBuyer: true,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'seed-2',
-          productId: product.id,
-          authorName: 'Tasnim Z.',
-          rating: 5,
-          shadeUsed: product.shades?.[1]?.name,
-          comment: 'Perfect undertone match for South Asian skin. The propolis infusion feels genuinely nourishing.',
-          isVerifiedBuyer: true,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-    }
   }
 
   const totalCount = reviews.length;
   const sumRatings = reviews.reduce((acc, r) => acc + r.rating, 0);
-  const averageRating = totalCount > 0 ? Number((sumRatings / totalCount).toFixed(1)) : 5.0;
+  // No reviews means no rating — never default to a fake 5 stars.
+  const averageRating = totalCount > 0 ? Number((sumRatings / totalCount).toFixed(1)) : 0;
 
   return { reviews, averageRating, totalCount };
 }
@@ -102,6 +114,12 @@ export async function createReview(payload: CreateReviewPayload): Promise<Stored
   }
   const rating = Math.min(5, Math.max(1, Math.round(payload.rating || 5)));
 
+  const isVerifiedBuyer = await hasPurchasedProduct(
+    payload.productId,
+    payload.authorEmail,
+    payload.authorPhone
+  );
+
   const review: StoredReview = {
     id: crypto.randomUUID(),
     productId: payload.productId,
@@ -109,63 +127,55 @@ export async function createReview(payload: CreateReviewPayload): Promise<Stored
     rating,
     shadeUsed: payload.shadeUsed?.trim(),
     comment: payload.comment.trim(),
-    isVerifiedBuyer: true,
+    isVerifiedBuyer,
     createdAt: new Date().toISOString(),
   };
 
-  const existing = fallbackReviews.get(payload.productId) || [];
-  fallbackReviews.set(payload.productId, [review, ...existing]);
+  if (!isSupabaseAdminReady()) {
+    const existing = fallbackReviews.get(payload.productId) || [];
+    fallbackReviews.set(payload.productId, [review, ...existing]);
+    return review;
+  }
 
-  try {
-    await supabaseAdmin.from('product_reviews').insert({
-      id: review.id,
-      product_id: review.productId,
-      author_name: review.authorName,
-      rating: review.rating,
-      shade_used: review.shadeUsed,
-      comment: review.comment,
-      is_verified_buyer: review.isVerifiedBuyer,
-      created_at: review.createdAt,
-    });
-  } catch (err) {
-    console.warn('Supabase review insert skipped or failed:', err);
+  const { error } = await supabaseAdmin.from('product_reviews').insert({
+    id: review.id,
+    product_id: review.productId,
+    author_name: review.authorName,
+    rating: review.rating,
+    shade_used: review.shadeUsed,
+    comment: review.comment,
+    is_verified_buyer: review.isVerifiedBuyer,
+    author_email: payload.authorEmail?.trim().toLowerCase() || null,
+    author_phone: normalizeBdPhone(payload.authorPhone) || null,
+    created_at: review.createdAt,
+  });
+
+  if (error) {
+    console.error('[reviews] Review insert failed:', error.code, error.message);
+    if (error.code === '23503') {
+      throw new Error('This product no longer exists.');
+    }
+    throw new Error('We could not save your review. Please try again.');
   }
 
   return review;
 }
 
 export async function getAllReviews(): Promise<StoredReview[]> {
-  let reviews: StoredReview[] = [];
-
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('product_reviews')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data && data.length > 0) {
-      reviews = data.map((r) => ({
-        id: r.id,
-        productId: r.product_id,
-        authorName: r.author_name,
-        rating: Number(r.rating),
-        shadeUsed: r.shade_used,
-        comment: r.comment,
-        isVerifiedBuyer: Boolean(r.is_verified_buyer),
-        createdAt: r.created_at,
-      }));
-    }
-  } catch (err) {
-    console.warn('Supabase getAllReviews fallback:', err);
+  if (!isSupabaseAdminReady()) {
+    return Array.from(fallbackReviews.values()).flat();
   }
 
-  if (reviews.length === 0) {
-    for (const rList of fallbackReviews.values()) {
-      reviews.push(...rList);
-    }
-  }
+  const { data, error } = await supabaseAdmin
+    .from('product_reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-  return reviews;
+  if (error) {
+    console.error('[reviews] getAllReviews failed:', error.message);
+    throw new Error('Could not load reviews.');
+  }
+  return (data || []).map(mapReviewRow);
 }
 
 export async function toggleReviewVerified(id: string, isVerified: boolean): Promise<boolean> {
@@ -175,9 +185,11 @@ export async function toggleReviewVerified(id: string, isVerified: boolean): Pro
       .update({ is_verified_buyer: isVerified })
       .eq('id', id);
 
+    if (error) console.error('[reviews] update/delete failed:', error.message);
     return !error;
-  } catch {
-    return true;
+  } catch (err) {
+    console.error('[reviews] update/delete failed:', err);
+    return false;
   }
 }
 
@@ -188,9 +200,11 @@ export async function deleteReview(id: string): Promise<boolean> {
       .delete()
       .eq('id', id);
 
+    if (error) console.error('[reviews] update/delete failed:', error.message);
     return !error;
-  } catch {
-    return true;
+  } catch (err) {
+    console.error('[reviews] update/delete failed:', err);
+    return false;
   }
 }
 

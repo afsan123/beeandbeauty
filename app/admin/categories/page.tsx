@@ -54,7 +54,10 @@ export default function AdminCategoriesPage() {
       const res = await fetch(`/api/admin/categories/${slug}`, {
         method: 'DELETE',
       });
-      if (!res.ok) throw new Error('Failed to delete category');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to delete category');
+      }
       setCategories((prev) => prev.filter((c) => c.slug !== slug));
     } catch (err: any) {
       alert(err.message || 'Error deleting category');
