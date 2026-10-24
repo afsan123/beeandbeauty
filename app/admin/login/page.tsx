@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@beeandbeauty.bd');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -35,10 +35,6 @@ export default function AdminLoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleQuickDemoFill = () => {
-    setErrorMsg('Demo credentials have been removed. Use the executive password from Vercel environment variables.');
   };
 
   return (
@@ -92,18 +88,6 @@ export default function AdminLoginPage() {
                 placeholder="••••••••••••"
                 className="w-full rounded-xl border border-stone-600 bg-[#1A031E] px-4 py-3 text-sm text-white placeholder-stone-500 focus:border-[var(--bb-gold)] focus:outline-none focus:ring-1 focus:ring-[var(--bb-gold)] transition-colors"
               />
-            </div>
-
-            {/* Quick Demo Fill Pill */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <button
-                type="button"
-                onClick={handleQuickDemoFill}
-                className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline underline-offset-2 transition-colors"
-              >
-                ⚡ 1-Click Demo Credentials
-              </button>
-              <span className="text-[11px] text-stone-400">Dhaka Operations</span>
             </div>
 
             {/* Submit Button */}

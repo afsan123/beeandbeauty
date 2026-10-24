@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server.js';
 import { proxy } from '../../proxy.ts';
+import { applySecurityHeaders } from '../security/headers.ts';
 import {
   createAdminToken,
   SESSION_COOKIE_NAME,
@@ -104,6 +105,16 @@ describe('Next.js 16 Request Proxy & Security Guards Suite', () => {
     assert.equal(res.headers.get('Referrer-Policy'), 'strict-origin-when-cross-origin');
     assert.equal(res.headers.get('X-DNS-Prefetch-Control'), 'on');
     assert.ok(res.headers.get('Content-Security-Policy')?.includes("default-src 'self'"));
+    assert.equal(res.headers.get('Cross-Origin-Resource-Policy'), 'same-origin');
     assert.equal(res.headers.get('Access-Control-Allow-Origin'), null);
+  });
+
+  it('strips a wildcard CORS header from proxy-owned responses', async () => {
+    const req = new NextRequest('http://localhost:3000/api/products');
+    const res = await proxy(req);
+    res.headers.set('Access-Control-Allow-Origin', '*');
+    const hardened = applySecurityHeaders(res);
+    assert.equal(hardened.headers.get('Access-Control-Allow-Origin'), null);
+    assert.equal(hardened.headers.get('Cross-Origin-Resource-Policy'), 'same-origin');
   });
 });

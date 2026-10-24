@@ -23,6 +23,8 @@ export const SECURITY_HEADERS: Record<string, string> = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   'X-DNS-Prefetch-Control': 'on',
   'Cross-Origin-Opener-Policy': 'same-origin',
+  // Limits leftover platform wildcards on prerendered HTML (not set in this repo).
+  'Cross-Origin-Resource-Policy': 'same-origin',
 };
 
 export function applySecurityHeaders(res: NextResponse): NextResponse {
@@ -30,6 +32,8 @@ export function applySecurityHeaders(res: NextResponse): NextResponse {
     res.headers.set(key, value);
   }
   // Never advertise a wildcard CORS policy on HTML or API responses.
+  // Vercel prerenders of public HTML have been observed adding `*`; API routes
+  // in this app do not set CORS. Deleting here covers proxy-owned responses.
   if (res.headers.get('Access-Control-Allow-Origin') === '*') {
     res.headers.delete('Access-Control-Allow-Origin');
   }
