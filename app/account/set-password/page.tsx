@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { createBrowserSupabaseClient } from '../../../lib/supabase/client.ts';
 
 export default function SetPasswordPage() {
   const router = useRouter();
@@ -9,6 +11,38 @@ export default function SetPasswordPage() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [linkError, setLinkError] = useState('');
+
+  // Supabase's built-in invite / admin reset emails use the implicit flow and
+  // deliver tokens in the URL fragment. Turn them into a cookie session.
+  useEffect(() => {
+    const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+    if (!hash) return;
+    const params = new URLSearchParams(hash);
+    const clearHash = () =>
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    if (params.get('error') || params.get('error_code')) {
+      setLinkError('This link is invalid or has expired. Request a new one from the sign-in page.');
+      clearHash();
+      return;
+    }
+
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (!accessToken || !refreshToken) return;
+
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+    supabase.auth
+      .setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error: sessionError }) => {
+        if (sessionError) {
+          setLinkError('This link is invalid or has expired. Request a new one from the sign-in page.');
+        }
+      })
+      .finally(clearHash);
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -42,6 +76,14 @@ export default function SetPasswordPage() {
         Open this page from the email we send after checkout. We never claim an SMS was sent unless a message is actually dispatched.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4 bg-white border border-[#F0E6DD] rounded-2xl p-6">
+        {linkError && (
+          <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">
+            {linkError}{' '}
+            <Link href="/account/login" className="underline">
+              Go to sign in
+            </Link>
+          </p>
+        )}
         {error && <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">{error}</p>}
         <label className="block text-xs font-bold uppercase tracking-wider text-[#6A1B6D]">
           New password
