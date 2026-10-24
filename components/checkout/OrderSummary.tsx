@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import { CartItem } from '../../data/types';
 import { CartTotals } from '../../lib/cart';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 
 export interface OrderSummaryProps {
   items: CartItem[];

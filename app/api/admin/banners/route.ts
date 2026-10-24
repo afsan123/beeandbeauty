@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    const banners = await getAllBanners();
+    const banners = await getAllBanners(true);
     return NextResponse.json({ banners });
   } catch (error: any) {
     return NextResponse.json(

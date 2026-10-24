@@ -1,12 +1,19 @@
 import { PRODUCTS } from '../../data/mock/catalogData.ts';
 import type { Product } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
-import { getAllInventoryProducts } from './inventoryService.ts';
+import { getAllInventoryProducts, applyInventoryOverrides, clearInventoryCache } from './inventoryService.ts';
 import { generateSlug } from '../slug.ts';
+import { revalidateStoreCatalog } from './revalidateStore.ts';
 
 // In-memory catalog list initialized with canonical products
 let customProducts: Product[] = [];
 let isProductsLoaded = false;
+
+export function clearProductCache(): void {
+  customProducts = [];
+  isProductsLoaded = false;
+  clearInventoryCache();
+}
 
 export async function fetchRemoteProducts(): Promise<void> {
   try {
@@ -57,29 +64,30 @@ export async function fetchRemoteProducts(): Promise<void> {
   }
 }
 
-export async function getAllCatalogProducts(): Promise<Product[]> {
-  if (!isProductsLoaded) {
+export async function getAllCatalogProducts(forceRefresh = false): Promise<Product[]> {
+  if (!isProductsLoaded || forceRefresh) {
     await fetchRemoteProducts();
   }
 
   // Get canonical products with inventory overrides applied
-  const baseProducts = await getAllInventoryProducts();
+  const baseProducts = await getAllInventoryProducts(forceRefresh);
 
   // Combine base products and custom products (deduplicating by id)
   const combinedMap = new Map<string, Product>();
   baseProducts.forEach((p) => combinedMap.set(p.id, p));
   customProducts.forEach((p) => combinedMap.set(p.id, p));
 
-  return Array.from(combinedMap.values());
+  // Apply inventory overrides to all products so overrides take precedence
+  return applyInventoryOverrides(Array.from(combinedMap.values()));
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const products = await getAllCatalogProducts();
+export async function getProductBySlug(slug: string, forceRefresh = false): Promise<Product | null> {
+  const products = await getAllCatalogProducts(forceRefresh);
   return products.find((p) => p.slug === slug) || null;
 }
 
-export async function getProductById(id: string): Promise<Product | null> {
-  const products = await getAllCatalogProducts();
+export async function getProductById(id: string, forceRefresh = false): Promise<Product | null> {
+  const products = await getAllCatalogProducts(forceRefresh);
   return products.find((p) => p.id === id) || null;
 }
 
@@ -161,6 +169,15 @@ export async function createCatalogProduct(
     console.error('Remote product upsert fallback to memory:', err);
   }
 
+  // Trigger store revalidation and broadcast
+  revalidateStoreCatalog({
+    productId: newProduct.id,
+    productSlug: newProduct.slug,
+    categorySlug: newProduct.categorySlug,
+    action: 'created',
+    payload: newProduct,
+  });
+
   return newProduct;
 }
 
@@ -210,10 +227,22 @@ export async function updateCatalogProduct(
     console.error('Remote product update fallback to memory:', err);
   }
 
+  // Trigger store revalidation and broadcast
+  revalidateStoreCatalog({
+    productId: updated.id,
+    productSlug: updated.slug,
+    categorySlug: updated.categorySlug,
+    action: 'updated',
+    payload: updated,
+  });
+
   return updated;
 }
 
 export async function deleteCatalogProduct(id: string): Promise<boolean> {
+  const products = await getAllCatalogProducts();
+  const target = products.find((p) => p.id === id);
+
   const customIdx = customProducts.findIndex((p) => p.id === id);
   if (customIdx >= 0) {
     customProducts.splice(customIdx, 1);
@@ -224,6 +253,14 @@ export async function deleteCatalogProduct(id: string): Promise<boolean> {
   } catch (err) {
     console.error('Remote product delete fallback to memory:', err);
   }
+
+  // Trigger store revalidation and broadcast
+  revalidateStoreCatalog({
+    productId: id,
+    productSlug: target?.slug,
+    categorySlug: target?.categorySlug,
+    action: 'deleted',
+  });
 
   return true;
 }
@@ -352,6 +389,9 @@ export async function bulkCreateCatalogProducts(
       console.error('Remote bulk product upsert fallback to memory:', err);
     }
   }
+
+  // Revalidate store routes
+  revalidateStoreCatalog({ action: 'bulk_updated' });
 
   return {
     success: true,

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../supabase/admin.ts';
 import { LAUNCH_BANNERS } from '../data/launchCatalog.ts';
+import { revalidateStoreBanners } from './revalidateStore.ts';
 
 export interface BannerSlide {
   id: string;
@@ -25,6 +26,11 @@ const DEFAULT_BANNERS: BannerSlide[] = LAUNCH_BANNERS;
 
 let inMemoryBanners: BannerSlide[] = [...DEFAULT_BANNERS];
 let isBannersLoaded = false;
+
+export function clearBannerCache(): void {
+  inMemoryBanners = [...DEFAULT_BANNERS];
+  isBannersLoaded = false;
+}
 
 export async function fetchRemoteBanners(): Promise<void> {
   try {
@@ -60,15 +66,18 @@ export async function fetchRemoteBanners(): Promise<void> {
   }
 }
 
-export async function getAllBanners(): Promise<BannerSlide[]> {
-  if (!isBannersLoaded) {
+export async function getAllBanners(forceRefresh = false): Promise<BannerSlide[]> {
+  if (!isBannersLoaded || forceRefresh) {
     await fetchRemoteBanners();
   }
   return [...inMemoryBanners].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export async function getActiveBanners(type?: 'hero' | 'promo' | 'announcement'): Promise<BannerSlide[]> {
-  const all = await getAllBanners();
+export async function getActiveBanners(
+  type?: 'hero' | 'promo' | 'announcement',
+  forceRefresh = false
+): Promise<BannerSlide[]> {
+  const all = await getAllBanners(forceRefresh);
   return all.filter((b) => b.isActive && (!type || b.bannerType === type));
 }
 
@@ -112,6 +121,9 @@ export async function createBanner(input: Omit<BannerSlide, 'id'> & { id?: strin
     console.error('Remote banner insert fallback to memory:', err);
   }
 
+  // Revalidate routes and broadcast
+  revalidateStoreBanners(newBanner.id, 'created');
+
   return newBanner;
 }
 
@@ -154,6 +166,9 @@ export async function updateBanner(
     console.error('Remote banner update fallback to memory:', err);
   }
 
+  // Revalidate routes and broadcast
+  revalidateStoreBanners(id, 'updated');
+
   return updated;
 }
 
@@ -168,6 +183,9 @@ export async function deleteBanner(id: string): Promise<boolean> {
   } catch (err) {
     console.error('Remote banner delete fallback to memory:', err);
   }
+
+  // Revalidate routes and broadcast
+  revalidateStoreBanners(id, 'deleted');
 
   return true;
 }

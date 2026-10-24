@@ -14,7 +14,7 @@ import {
   MapPin,
   CreditCard,
 } from 'lucide-react';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 
 interface TrackingStep {
   title: string;

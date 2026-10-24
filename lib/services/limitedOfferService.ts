@@ -1,6 +1,7 @@
 import { OFFERS } from '../../data/mock/catalogData.ts';
 import type { Offer } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
+import { revalidateStoreOffers } from './revalidateStore.ts';
 
 export interface LimitedOffer extends Offer {
   isActive: boolean;
@@ -15,6 +16,11 @@ const DEFAULT_LIMITED_OFFERS: LimitedOffer[] = OFFERS.map((o) => ({
 
 let inMemoryOffers: LimitedOffer[] = [...DEFAULT_LIMITED_OFFERS];
 let isOffersLoaded = false;
+
+export function clearOfferCache(): void {
+  inMemoryOffers = [...DEFAULT_LIMITED_OFFERS];
+  isOffersLoaded = false;
+}
 
 export async function fetchRemoteOffers(): Promise<void> {
   try {
@@ -41,15 +47,15 @@ export async function fetchRemoteOffers(): Promise<void> {
   }
 }
 
-export async function getAllOffers(): Promise<LimitedOffer[]> {
-  if (!isOffersLoaded) {
+export async function getAllOffers(forceRefresh = false): Promise<LimitedOffer[]> {
+  if (!isOffersLoaded || forceRefresh) {
     await fetchRemoteOffers();
   }
   return [...inMemoryOffers];
 }
 
-export async function getActiveOffers(): Promise<LimitedOffer[]> {
-  const all = await getAllOffers();
+export async function getActiveOffers(forceRefresh = false): Promise<LimitedOffer[]> {
+  const all = await getAllOffers(forceRefresh);
   return all.filter((o) => o.isActive);
 }
 
@@ -61,9 +67,7 @@ export async function createOffer(input: Omit<LimitedOffer, 'id'> & { id?: strin
     isActive: input.isActive !== false,
   };
 
-  const existingIdx = inMemoryOffers.findIndex(
-    (o) => o.id === newOffer.id || (o.code && o.code.toUpperCase() === newOffer.code?.toUpperCase())
-  );
+  const existingIdx = inMemoryOffers.findIndex((o) => o.code === newOffer.code || o.id === newOffer.id);
   if (existingIdx !== -1) {
     inMemoryOffers[existingIdx] = newOffer;
   } else {
@@ -87,6 +91,9 @@ export async function createOffer(input: Omit<LimitedOffer, 'id'> & { id?: strin
   } catch (err) {
     console.error('Remote offer insert fallback to memory:', err);
   }
+
+  // Revalidate routes and broadcast
+  revalidateStoreOffers(newOffer.id, 'created');
 
   return newOffer;
 }
@@ -124,6 +131,9 @@ export async function updateOffer(
     console.error('Remote offer update fallback to memory:', err);
   }
 
+  // Revalidate routes and broadcast
+  revalidateStoreOffers(id, 'updated');
+
   return updated;
 }
 
@@ -138,6 +148,9 @@ export async function deleteOffer(id: string): Promise<boolean> {
   } catch (err) {
     console.error('Remote offer delete fallback to memory:', err);
   }
+
+  // Revalidate routes and broadcast
+  revalidateStoreOffers(id, 'deleted');
 
   return true;
 }

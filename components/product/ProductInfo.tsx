@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Check, Heart, MapPin, Shield, Truck } from 'lucide-react';
 import { Product, Shade } from '../../data/types';
@@ -11,6 +11,7 @@ import { ShadePicker } from './ShadePicker';
 import { useCart } from '../../store/cart';
 import { useWishlist } from '../../store/wishlist';
 import { cn } from '../../lib/cn';
+import { useStorefrontRealtime } from '../../lib/services/realtimeStorefront.ts';
 
 export interface ProductInfoProps {
   product: Product;
@@ -20,27 +21,56 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const { addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
+  const [currentProduct, setCurrentProduct] = useState<Product>(product);
+
+  useEffect(() => {
+    setCurrentProduct(product);
+  }, [product]);
+
   const [selectedShade, setSelectedShade] = useState<Shade | undefined>(
-    product.shades.find((s) => s.inStock) || product.shades[0]
+    currentProduct.shades.find((s) => s.inStock) || currentProduct.shades[0]
   );
   const [quantity, setQuantity] = useState(1);
   const [pincode, setPincode] = useState('');
   const [pincodeMessage, setPincodeMessage] = useState<string | null>(null);
 
-  const isSaved = isInWishlist(product.id);
+  // Real-time catalog and inventory synchronization
+  useStorefrontRealtime({
+    onCatalogUpdate: (event) => {
+      if (!event.id || event.id === product.id || event.slug === product.slug) {
+        fetch(`/api/products?refresh=true&search=${encodeURIComponent(product.title)}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            const fresh = data?.products?.find((p: Product) => p.id === product.id || p.slug === product.slug);
+            if (fresh) {
+              setCurrentProduct(fresh);
+              setSelectedShade((prev) => {
+                if (!prev) return fresh.shades?.[0];
+                const updated = fresh.shades?.find((s: Shade) => s.id === prev.id);
+                return updated || prev;
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    },
+  });
+
+  const isSaved = isInWishlist(currentProduct.id);
+  const isStockAvailable = currentProduct.inStock !== false && (!selectedShade || selectedShade.inStock !== false);
 
   const handleAddToBag = () => {
     addItem({
-      id: selectedShade ? `${product.id}-${selectedShade.id}` : product.id,
-      productId: product.id,
-      productSlug: product.slug,
-      title: product.title,
-      categoryName: product.categoryName,
-      price: product.price,
-      compareAtPrice: product.compareAtPrice,
+      id: selectedShade ? `${currentProduct.id}-${selectedShade.id}` : currentProduct.id,
+      productId: currentProduct.id,
+      productSlug: currentProduct.slug,
+      title: currentProduct.title,
+      categoryName: currentProduct.categoryName,
+      price: currentProduct.price,
+      compareAtPrice: currentProduct.compareAtPrice,
       selectedShade: selectedShade,
       quantity,
-      image: product.images.primary,
+      image: currentProduct.images.primary,
     });
   };
 
@@ -65,39 +95,46 @@ export function ProductInfo({ product }: ProductInfoProps) {
           Home
         </Link>
         <span>/</span>
-        <Link href={`/shop/${product.categorySlug}`} className="hover:text-[#6A1B6D]">
-          {product.categoryName}
+        <Link href={`/shop/${currentProduct.categorySlug}`} className="hover:text-[#6A1B6D]">
+          {currentProduct.categoryName}
         </Link>
         <span>/</span>
         <span className="text-[#6A1B6D] font-medium truncate max-w-[200px]">
-          {product.title}
+          {currentProduct.title}
         </span>
       </nav>
 
       {/* Title & Subtitle */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-[#6A1B6D] leading-tight font-serif">
-          {product.title}
+          {currentProduct.title}
         </h1>
         <p className="text-xs md:text-sm text-[#666666] mt-1.5 leading-relaxed font-light">
-          {product.subtitle}
+          {currentProduct.subtitle}
         </p>
       </div>
 
       {/* Ratings bar */}
       <div className="flex items-center gap-3">
-        <Rating rating={product.rating} reviewCount={product.reviewCount} size="md" />
+        <Rating rating={currentProduct.rating} reviewCount={currentProduct.reviewCount} size="md" />
         <span className="text-neutral-300">|</span>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-[2px]">
-          In Stock
+        <span
+          className={cn(
+            'text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-[2px]',
+            isStockAvailable
+              ? 'text-[#2E7D32] bg-[#E8F5E9]'
+              : 'text-rose-700 bg-rose-50 border border-rose-200'
+          )}
+        >
+          {isStockAvailable ? 'In Stock' : 'Out of Stock'}
         </span>
       </div>
 
       {/* Pricing Block */}
       <div className="bg-[#FFF9F5] p-4 border border-[#F0E6DD] rounded-[2px]">
         <Price
-          price={product.price}
-          compareAtPrice={product.compareAtPrice}
+          price={currentProduct.price}
+          compareAtPrice={currentProduct.compareAtPrice}
           size="xl"
         />
         <p className="text-[11px] text-[#666666] mt-1 font-medium">
@@ -106,7 +143,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       {/* Shade Picker for Cosmetics / Botanical Actives for Skincare */}
-      {product.categorySlug === 'skin' ? (
+      {currentProduct.categorySlug === 'skin' ? (
         <div className="bg-[#EBF3EE]/80 border border-[#C2DBCB] rounded-[2px] p-3 text-xs flex flex-col gap-1.5">
           <div className="font-bold uppercase tracking-wider text-[#274436] flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#3E6351]" />
@@ -116,9 +153,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
             Dermatologically tested, hypoallergenic, non-comedogenic formula enriched with raw propolis, bio-identical ceramides, and antioxidant honey nectar.
           </p>
         </div>
-      ) : product.shades.length > 0 ? (
+      ) : currentProduct.shades && currentProduct.shades.length > 0 ? (
         <ShadePicker
-          shades={product.shades}
+          shades={currentProduct.shades}
           selectedShade={selectedShade}
           onSelectShade={setSelectedShade}
         />
@@ -131,14 +168,20 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <button
           type="button"
           onClick={handleAddToBag}
-          className="flex-1 bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs md:text-sm font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-all cursor-pointer shadow-xs active:scale-[0.99]"
+          disabled={!isStockAvailable}
+          className={cn(
+            'flex-1 text-xs md:text-sm font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-all shadow-xs',
+            isStockAvailable
+              ? 'bg-[#6A1B6D] hover:bg-[#521354] text-white cursor-pointer active:scale-[0.99]'
+              : 'bg-stone-200 text-stone-500 cursor-not-allowed border border-stone-300'
+          )}
         >
-          Add to Bag
+          {isStockAvailable ? 'Add to Bag' : 'Out of Stock'}
         </button>
 
         <button
           type="button"
-          onClick={() => toggleWishlist(product.id)}
+          onClick={() => toggleWishlist(currentProduct.id)}
           aria-label={isSaved ? 'Remove from wishlist' : 'Add to wishlist'}
           className="w-11 h-11 border border-[#F0E6DD] rounded-[2px] flex items-center justify-center text-neutral-700 hover:text-[#C2188B] hover:border-[#C2188B] transition-colors cursor-pointer bg-white"
         >

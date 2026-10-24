@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    const offers = await getAllOffers();
+    const offers = await getAllOffers(true);
     return NextResponse.json({ offers });
   } catch (error: any) {
     return NextResponse.json(

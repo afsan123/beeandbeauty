@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    const categories = await getAllCategories();
+    const categories = await getAllCategories(true);
     return NextResponse.json({ categories });
   } catch (error: any) {
     return NextResponse.json(

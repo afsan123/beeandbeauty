@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { MessageCircle, X, Sparkles, Truck, HelpCircle } from 'lucide-react';
 
-const WHATSAPP_NUMBER = '8801754502430';
+const WHATSAPP_NUMBER =
+  (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/[^0-9]/g, '')) ||
+  '8801754502430';
 
 interface PromptOption {
   icon: React.ReactNode;

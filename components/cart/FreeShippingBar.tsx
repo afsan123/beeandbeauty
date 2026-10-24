@@ -3,7 +3,7 @@
 import React from 'react';
 import { Truck, CheckCircle2 } from 'lucide-react';
 import { calculateFreeShippingProgress } from '../../lib/cart';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 import { cn } from '../../lib/cn';
 
 export interface FreeShippingBarProps {

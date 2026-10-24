@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Plus } from 'lucide-react';
 import { Product } from '../../data/types';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 
 export interface CartUpsellProps {
   products: Product[];

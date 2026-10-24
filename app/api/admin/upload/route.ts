@@ -99,6 +99,18 @@ export async function POST(request: Request) {
 
     // 2. Fallback: Save to local public/images/products folder if cloud upload didn't succeed
     if (!finalUrl) {
+      // In serverless environments like Vercel, the local filesystem is read-only
+      const isServerlessReadOnly = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+      if (isServerlessReadOnly) {
+        return NextResponse.json(
+          {
+            error:
+              'Cloud storage upload failed and local filesystem is read-only on Vercel. Please ensure the Supabase "products" storage bucket is configured and accessible.',
+          },
+          { status: 502 }
+        );
+      }
+
       try {
         const publicDir = path.join(process.cwd(), 'public', 'images', 'products');
         await fs.mkdir(publicDir, { recursive: true });

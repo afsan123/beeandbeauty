@@ -17,9 +17,12 @@ export interface ShippingCalculationResult {
   courierPartners: string[];
 }
 
-export const FREE_SHIPPING_THRESHOLD = 2500;
-export const DHAKA_SHIPPING_FEE = 70;
-export const OUTSIDE_DHAKA_SHIPPING_FEE = 130;
+export const FREE_SHIPPING_THRESHOLD =
+  (typeof process !== 'undefined' && Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD)) || 2500;
+export const DHAKA_SHIPPING_FEE =
+  (typeof process !== 'undefined' && Number(process.env.NEXT_PUBLIC_DHAKA_SHIPPING_FEE)) || 70;
+export const OUTSIDE_DHAKA_SHIPPING_FEE =
+  (typeof process !== 'undefined' && Number(process.env.NEXT_PUBLIC_OUTSIDE_DHAKA_SHIPPING_FEE)) || 130;
 
 export function isDhakaZone(district: string): boolean {
   if (!district) return true;

@@ -6,7 +6,7 @@ import { ShoppingBag, ArrowRight, ShieldCheck, Tag, X, Trash2 } from 'lucide-rea
 import { useCart } from '../../store/cart';
 import { CartLineItem } from '../../components/cart/CartLineItem';
 import { FreeShippingBar } from '../../components/cart/FreeShippingBar';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 import { applyCoupon } from '../../lib/cart';
 
 export default function CartPage() {

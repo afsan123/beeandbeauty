@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { useStorefrontRealtime } from '../../lib/services/realtimeStorefront.ts';
 
 export interface HeroSlide {
   id: string;
@@ -77,46 +78,54 @@ export function HeroCarousel() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  const loadRemoteBanners = useCallback(async () => {
+    try {
+      const res = await fetch('/api/banners?refresh=true');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.banners && data.banners.length > 0) {
+          const mapped: HeroSlide[] = data.banners.map((b: any) => {
+            const url = b.mediaUrl || b.imageUrl || '';
+            const isVideo = b.mediaType === 'video' || url.endsWith('.mp4') || url.endsWith('.webm');
+            const isGif = b.mediaType === 'gif' || url.endsWith('.gif');
+            const inferredType = isVideo ? 'video' : isGif ? 'gif' : url ? 'image' : 'none';
+
+            return {
+              id: b.id,
+              tagline: b.tagline || 'BEE & BEAUTY EXCLUSIVE',
+              title: b.title,
+              subtitle: b.subtitle || '',
+              ctaText: b.ctaText,
+              ctaHref: b.ctaHref,
+              secondaryCtaText: b.secondaryCtaText,
+              secondaryCtaHref: b.secondaryCtaHref,
+              bgColor: b.bgColor || 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
+              accentColor: b.accentColor || '#D4AF37',
+              mediaType: b.mediaType || inferredType,
+              mediaUrl: url || undefined,
+              overlayOpacity: typeof b.overlayOpacity === 'number' ? b.overlayOpacity : 50,
+            };
+          });
+          setSlides(mapped);
+        }
+      }
+    } catch {
+      // Fallback to DEFAULT_SLIDES
+    }
+  }, []);
+
+  // Real-time banner updates directly from Admin mutations
+  useStorefrontRealtime({
+    onBannerUpdate: () => {
+      loadRemoteBanners();
+    },
+  });
+
   useEffect(() => {
     let isMounted = true;
-    async function loadRemoteBanners() {
-      try {
-        const res = await fetch('/api/banners');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.banners && data.banners.length > 0 && isMounted) {
-            const mapped: HeroSlide[] = data.banners.map((b: any) => {
-              const url = b.mediaUrl || b.imageUrl || '';
-              const isVideo = b.mediaType === 'video' || url.endsWith('.mp4') || url.endsWith('.webm');
-              const isGif = b.mediaType === 'gif' || url.endsWith('.gif');
-              const inferredType = isVideo ? 'video' : isGif ? 'gif' : url ? 'image' : 'none';
-
-              return {
-                id: b.id,
-                tagline: b.tagline || 'BEE & BEAUTY EXCLUSIVE',
-                title: b.title,
-                subtitle: b.subtitle || '',
-                ctaText: b.ctaText,
-                ctaHref: b.ctaHref,
-                secondaryCtaText: b.secondaryCtaText,
-                secondaryCtaHref: b.secondaryCtaHref,
-                bgColor: b.bgColor || 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
-                accentColor: b.accentColor || '#D4AF37',
-                mediaType: b.mediaType || inferredType,
-                mediaUrl: url || undefined,
-                overlayOpacity: typeof b.overlayOpacity === 'number' ? b.overlayOpacity : 50,
-              };
-            });
-            setSlides(mapped);
-          }
-        }
-      } catch {
-        // Fallback to DEFAULT_SLIDES
-      }
-    }
     loadRemoteBanners();
 
-    // Real-time synchronization: sync when window gains focus & periodic heartbeat
+    // Sync when window gains focus & periodic heartbeat
     const handleFocus = () => loadRemoteBanners();
     window.addEventListener('focus', handleFocus);
     const syncInterval = setInterval(loadRemoteBanners, 20000);
@@ -126,7 +135,7 @@ export function HeroCarousel() {
       window.removeEventListener('focus', handleFocus);
       clearInterval(syncInterval);
     };
-  }, []);
+  }, [loadRemoteBanners]);
 
   const totalSlides = slides.length;
 

@@ -17,7 +17,7 @@ import { useCart } from '../../store/cart';
 import { CheckoutSteps } from '../../components/checkout/CheckoutSteps';
 import { AddressForm, ShippingFormData } from '../../components/checkout/AddressForm';
 import { OrderSummary } from '../../components/checkout/OrderSummary';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 import { Logo } from '../../components/ui/Logo';
 
 type PaymentMethod = 'cod' | 'bkash' | 'nagad';

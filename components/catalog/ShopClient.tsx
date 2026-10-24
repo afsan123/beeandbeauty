@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { Category, FilterState, Product, SortOption } from '../../data/types';
@@ -10,6 +10,7 @@ import { SortDropdown } from './SortDropdown';
 import { Pagination } from './Pagination';
 import { filterProducts, sortProducts } from '../../lib/filters';
 import { Drawer } from '../ui/Drawer';
+import { useStorefrontRealtime } from '../../lib/services/realtimeStorefront.ts';
 
 export interface ShopClientProps {
   initialCategory: Category | null;
@@ -26,6 +27,28 @@ export function ShopClient({
   allProducts,
   categorySlug,
 }: ShopClientProps) {
+  const [products, setProducts] = useState<Product[]>(allProducts);
+
+  // Sync state if server props refresh
+  useEffect(() => {
+    setProducts(allProducts);
+  }, [allProducts]);
+
+  // Connect real-time synchronization for instant catalog updates
+  useStorefrontRealtime({
+    onCatalogUpdate: () => {
+      const catParam = categorySlug !== 'all' ? `&category=${encodeURIComponent(categorySlug)}` : '';
+      fetch(`/api/products?refresh=true${catParam}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.products && Array.isArray(data.products)) {
+            setProducts(data.products);
+          }
+        })
+        .catch(() => {});
+    },
+  });
+
   const [filters, setFilters] = useState<FilterState>({
     category: categorySlug === 'all' || categorySlug === 'under499' ? undefined : categorySlug,
     inStockOnly: false,
@@ -41,13 +64,13 @@ export function ShopClient({
 
   // Compute filtered & sorted products
   const filteredProducts = useMemo(() => {
-    let prods = allProducts;
+    let prods = products;
     if (categorySlug === 'under499') {
       prods = prods.filter((p) => p.isUnder499 || p.price <= 499);
     }
     const filtered = filterProducts(prods, filters);
     return sortProducts(filtered, sortOption);
-  }, [allProducts, filters, sortOption, categorySlug]);
+  }, [products, filters, sortOption, categorySlug]);
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = useMemo(() => {

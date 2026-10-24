@@ -18,32 +18,32 @@ export class MockCatalogRepository implements CatalogRepository {
     filters?: Partial<FilterState>,
     sort?: SortOption
   ): Promise<Product[]> {
-    const products = await getAllCatalogProducts();
+    const products = await getAllCatalogProducts(true);
     const filtered = filterProducts(products, filters);
     const sorted = sortProducts(filtered, sort);
     return sorted;
   }
 
   async getProductBySlug(slug: string): Promise<Product | null> {
-    return await fetchProductBySlug(slug);
+    return await fetchProductBySlug(slug, true);
   }
 
   async getProductById(id: string): Promise<Product | null> {
-    return await fetchProductById(id);
+    return await fetchProductById(id, true);
   }
 
   async getCategories(): Promise<Category[]> {
-    return await getAllCategories();
+    return await getAllCategories(true);
   }
 
   async getCategoryBySlug(slug: string): Promise<Category | null> {
-    return await fetchCategoryBySlug(slug);
+    return await fetchCategoryBySlug(slug, true);
   }
 
   async getFeaturedProducts(
     type: 'new' | 'bestseller' | 'kits' | 'under499'
   ): Promise<Product[]> {
-    const products = await getAllCatalogProducts();
+    const products = await getAllCatalogProducts(true);
     switch (type) {
       case 'new':
         return products.filter((p) => p.isNewLaunch);
@@ -59,7 +59,7 @@ export class MockCatalogRepository implements CatalogRepository {
   }
 
   async getRelatedProducts(productId: string, limit: number = 4): Promise<Product[]> {
-    const products = await getAllCatalogProducts();
+    const products = await getAllCatalogProducts(true);
     const target = products.find((p) => p.id === productId);
     if (!target) return products.slice(0, limit);
 
@@ -79,12 +79,12 @@ export class MockCatalogRepository implements CatalogRepository {
   }
 
   async searchProducts(query: string): Promise<Product[]> {
-    const products = await getAllCatalogProducts();
+    const products = await getAllCatalogProducts(true);
     return searchCatalog(products, query);
   }
 
   async getOffers(): Promise<Offer[]> {
-    const offers = await getActiveOffers();
+    const offers = await getActiveOffers(true);
     return offers;
   }
 }

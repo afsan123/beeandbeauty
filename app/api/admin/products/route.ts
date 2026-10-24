@@ -13,7 +13,7 @@ export async function GET() {
   }
 
   try {
-    const products = await getAllCatalogProducts();
+    const products = await getAllCatalogProducts(true);
     return NextResponse.json({ products });
   } catch (error: any) {
     return NextResponse.json(

@@ -8,7 +8,7 @@ import { Drawer } from '../ui/Drawer';
 import { FreeShippingBar } from './FreeShippingBar';
 import { CartLineItem } from './CartLineItem';
 import { CartUpsell } from './CartUpsell';
-import { formatPrice } from '../../lib/price';
+import { formatPrice } from '../../lib/formatters';
 import { applyCoupon } from '../../lib/cart';
 import { catalogRepository } from '../../data/mock/mockRepository';
 import { Product } from '../../data/types';

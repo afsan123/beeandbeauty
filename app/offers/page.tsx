@@ -6,31 +6,40 @@ import { Tag, Copy, Check, Gift, Truck, Percent } from 'lucide-react';
 import { OFFERS } from '../../data/mock/catalogData';
 import { Accordion } from '../../components/ui/Accordion';
 import type { Offer } from '../../data/types';
+import { useStorefrontRealtime } from '../../lib/services/realtimeStorefront.ts';
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<Offer[]>(OFFERS);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
+  const loadOffers = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/offers?refresh=true');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.offers && data.offers.length > 0) {
+          setOffers(data.offers);
+        }
+      }
+    } catch {
+      // Fallback to initial OFFERS
+    }
+  }, []);
+
+  // Real-time limited offers updates directly from Admin mutations
+  useStorefrontRealtime({
+    onOfferUpdate: () => {
+      loadOffers();
+    },
+  });
+
   useEffect(() => {
     let isMounted = true;
-    async function loadOffers() {
-      try {
-        const res = await fetch('/api/offers');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.offers && data.offers.length > 0 && isMounted) {
-            setOffers(data.offers);
-          }
-        }
-      } catch {
-        // Fallback to initial OFFERS
-      }
-    }
     loadOffers();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadOffers]);
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);

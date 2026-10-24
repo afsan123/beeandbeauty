@@ -1,6 +1,7 @@
 import { PRODUCTS } from '../../data/mock/catalogData.ts';
 import type { Product } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
+import { revalidateStoreCatalog } from './revalidateStore.ts';
 
 export interface ProductInventoryOverride {
   productId: string;
@@ -16,36 +17,19 @@ export interface ProductInventoryOverride {
 
 // In-memory persistent cache across server-side executions
 const inventoryOverridesCache = new Map<string, ProductInventoryOverride>();
+let isInventoryLoaded = false;
 
-export async function fetchRemoteInventoryOverrides(): Promise<void> {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('product_inventory')
-      .select('*');
-
-    if (!error && data && data.length > 0) {
-      data.forEach((row) => {
-        inventoryOverridesCache.set(row.product_id, {
-          productId: row.product_id,
-          inStock: row.in_stock,
-          price: row.price ? Number(row.price) : undefined,
-          compareAtPrice: row.compare_at_price ? Number(row.compare_at_price) : undefined,
-          isBestseller: row.is_bestseller,
-          isNewLaunch: row.is_new_launch,
-          isFeatured: row.is_featured,
-          shadesStock: row.shades_stock || {},
-          updatedAt: row.updated_at,
-        });
-      });
-    }
-  } catch {
-    // Graceful in-memory fallback
-  }
+export function clearInventoryCache(): void {
+  inventoryOverridesCache.clear();
+  isInventoryLoaded = false;
 }
 
-export async function getAllInventoryProducts(): Promise<Product[]> {
-  // Merge cached/overridden properties onto canonical catalog products
-  return PRODUCTS.map((product) => {
+export function getInventoryOverride(productId: string): ProductInventoryOverride | undefined {
+  return inventoryOverridesCache.get(productId);
+}
+
+export function applyInventoryOverrides(products: Product[]): Product[] {
+  return products.map((product) => {
     const override = inventoryOverridesCache.get(product.id);
     if (!override) return { ...product };
 
@@ -67,6 +51,43 @@ export async function getAllInventoryProducts(): Promise<Product[]> {
       shades: mergedShades || product.shades,
     };
   });
+}
+
+export async function fetchRemoteInventoryOverrides(): Promise<void> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('product_inventory')
+      .select('*');
+
+    if (!error && data && data.length > 0) {
+      data.forEach((row) => {
+        inventoryOverridesCache.set(row.product_id, {
+          productId: row.product_id,
+          inStock: row.in_stock,
+          price: row.price ? Number(row.price) : undefined,
+          compareAtPrice: row.compare_at_price ? Number(row.compare_at_price) : undefined,
+          isBestseller: row.is_bestseller,
+          isNewLaunch: row.is_new_launch,
+          isFeatured: row.is_featured,
+          shadesStock: row.shades_stock || {},
+          updatedAt: row.updated_at,
+        });
+      });
+      isInventoryLoaded = true;
+    }
+  } catch {
+    // Graceful in-memory fallback
+  }
+}
+
+export async function getAllInventoryProducts(forceRefresh = false): Promise<Product[]> {
+  if (!isInventoryLoaded || forceRefresh) {
+    await fetchRemoteInventoryOverrides();
+    isInventoryLoaded = true;
+  }
+
+  // Merge cached/overridden properties onto canonical catalog products
+  return applyInventoryOverrides(PRODUCTS);
 }
 
 export async function updateProductInventory(override: ProductInventoryOverride): Promise<Product | null> {
@@ -105,6 +126,13 @@ export async function updateProductInventory(override: ProductInventoryOverride)
     console.warn('Supabase product_inventory upsert skipped/failed:', err);
   }
 
-  const all = await getAllInventoryProducts();
+  // Trigger store revalidation and real-time broadcast
+  revalidateStoreCatalog({
+    productId: override.productId,
+    action: 'updated',
+    payload: updated,
+  });
+
+  const all = await getAllInventoryProducts(true);
   return all.find((p) => p.id === override.productId) || null;
 }

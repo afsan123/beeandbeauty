@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/cn';
-import { calculateDiscountPercentage, formatPrice, hasDiscount } from '../../lib/price';
+import { calculateDiscountPercentage, formatPrice, hasDiscount } from '../../lib/formatters';
 
 export interface PriceProps {
   price: number;

@@ -79,6 +79,20 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-[#1F0422] text-stone-100">{children}</div>;
   }
 
+  // If checking authentication for protected admin routes, show discreet loading barrier
+  if (isCheckingAuth && !user) {
+    return (
+      <div className="min-h-screen bg-[var(--bb-ivory)] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--bb-plum)] border-t-transparent" />
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-widest">
+            Verifying Executive Access...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--bb-ivory)] text-stone-900 flex">
       {/* Sidebar Navigation */}

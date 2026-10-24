@@ -1,10 +1,16 @@
 import { CATEGORIES } from '../../data/mock/catalogData.ts';
 import type { Category } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
+import { revalidateStoreCategories } from './revalidateStore.ts';
 
 // In-memory persistent cache across server-side executions
 let inMemoryCategories: Category[] = [...CATEGORIES];
 let isFetchedFromRemote = false;
+
+export function clearCategoryCache(): void {
+  inMemoryCategories = [...CATEGORIES];
+  isFetchedFromRemote = false;
+}
 
 export async function fetchRemoteCategories(): Promise<void> {
   try {
@@ -32,15 +38,15 @@ export async function fetchRemoteCategories(): Promise<void> {
   }
 }
 
-export async function getAllCategories(): Promise<Category[]> {
-  if (!isFetchedFromRemote) {
+export async function getAllCategories(forceRefresh = false): Promise<Category[]> {
+  if (!isFetchedFromRemote || forceRefresh) {
     await fetchRemoteCategories();
   }
   return [...inMemoryCategories];
 }
 
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const categories = await getAllCategories();
+export async function getCategoryBySlug(slug: string, forceRefresh = false): Promise<Category | null> {
+  const categories = await getAllCategories(forceRefresh);
   return categories.find((c) => c.slug === slug) || null;
 }
 
@@ -84,6 +90,9 @@ export async function createCategory(
     console.error('Remote category insert fallback to memory:', err);
   }
 
+  // Trigger store revalidation and broadcast
+  revalidateStoreCategories(newCategory.slug, 'created');
+
   return newCategory;
 }
 
@@ -104,19 +113,20 @@ export async function updateCategory(
     await supabaseAdmin
       .from('categories')
       .update({
-        slug: updated.slug,
         name: updated.name,
         short_title: updated.shortTitle,
         description: updated.description,
         tile_image: updated.tileImage,
         hero_banner_image: updated.heroBannerImage,
-        product_count: updated.productCount,
         subcategories: updated.subcategories,
       })
       .eq('slug', slug);
   } catch (err) {
     console.error('Remote category update fallback to memory:', err);
   }
+
+  // Trigger store revalidation and broadcast
+  revalidateStoreCategories(slug, 'updated');
 
   return updated;
 }
@@ -132,6 +142,9 @@ export async function deleteCategory(slug: string): Promise<boolean> {
   } catch (err) {
     console.error('Remote category delete fallback to memory:', err);
   }
+
+  // Trigger store revalidation and broadcast
+  revalidateStoreCategories(slug, 'deleted');
 
   return true;
 }
