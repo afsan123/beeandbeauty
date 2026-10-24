@@ -309,7 +309,7 @@ export function normalizeProductRow(
     isFeatured,
     isKit,
     isUnder499,
-    rating: 5.0,
+    rating: 0,
     reviewCount: 0,
     badges,
     shades,

@@ -17,6 +17,11 @@ export function Rating({
   showCount = true,
   className,
 }: RatingProps) {
+  // No real reviews yet: show nothing rather than a made-up score.
+  if (typeof reviewCount === 'number' && reviewCount <= 0) {
+    return null;
+  }
+
   const iconSize = size === 'sm' ? 12 : 14;
   const roundedRating = Math.round(rating);
 

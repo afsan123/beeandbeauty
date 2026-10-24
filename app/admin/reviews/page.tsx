@@ -54,9 +54,12 @@ export default function AdminReviewsPage() {
       const res = await fetch(`/api/admin/reviews?id=${review.id}`, {
         method: 'DELETE',
       });
-      if (res.ok) {
-        setReviews((prev) => prev.filter((r) => r.id !== review.id));
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to delete review');
+        return;
       }
+      setReviews((prev) => prev.filter((r) => r.id !== review.id));
     } catch (err) {
       console.error('Error deleting review:', err);
     }
