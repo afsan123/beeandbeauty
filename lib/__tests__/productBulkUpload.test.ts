@@ -8,7 +8,7 @@ import {
   parseProductJson,
   getSampleCsvTemplate,
 } from '../productBulkParser.ts';
-import { bulkCreateCatalogProducts } from '../services/productService.ts';
+import { bulkCreateCatalogProducts, deleteCatalogProduct } from '../services/productService.ts';
 import type { Category } from '../../data/types.ts';
 
 const mockCategories: Category[] = [
@@ -191,6 +191,11 @@ describe('Product Bulk Upload Engine', () => {
       assert.strictEqual(res.products.length, 2);
       assert.strictEqual(res.products[0].slug, 'bulk-batch-radiant-foundation');
       assert.strictEqual(res.products[1].slug, 'bulk-batch-silk-kohl-eyeliner');
+
+      // Teardown test items to maintain zero dummy products in production database
+      for (const p of res.products) {
+        await deleteCatalogProduct(p.id);
+      }
     });
   });
 });

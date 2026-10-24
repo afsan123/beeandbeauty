@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateSlug } from '../slug.ts';
-import { createCatalogProduct } from '../services/productService.ts';
+import { createCatalogProduct, deleteCatalogProduct } from '../services/productService.ts';
 
 describe('Auto-Generated URL Slug Suite', () => {
   it('converts product titles to clean lowercase hyphenated slugs', () => {
@@ -46,5 +46,8 @@ describe('Auto-Generated URL Slug Suite', () => {
 
     assert.equal(prod.slug, 'botanical-propolis-lash-sculpting-mascara');
     assert.equal(prod.title, 'Botanical Propolis Lash Sculpting Mascara');
+
+    // Teardown test item to keep production database clean
+    await deleteCatalogProduct(prod.id);
   });
 });
