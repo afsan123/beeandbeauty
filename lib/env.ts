@@ -30,8 +30,8 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
       (cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY) ||
-        cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
-        cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY))
+        cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
+        cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY))
   );
 }
 
@@ -39,16 +39,26 @@ export function getSupabaseUrl(): string | null {
   return cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
-export function getSupabaseAnonKey(): string | null {
+/**
+ * Public (browser-safe) Supabase key. Prefers the new `sb_publishable_...`
+ * key and falls back to the legacy anon JWT so the legacy keys can be
+ * disabled in Supabase once the publishable key is deployed.
+ * Literal `process.env.NEXT_PUBLIC_*` references are required so Next.js
+ * inlines them into client bundles.
+ */
+export function getSupabasePublishableKey(): string | null {
   return (
-    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
-    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
+    cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
   );
 }
 
+/** @deprecated Use getSupabasePublishableKey(). Kept for existing imports. */
+export const getSupabaseAnonKey = getSupabasePublishableKey;
+
 export function getSupabaseServiceRoleKey(): string | null {
   return (
-    cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY) ||
-    cleanEnv(process.env.SUPABASE_SECRET_KEY)
+    cleanEnv(process.env.SUPABASE_SECRET_KEY) ||
+    cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY)
   );
 }

@@ -1,12 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server.js';
-import { getSupabaseAnonKey, getSupabaseUrl } from '../env.ts';
+import { getSupabasePublishableKey, getSupabaseUrl } from '../env.ts';
 
 /** Refresh the customer Supabase session without touching the admin HMAC cookie. */
 export async function refreshCustomerSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
   const url = getSupabaseUrl();
-  const key = getSupabaseAnonKey();
+  const key = getSupabasePublishableKey();
   if (!url || !key) {
     return response;
   }

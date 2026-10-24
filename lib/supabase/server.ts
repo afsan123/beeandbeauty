@@ -1,11 +1,11 @@
 import 'server-only';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers.js';
-import { getSupabaseAnonKey, getSupabaseUrl } from '../env.ts';
+import { getSupabasePublishableKey, getSupabaseUrl } from '../env.ts';
 
 export async function createServerSupabaseClient() {
   const url = getSupabaseUrl();
-  const key = getSupabaseAnonKey();
+  const key = getSupabasePublishableKey();
   if (!url || !key) {
     return null;
   }
