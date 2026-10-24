@@ -1,19 +1,7 @@
+import type { StudioTutorial } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
 
-export interface StudioTutorial {
-  id: string;
-  title: string;
-  category: string;
-  duration: string;
-  description: string;
-  steps: string[];
-  productSlug?: string;
-  productName?: string;
-  videoUrl?: string;
-  thumbnailUrl?: string;
-  isActive: boolean;
-  sortOrder: number;
-}
+export type { StudioTutorial };
 
 export interface StudioBooking {
   id: string;
@@ -81,14 +69,14 @@ const DEFAULT_TUTORIALS: StudioTutorial[] = [
 
 const DEFAULT_BOOKINGS: StudioBooking[] = [];
 
-let inMemoryTutorials: StudioTutorial[] = [...DEFAULT_TUTORIALS];
+let inMemoryTutorials: StudioTutorial[] = [];
 let inMemoryBookings: StudioBooking[] = [];
 let isStudioLoaded = false;
 
 export async function clearTestBookings(): Promise<{ success: boolean; deletedCount: number }> {
   let count = inMemoryBookings.length;
   inMemoryBookings = [];
-  inMemoryTutorials = [...DEFAULT_TUTORIALS];
+  inMemoryTutorials = [];
 
   try {
     const { data } = await supabaseAdmin
@@ -156,7 +144,13 @@ export async function getAllTutorials(): Promise<StudioTutorial[]> {
   if (!isStudioLoaded) {
     await fetchRemoteStudio();
   }
-  return [...inMemoryTutorials];
+  const source = inMemoryTutorials.length > 0 ? inMemoryTutorials : DEFAULT_TUTORIALS;
+  return [...source];
+}
+
+export async function getActiveTutorials(): Promise<StudioTutorial[]> {
+  const all = await getAllTutorials();
+  return all.filter((t) => t.isActive);
 }
 
 export async function createTutorial(

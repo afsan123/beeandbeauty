@@ -16,6 +16,9 @@ interface CouponDefinition {
   min_spend: number;
   max_discount: number | null;
   is_active: boolean;
+  expires_at?: string | null;
+  usage_limit?: number | null;
+  used_count?: number;
 }
 
 const CANONICAL_COUPONS: Record<string, CouponDefinition> = {
@@ -88,6 +91,9 @@ export async function validateCoupon(
         min_spend: Number(data.min_spend || 0),
         max_discount: data.max_discount ? Number(data.max_discount) : null,
         is_active: data.is_active,
+        expires_at: data.expires_at,
+        usage_limit: data.usage_limit,
+        used_count: Number(data.used_count || 0),
       };
     }
   } catch {
@@ -104,6 +110,30 @@ export async function validateCoupon(
       valid: false,
       code: upperCode,
       discountType: 'percentage',
+      discountAmount: 0,
+      message: `Coupon "${upperCode}" is invalid or expired.`,
+    };
+  }
+
+  if (couponDef.expires_at && new Date(couponDef.expires_at).getTime() < Date.now()) {
+    return {
+      valid: false,
+      code: upperCode,
+      discountType: couponDef.discount_type,
+      discountAmount: 0,
+      message: `Coupon "${upperCode}" is invalid or expired.`,
+    };
+  }
+
+  if (
+    couponDef.usage_limit != null &&
+    couponDef.used_count != null &&
+    couponDef.used_count >= couponDef.usage_limit
+  ) {
+    return {
+      valid: false,
+      code: upperCode,
+      discountType: couponDef.discount_type,
       discountAmount: 0,
       message: `Coupon "${upperCode}" is invalid or expired.`,
     };

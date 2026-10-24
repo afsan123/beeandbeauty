@@ -71,6 +71,8 @@ export function LaunchPreparationCard({ onRefreshParent }: LaunchPreparationCard
     try {
       const res = await fetch('/api/admin/launch-setup', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: true }),
       });
 
       const result = await res.json();

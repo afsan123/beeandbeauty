@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../supabase/admin.ts';
-import { catalogRepository } from '../../data/mock/mockRepository.ts';
+import { normalizeBdPhone, phonesMatch } from '../security/phone.ts';
 
 export interface CreateReviewPayload {
   productId: string;
@@ -7,6 +7,8 @@ export interface CreateReviewPayload {
   rating: number;
   shadeUsed?: string;
   comment: string;
+  authorEmail?: string;
+  authorPhone?: string;
 }
 
 export interface StoredReview {
@@ -21,6 +23,39 @@ export interface StoredReview {
 }
 
 const fallbackReviews = new Map<string, StoredReview[]>();
+
+async function hasPurchasedProduct(
+  productId: string,
+  email?: string,
+  phone?: string
+): Promise<boolean> {
+  const cleanEmail = email?.trim().toLowerCase();
+  const cleanPhone = normalizeBdPhone(phone);
+  if (!cleanEmail && !cleanPhone) return false;
+
+  try {
+    let query = supabaseAdmin
+      .from('orders')
+      .select('id, customer_email, customer_phone, order_items!inner(product_id)')
+      .eq('order_items.product_id', productId)
+      .neq('order_status', 'cancelled');
+
+    if (cleanEmail) {
+      query = query.eq('customer_email', cleanEmail);
+    }
+
+    const { data, error } = await query.limit(20);
+    if (error || !data) return false;
+
+    return data.some((row) => {
+      const emailMatch = cleanEmail ? row.customer_email?.toLowerCase() === cleanEmail : false;
+      const phoneMatch = cleanPhone ? phonesMatch(row.customer_phone, cleanPhone) : false;
+      return emailMatch || phoneMatch;
+    });
+  } catch {
+    return false;
+  }
+}
 
 export async function getReviews(productId: string): Promise<{
   reviews: StoredReview[];
@@ -56,36 +91,6 @@ export async function getReviews(productId: string): Promise<{
     reviews = fallbackReviews.get(productId) || [];
   }
 
-  // If still empty, pull initial seed reviews from catalogRepository
-  if (reviews.length === 0) {
-    const product = await catalogRepository.getProductById(productId);
-    if (product) {
-      // Mock seed review
-      reviews = [
-        {
-          id: 'seed-1',
-          productId: product.id,
-          authorName: 'Ayesha Rahman',
-          rating: 5,
-          shadeUsed: product.shades?.[0]?.name,
-          comment: 'Outstanding velvet finish that lasts through Dhaka humidity without drying out lips!',
-          isVerifiedBuyer: true,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'seed-2',
-          productId: product.id,
-          authorName: 'Tasnim Z.',
-          rating: 5,
-          shadeUsed: product.shades?.[1]?.name,
-          comment: 'Perfect undertone match for South Asian skin. The propolis infusion feels genuinely nourishing.',
-          isVerifiedBuyer: true,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-    }
-  }
-
   const totalCount = reviews.length;
   const sumRatings = reviews.reduce((acc, r) => acc + r.rating, 0);
   const averageRating = totalCount > 0 ? Number((sumRatings / totalCount).toFixed(1)) : 5.0;
@@ -102,6 +107,12 @@ export async function createReview(payload: CreateReviewPayload): Promise<Stored
   }
   const rating = Math.min(5, Math.max(1, Math.round(payload.rating || 5)));
 
+  const isVerifiedBuyer = await hasPurchasedProduct(
+    payload.productId,
+    payload.authorEmail,
+    payload.authorPhone
+  );
+
   const review: StoredReview = {
     id: crypto.randomUUID(),
     productId: payload.productId,
@@ -109,7 +120,7 @@ export async function createReview(payload: CreateReviewPayload): Promise<Stored
     rating,
     shadeUsed: payload.shadeUsed?.trim(),
     comment: payload.comment.trim(),
-    isVerifiedBuyer: true,
+    isVerifiedBuyer,
     createdAt: new Date().toISOString(),
   };
 
@@ -125,6 +136,8 @@ export async function createReview(payload: CreateReviewPayload): Promise<Stored
       shade_used: review.shadeUsed,
       comment: review.comment,
       is_verified_buyer: review.isVerifiedBuyer,
+      author_email: payload.authorEmail?.trim().toLowerCase() || null,
+      author_phone: normalizeBdPhone(payload.authorPhone) || null,
       created_at: review.createdAt,
     });
   } catch (err) {

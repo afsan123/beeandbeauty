@@ -1,26 +1,23 @@
 import { PRODUCTS } from '../../data/mock/catalogData.ts';
 import type { Product } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
-import { getAllInventoryProducts, applyInventoryOverrides, clearInventoryCache } from './inventoryService.ts';
+import { applyInventoryOverrides, clearInventoryCache, fetchRemoteInventoryOverrides } from './inventoryService.ts';
 import { generateSlug } from '../slug.ts';
 import { revalidateStoreCatalog } from './revalidateStore.ts';
 
-// In-memory catalog list initialized with canonical products
-let customProducts: Product[] = [];
+let remoteProducts: Product[] = [];
+let localProductOverrides: Product[] = [];
 let isProductsLoaded = false;
 
 export function clearProductCache(): void {
-  customProducts = [];
+  remoteProducts = [];
+  localProductOverrides = [];
   isProductsLoaded = false;
   clearInventoryCache();
 }
 
-export async function fetchRemoteProducts(): Promise<void> {
-  try {
-    const { data, error } = await supabaseAdmin.from('products').select('*');
-
-    if (!error && data && data.length > 0) {
-      customProducts = data.map((row) => ({
+function mapProductRow(row: Record<string, any>): Product {
+  return {
         id: row.id,
         slug: row.slug,
         title: row.title,
@@ -56,28 +53,33 @@ export async function fetchRemoteProducts(): Promise<void> {
         isKit: Boolean(row.is_kit),
         isUnder499: Boolean(row.is_under499),
         tags: Array.isArray(row.tags) ? row.tags : [],
-      }));
+  };
+}
+
+export async function fetchRemoteProducts(): Promise<void> {
+  try {
+    const { data, error } = await supabaseAdmin.from('products').select('*');
+
+    if (!error && data && data.length > 0) {
+      remoteProducts = data.map(mapProductRow);
       isProductsLoaded = true;
     }
   } catch {
-    // Fallback to local
+    // Fallback to launch catalog — never merge static + DB at runtime.
   }
 }
 
 export async function getAllCatalogProducts(forceRefresh = false): Promise<Product[]> {
   if (!isProductsLoaded || forceRefresh) {
     await fetchRemoteProducts();
+    await fetchRemoteInventoryOverrides();
   }
 
-  // Get canonical products with inventory overrides applied
-  const baseProducts = await getAllInventoryProducts(forceRefresh);
-
-  // Combine base products and custom products (deduplicating by id)
+  const base = remoteProducts.length > 0 ? remoteProducts : PRODUCTS;
   const combinedMap = new Map<string, Product>();
-  baseProducts.forEach((p) => combinedMap.set(p.id, p));
-  customProducts.forEach((p) => combinedMap.set(p.id, p));
+  base.forEach((p) => combinedMap.set(p.id, p));
+  localProductOverrides.forEach((p) => combinedMap.set(p.id, p));
 
-  // Apply inventory overrides to all products so overrides take precedence
   return applyInventoryOverrides(Array.from(combinedMap.values()));
 }
 
@@ -128,12 +130,11 @@ export async function createCatalogProduct(
     inStock: input.inStock !== false,
   };
 
-  // Add to in-memory custom products
-  const existingIdx = customProducts.findIndex((p) => p.id === id);
+  const existingIdx = localProductOverrides.findIndex((p) => p.id === id);
   if (existingIdx >= 0) {
-    customProducts[existingIdx] = newProduct;
+    localProductOverrides[existingIdx] = newProduct;
   } else {
-    customProducts.push(newProduct);
+    localProductOverrides.push(newProduct);
   }
 
   try {
@@ -194,11 +195,11 @@ export async function updateCatalogProduct(
     ...updates,
   };
 
-  const customIdx = customProducts.findIndex((p) => p.id === id);
+  const customIdx = localProductOverrides.findIndex((p) => p.id === id);
   if (customIdx >= 0) {
-    customProducts[customIdx] = updated;
+    localProductOverrides[customIdx] = updated;
   } else {
-    customProducts.push(updated);
+    localProductOverrides.push(updated);
   }
 
   try {
@@ -243,10 +244,11 @@ export async function deleteCatalogProduct(id: string): Promise<boolean> {
   const products = await getAllCatalogProducts();
   const target = products.find((p) => p.id === id);
 
-  const customIdx = customProducts.findIndex((p) => p.id === id);
+  const customIdx = localProductOverrides.findIndex((p) => p.id === id);
   if (customIdx >= 0) {
-    customProducts.splice(customIdx, 1);
+    localProductOverrides.splice(customIdx, 1);
   }
+  remoteProducts = remoteProducts.filter((p) => p.id !== id);
 
   try {
     await supabaseAdmin.from('products').delete().eq('id', id);
@@ -339,11 +341,11 @@ export async function bulkCreateCatalogProducts(
     };
 
     // Update in-memory cache
-    const existingIdx = customProducts.findIndex((p) => p.id === id || p.slug === slug);
+    const existingIdx = localProductOverrides.findIndex((p) => p.id === id || p.slug === slug);
     if (existingIdx >= 0) {
-      customProducts[existingIdx] = newProduct;
+      localProductOverrides[existingIdx] = newProduct;
     } else {
-      customProducts.push(newProduct);
+      localProductOverrides.push(newProduct);
     }
 
     validProducts.push(newProduct);

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Heart, Menu, Search, ShoppingBag } from 'lucide-react';
+import { Heart, Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { AnnouncementBar } from './AnnouncementBar';
 import { MegaMenu } from './MegaMenu';
 import { MobileNav } from './MobileNav';
@@ -99,6 +99,14 @@ export function Header() {
               </button>
             )}
           </div>
+
+          <Link
+            href="/account"
+            aria-label="Customer account"
+            className="relative p-2 text-[#6A1B6D] hover:text-[#C2188B] transition-colors cursor-pointer"
+          >
+            <User size={20} />
+          </Link>
 
           {/* Wishlist Link */}
           <Link

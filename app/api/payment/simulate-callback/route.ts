@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '../../../../lib/supabase/admin';
-import { getOrderById } from '../../../../lib/services/orderService';
+import { isProductionRuntime } from '../../../../lib/env.ts';
+import { getCurrentAdminUser } from '../../../../lib/services/adminAuth.ts';
+import { getOrderById, updatePaymentStatus, updateOrderStatus } from '../../../../lib/services/orderService';
 
 export async function POST(req: NextRequest) {
+  if (isProductionRuntime()) {
+    return NextResponse.json({ error: 'Not found.' }, { status: 404 });
+  }
+
+  const admin = await getCurrentAdminUser();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
+  }
+
   try {
     const { orderNumber, transactionId, paymentMethod, status } = await req.json();
 
@@ -22,42 +32,21 @@ export async function POST(req: NextRequest) {
     }
 
     const paymentStatus = status === 'success' ? 'paid' : 'failed';
-
-    // Update in Supabase
-    try {
-      await supabaseAdmin
-        .from('orders')
-        .update({
-          payment_status: paymentStatus,
-          order_status: paymentStatus === 'paid' ? 'processing' : 'pending',
-          notes: `Payment verified via ${paymentMethod || order.paymentMethod} (Txn: ${
-            transactionId || 'SIMULATED-' + Date.now()
-          })`,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('order_number', orderNumber);
-    } catch (err) {
-      console.warn('Supabase order payment update skipped or failed:', err);
-    }
-
-    // Update cached instance
-    order.paymentStatus = paymentStatus;
+    await updatePaymentStatus(order.orderNumber, paymentStatus);
     if (paymentStatus === 'paid') {
-      order.orderStatus = 'processing';
+      await updateOrderStatus(order.orderNumber, 'processing');
     }
 
     return NextResponse.json({
       success: true,
       orderNumber,
       paymentStatus,
-      transactionId: transactionId || 'SIMULATED-' + Date.now(),
-      message: `Payment for order #${orderNumber} marked as ${paymentStatus}.`,
+      transactionId: transactionId || `DEV-${Date.now()}`,
+      paymentMethod: paymentMethod || order.paymentMethod,
+      message: `Development-only payment callback marked #${orderNumber} as ${paymentStatus}.`,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Payment callback simulation failed.';
-    return NextResponse.json(
-      { success: false, error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

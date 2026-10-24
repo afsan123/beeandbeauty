@@ -109,3 +109,38 @@ export type SortOption =
   | 'price-desc'
   | 'rating'
   | 'newest';
+
+export interface BannerSlide {
+  id: string;
+  tagline: string;
+  title: string;
+  subtitle: string;
+  ctaText: string;
+  ctaHref: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  bgColor: string;
+  accentColor: string;
+  imageUrl?: string;
+  mediaType?: 'none' | 'image' | 'video' | 'gif';
+  mediaUrl?: string;
+  overlayOpacity?: number;
+  bannerType: 'hero' | 'promo' | 'announcement';
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface StudioTutorial {
+  id: string;
+  title: string;
+  category: string;
+  duration: string;
+  description: string;
+  steps: string[];
+  productSlug?: string;
+  productName?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  isActive: boolean;
+  sortOrder: number;
+}

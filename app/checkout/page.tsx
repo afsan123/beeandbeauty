@@ -36,6 +36,11 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [notifications, setNotifications] = useState<{
+    emailSent: boolean;
+    smsSent: boolean;
+    accountCreated: boolean;
+  }>({ emailSent: false, smsSent: false, accountCreated: false });
 
   // Fully resets and reloads the checkout flow for a brand-new order
   const resetCheckoutFlow = () => {
@@ -116,6 +121,11 @@ export default function CheckoutPage() {
       }
 
       setOrderNumber(data.order.orderNumber);
+      setNotifications({
+        emailSent: Boolean(data.notifications?.emailSent),
+        smsSent: Boolean(data.notifications?.smsSent),
+        accountCreated: Boolean(data.notifications?.accountCreated),
+      });
       setCurrentStep(4);
       clearCart();
     } catch (err: unknown) {
@@ -141,8 +151,26 @@ export default function CheckoutPage() {
         </h1>
 
         <p className="text-xs md:text-sm text-[#666666] max-w-md mx-auto leading-relaxed mb-6">
-          Your order <strong>#{orderNumber}</strong> has been successfully placed. We have sent a dispatch confirmation to{' '}
-          <strong>{shippingData?.email || 'your email'}</strong> and SMS to <strong>{shippingData?.phone || 'your mobile'}</strong>.
+          Your order <strong>#{orderNumber}</strong> has been successfully placed.
+          {notifications.emailSent ? (
+            <>
+              {' '}
+              We emailed order details
+              {notifications.accountCreated ? ' and a link to set your account password' : ''} to{' '}
+              <strong>{shippingData?.email}</strong>.
+            </>
+          ) : (
+            <>
+              {' '}
+              Save this reference number to track your order. We have not sent an SMS.
+              {shippingData?.email ? (
+                <>
+                  {' '}
+                  If email delivery is configured, a receipt will go to <strong>{shippingData.email}</strong>.
+                </>
+              ) : null}
+            </>
+          )}
         </p>
 
         <div className="bg-[#FFF9F5] border border-[#F0E6DD] rounded-[2px] p-6 text-left text-xs space-y-3 mb-8 max-w-lg mx-auto shadow-2xs">
@@ -193,6 +221,13 @@ export default function CheckoutPage() {
             <ShoppingBag size={15} className="text-[#D4AF37]" />
             <span>Place Another Order</span>
           </button>
+
+          <Link
+            href="/account/orders"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#D4AF37] text-[#6A1B6D] hover:bg-[#D4AF37]/10 text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs"
+          >
+            View account orders
+          </Link>
 
           <Link
             href={`/track-order?orderNumber=${orderNumber}&phone=${encodeURIComponent(shippingData?.phone || '')}`}

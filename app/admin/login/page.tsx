@@ -38,9 +38,7 @@ export default function AdminLoginPage() {
   };
 
   const handleQuickDemoFill = () => {
-    setEmail('admin@beeandbeauty.bd');
-    setPassword('beeAdmin2026!');
-    setErrorMsg('');
+    setErrorMsg('Demo credentials have been removed. Use the executive password from Vercel environment variables.');
   };
 
   return (

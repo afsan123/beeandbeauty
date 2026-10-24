@@ -84,7 +84,7 @@ export function VideoBlock() {
     let isMounted = true;
     async function fetchTutorials() {
       try {
-        const res = await fetch('/api/admin/studio/tutorials');
+        const res = await fetch('/api/studio/tutorials');
         if (res.ok) {
           const data = await res.json();
           if (data.tutorials && data.tutorials.length > 0 && isMounted) {

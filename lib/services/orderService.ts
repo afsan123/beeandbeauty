@@ -1,7 +1,10 @@
-import { supabaseAdmin } from '../supabase/admin.ts';
-import { catalogRepository } from '../../data/mock/mockRepository.ts';
+import { supabaseAdmin, tryGetSupabaseAdmin } from '../supabase/admin.ts';
+import { generateOrderNumber, randomToken, timingSafeEqualString } from '../security/crypto.ts';
+import { normalizeBdPhone, phonesMatch } from '../security/phone.ts';
+import { getAllCatalogProducts } from './productService.ts';
 import { calculateShipping } from './shippingService.ts';
 import { validateCoupon } from './couponService.ts';
+import { provisionCustomerForOrder } from './customerAccount.ts';
 
 export interface OrderItemInput {
   productId: string;
@@ -57,6 +60,13 @@ export interface StoredOrder {
   notes?: string;
   createdAt: string;
   items: StoredOrderItem[];
+  customerId?: string;
+  accessToken?: string;
+  account?: {
+    created: boolean;
+    emailSent: boolean;
+    channel: 'resend' | 'supabase' | 'none';
+  };
 }
 
 export interface TrackingStep {
@@ -69,10 +79,7 @@ export interface TrackingStep {
 // In-memory fallback cache to ensure zero downtime before Supabase migrations are run
 const fallbackOrdersCache = new Map<string, StoredOrder>();
 
-function normalizePhone(phone?: string | null): string {
-  if (!phone) return '';
-  return phone.replace(/[\s\-\+]/g, '').replace(/^88/, '');
-}
+export { normalizeBdPhone as normalizePhone };
 
 export async function createOrder(payload: CreateOrderPayload): Promise<StoredOrder> {
   // 1. Validate required customer details
@@ -95,8 +102,7 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
     throw new Error('Cart must contain at least one product.');
   }
 
-  // 2. Fetch canonical products and recalculate prices on server side
-  const allProducts = await catalogRepository.getProducts();
+  const allProducts = await getAllCatalogProducts(true);
   const productsMap = new Map(allProducts.map((p) => [p.id, p]));
 
   const orderItems: StoredOrderItem[] = [];
@@ -157,9 +163,9 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
 
   const totalAmount = Math.max(0, calculatedSubtotal - discountAmount + shippingFee);
 
-  // 5. Generate unique Human-Readable Order Number
-  const orderNumber = `BB-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+  const orderNumber = generateOrderNumber();
   const orderId = crypto.randomUUID();
+  const accessToken = randomToken(24);
   const now = new Date().toISOString();
 
   const storedOrder: StoredOrder = {
@@ -185,6 +191,8 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
     notes: payload.notes?.trim(),
     createdAt: now,
     items: orderItems,
+    accessToken,
+    account: { created: false, emailSent: false, channel: 'none' },
   };
 
   // Always save to fallback cache
@@ -214,6 +222,7 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
       target_delivery: storedOrder.targetDelivery,
       courier_tracking_code: storedOrder.courierTrackingCode,
       notes: storedOrder.notes,
+      access_token: storedOrder.accessToken,
       created_at: storedOrder.createdAt,
     });
 
@@ -236,7 +245,34 @@ export async function createOrder(payload: CreateOrderPayload): Promise<StoredOr
     console.warn('Supabase insert skipped or failed, fallback cached:', err);
   }
 
+  try {
+    const account = await provisionCustomerForOrder({
+      orderId: storedOrder.id,
+      email: storedOrder.customerEmail,
+      fullName: storedOrder.customerName,
+      phone: storedOrder.customerPhone,
+    });
+    storedOrder.customerId = account.customerId || undefined;
+    storedOrder.account = {
+      created: account.accountCreated,
+      emailSent: account.emailSent,
+      channel: account.emailChannel,
+    };
+  } catch (err) {
+    console.warn('Customer account provisioning skipped:', err);
+  }
+
   return storedOrder;
+}
+
+export async function getOrdersForCustomer(customerId: string): Promise<StoredOrder[]> {
+  const all = await getAllOrders();
+  return all.filter((order) => order.customerId === customerId);
+}
+
+export function orderMatchesAccessToken(order: StoredOrder, token?: string | null): boolean {
+  if (!token || !order.accessToken) return false;
+  return timingSafeEqualString(order.accessToken, token);
 }
 
 export async function getOrderById(id: string): Promise<StoredOrder | null> {
@@ -295,6 +331,8 @@ export async function getOrderById(id: string): Promise<StoredOrder | null> {
         notes: orderData.notes,
         createdAt: orderData.created_at,
         items,
+        customerId: orderData.customer_id || undefined,
+        accessToken: orderData.access_token || undefined,
       };
     }
   } catch {
@@ -309,16 +347,13 @@ export async function trackOrderByPhone(
   phone: string
 ): Promise<{ order: StoredOrder; timeline: TrackingStep[] } | null> {
   const cleanOrderNum = orderNumber.trim().toUpperCase();
-  const cleanPhone = normalizePhone(phone);
 
   const order = await getOrderById(cleanOrderNum);
   if (!order) {
     return null;
   }
 
-  // Verify phone matches
-  const orderPhoneNormalized = normalizePhone(order.customerPhone);
-  if (!orderPhoneNormalized.includes(cleanPhone) && !cleanPhone.includes(orderPhoneNormalized)) {
+  if (!phonesMatch(order.customerPhone, phone)) {
     return null;
   }
 
@@ -438,6 +473,8 @@ export async function getAllOrders(filters?: OrderFilters): Promise<StoredOrder[
         notes: orderData.notes,
         createdAt: orderData.created_at,
         items: itemsByOrderId.get(orderData.id) || [],
+        customerId: orderData.customer_id || undefined,
+        accessToken: orderData.access_token || undefined,
       }));
     }
   } catch (err) {

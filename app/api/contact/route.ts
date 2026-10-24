@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createInquiry, CreateInquiryPayload } from '../../../lib/services/inquiryService';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '../../../lib/security/rateLimit.ts';
 
 export async function POST(req: NextRequest) {
+  const limit = checkRateLimit(`contact:${getClientIp(req)}`, 6, 15 * 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(rateLimitResponse(limit.retryAfterSeconds), {
+      status: 429,
+      headers: { 'Retry-After': String(limit.retryAfterSeconds) },
+    });
+  }
+
   try {
     const body: CreateInquiryPayload = await req.json();
     const inquiry = await createInquiry(body);

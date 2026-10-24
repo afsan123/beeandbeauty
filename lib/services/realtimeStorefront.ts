@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation.js';
-import { supabase } from '../supabase/client.ts';
+import { createBrowserSupabaseClient } from '../supabase/client.ts';
 import type { StorefrontSyncEvent } from './revalidateStore.ts';
 
 export interface UseStorefrontRealtimeOptions {
@@ -63,7 +63,9 @@ export function useStorefrontRealtime({
       debouncedRefresh();
     };
 
-    // 1. Subscribe to Supabase Realtime Broadcast channel
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) return;
+
     const channel = supabase.channel('storefront-sync');
 
     channel

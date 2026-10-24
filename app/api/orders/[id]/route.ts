@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrderById } from '../../../../lib/services/orderService';
+import { getCurrentAdminUser } from '../../../../lib/services/adminAuth.ts';
+import { getOrderById, orderMatchesAccessToken } from '../../../../lib/services/orderService';
+import { getCurrentCustomer } from '../../../../lib/supabase/server.ts';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -19,9 +21,28 @@ export async function GET(
       );
     }
 
+    const admin = await getCurrentAdminUser();
+    const customer = await getCurrentCustomer();
+    const token = req.nextUrl.searchParams.get('token') || req.headers.get('x-order-token');
+
+    const allowed =
+      Boolean(admin) ||
+      (customer && order.customerId === customer.id) ||
+      orderMatchesAccessToken(order, token);
+
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Order lookup requires a signed-in account or access token.' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      order,
+      order: {
+        ...order,
+        accessToken: undefined,
+      },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error fetching order.';

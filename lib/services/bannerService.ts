@@ -1,34 +1,17 @@
+import type { BannerSlide } from '../../data/types.ts';
 import { supabaseAdmin } from '../supabase/admin.ts';
 import { LAUNCH_BANNERS } from '../data/launchCatalog.ts';
 import { revalidateStoreBanners } from './revalidateStore.ts';
 
-export interface BannerSlide {
-  id: string;
-  tagline: string;
-  title: string;
-  subtitle: string;
-  ctaText: string;
-  ctaHref: string;
-  secondaryCtaText?: string;
-  secondaryCtaHref?: string;
-  bgColor: string;
-  accentColor: string;
-  imageUrl?: string;
-  mediaType?: 'none' | 'image' | 'video' | 'gif';
-  mediaUrl?: string;
-  overlayOpacity?: number;
-  bannerType: 'hero' | 'promo' | 'announcement';
-  isActive: boolean;
-  sortOrder: number;
-}
+export type { BannerSlide };
 
 const DEFAULT_BANNERS: BannerSlide[] = LAUNCH_BANNERS;
 
-let inMemoryBanners: BannerSlide[] = [...DEFAULT_BANNERS];
+let inMemoryBanners: BannerSlide[] = [];
 let isBannersLoaded = false;
 
 export function clearBannerCache(): void {
-  inMemoryBanners = [...DEFAULT_BANNERS];
+  inMemoryBanners = [];
   isBannersLoaded = false;
 }
 
@@ -70,7 +53,8 @@ export async function getAllBanners(forceRefresh = false): Promise<BannerSlide[]
   if (!isBannersLoaded || forceRefresh) {
     await fetchRemoteBanners();
   }
-  return [...inMemoryBanners].sort((a, b) => a.sortOrder - b.sortOrder);
+  const source = inMemoryBanners.length > 0 ? inMemoryBanners : DEFAULT_BANNERS;
+  return [...source].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export async function getActiveBanners(

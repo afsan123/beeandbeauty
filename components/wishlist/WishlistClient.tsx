@@ -6,7 +6,7 @@ import { Heart, Trash2 } from 'lucide-react';
 import { useWishlist } from '../../store/wishlist';
 import { Product } from '../../data/types';
 import { ProductCard } from '../catalog/ProductCard';
-import { catalogRepository } from '../../data/mock/mockRepository';
+import { fetchPublicProducts } from '../../lib/catalog/publicApi';
 
 export function WishlistClient() {
   const { wishlistIds, clearWishlist, wishlistCount } = useWishlist();
@@ -15,7 +15,7 @@ export function WishlistClient() {
 
   useEffect(() => {
     let isMounted = true;
-    catalogRepository.getProducts().then((all) => {
+    fetchPublicProducts().then((all) => {
       if (isMounted) {
         const saved = all.filter((p) => wishlistIds.includes(p.id));
         setProducts(saved);

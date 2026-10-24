@@ -1,5 +1,6 @@
-import { revalidatePath } from 'next/cache.js';
-import { supabaseAdmin } from '../supabase/admin.ts';
+import { revalidatePath, revalidateTag } from 'next/cache.js';
+import { STORE_TAGS } from '../cache/tags.ts';
+import { supabaseAdmin, tryGetSupabaseAdmin } from '../supabase/admin.ts';
 
 export type StorefrontEntityType = 'product' | 'inventory' | 'category' | 'banner' | 'offer';
 export type StorefrontActionType = 'created' | 'updated' | 'deleted' | 'bulk_updated';
@@ -10,18 +11,27 @@ export interface StorefrontSyncEvent {
   id?: string;
   slug?: string;
   timestamp: string;
-  payload?: any;
+  payload?: unknown;
 }
 
-/**
- * Broadcasts a lightweight real-time event to connected storefront clients
- * over the Supabase Realtime WebSocket channel.
- */
+function revalidateStoreTags(tags: string[]) {
+  for (const tag of tags) {
+    try {
+      revalidateTag(tag, 'max');
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'test' && !process.env.NODE_TEST_CONTEXT) {
+        console.warn('Next.js revalidateTag notice (non-fatal):', err);
+      }
+    }
+  }
+}
+
 export async function broadcastStorefrontEvent(event: StorefrontSyncEvent): Promise<void> {
+  if (!tryGetSupabaseAdmin()) return;
   try {
     const channel = supabaseAdmin.channel('storefront-sync');
-    if (typeof (channel as any).httpSend === 'function') {
-      await (channel as any).httpSend('storefront_mutation', event);
+    if (typeof (channel as { httpSend?: Function }).httpSend === 'function') {
+      await (channel as { httpSend: Function }).httpSend('storefront_mutation', event);
     } else {
       await channel.send({
         type: 'broadcast',
@@ -30,24 +40,21 @@ export async function broadcastStorefrontEvent(event: StorefrontSyncEvent): Prom
       });
     }
   } catch (err) {
-    // Non-blocking fallback
     if (process.env.NODE_ENV !== 'test') {
       console.warn('Realtime broadcast error (non-fatal):', err);
     }
   }
 }
 
-/**
- * Purges and revalidates Next.js 16 App Router static and PPR caches
- * across the storefront for product catalog mutations.
- */
 export function revalidateStoreCatalog(options?: {
   productId?: string;
   categorySlug?: string;
   productSlug?: string;
   action?: StorefrontActionType;
-  payload?: any;
+  payload?: unknown;
 }) {
+  revalidateStoreTags([STORE_TAGS.catalog, STORE_TAGS.products, STORE_TAGS.categories]);
+
   try {
     revalidatePath('/', 'page');
     revalidatePath('/shop/[category]', 'page');
@@ -68,7 +75,6 @@ export function revalidateStoreCatalog(options?: {
     }
   }
 
-  // Also broadcast the event over Realtime channel
   broadcastStorefrontEvent({
     entity: 'product',
     action: options?.action || 'updated',
@@ -79,10 +85,8 @@ export function revalidateStoreCatalog(options?: {
   }).catch(() => {});
 }
 
-/**
- * Revalidates routes when hero banners or promos change.
- */
 export function revalidateStoreBanners(bannerId?: string, action: StorefrontActionType = 'updated') {
+  revalidateStoreTags([STORE_TAGS.banners, STORE_TAGS.catalog]);
   try {
     revalidatePath('/', 'page');
     revalidatePath('/offers', 'page');
@@ -100,10 +104,8 @@ export function revalidateStoreBanners(bannerId?: string, action: StorefrontActi
   }).catch(() => {});
 }
 
-/**
- * Revalidates routes when categories are created, updated, or removed.
- */
 export function revalidateStoreCategories(categorySlug?: string, action: StorefrontActionType = 'updated') {
+  revalidateStoreTags([STORE_TAGS.categories, STORE_TAGS.catalog]);
   try {
     revalidatePath('/', 'page');
     revalidatePath('/shop/[category]', 'page');
@@ -125,10 +127,8 @@ export function revalidateStoreCategories(categorySlug?: string, action: Storefr
   }).catch(() => {});
 }
 
-/**
- * Revalidates routes when limited offers and flash deals change.
- */
 export function revalidateStoreOffers(offerId?: string, action: StorefrontActionType = 'updated') {
+  revalidateStoreTags([STORE_TAGS.offers, STORE_TAGS.catalog]);
   try {
     revalidatePath('/', 'page');
     revalidatePath('/offers', 'page');
@@ -144,4 +144,13 @@ export function revalidateStoreOffers(offerId?: string, action: StorefrontAction
     id: offerId,
     timestamp: new Date().toISOString(),
   }).catch(() => {});
+}
+
+export function revalidateStoreTutorials() {
+  revalidateStoreTags([STORE_TAGS.tutorials]);
+  try {
+    revalidatePath('/', 'page');
+  } catch {
+    // non-fatal
+  }
 }

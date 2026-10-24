@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '../supabase/client.ts';
+import { createBrowserSupabaseClient } from '../supabase/client.ts';
 import type { StoredOrder } from './orderService.ts';
 
 const SOUND_PREF_KEY = 'bb_admin_sound_muted';
@@ -129,7 +129,12 @@ export function subscribeToRealtimeOrders({
 
   // 3. Setup Supabase Realtime channel if available
   let realtimeChannel: any = null;
+  const supabase = createBrowserSupabaseClient();
   try {
+    if (!supabase) {
+      throw new Error('browser supabase unavailable');
+    }
+
     realtimeChannel = supabase
       .channel('realtime-orders-admin')
       .on(
@@ -217,7 +222,7 @@ export function subscribeToRealtimeOrders({
   return () => {
     isSubscribed = false;
     clearInterval(timer);
-    if (realtimeChannel) {
+    if (realtimeChannel && supabase) {
       supabase.removeChannel(realtimeChannel);
     }
   };

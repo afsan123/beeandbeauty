@@ -4,11 +4,11 @@ import { supabaseAdmin } from '../supabase/admin.ts';
 import { revalidateStoreCategories } from './revalidateStore.ts';
 
 // In-memory persistent cache across server-side executions
-let inMemoryCategories: Category[] = [...CATEGORIES];
+let inMemoryCategories: Category[] = [];
 let isFetchedFromRemote = false;
 
 export function clearCategoryCache(): void {
-  inMemoryCategories = [...CATEGORIES];
+  inMemoryCategories = [];
   isFetchedFromRemote = false;
 }
 
@@ -42,7 +42,8 @@ export async function getAllCategories(forceRefresh = false): Promise<Category[]
   if (!isFetchedFromRemote || forceRefresh) {
     await fetchRemoteCategories();
   }
-  return [...inMemoryCategories];
+  const source = inMemoryCategories.length > 0 ? inMemoryCategories : CATEGORIES;
+  return [...source];
 }
 
 export async function getCategoryBySlug(slug: string, forceRefresh = false): Promise<Category | null> {

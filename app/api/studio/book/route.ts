@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server.js';
 import { createBooking } from '../../../../lib/services/studioService.ts';
 
 export async function POST(request: Request) {
+  const { checkRateLimit, getClientIp, rateLimitResponse } = await import('../../../../lib/security/rateLimit.ts');
+  const limit = checkRateLimit(`studio-book:${getClientIp(request)}`, 6, 15 * 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(rateLimitResponse(limit.retryAfterSeconds), {
+      status: 429,
+      headers: { 'Retry-After': String(limit.retryAfterSeconds) },
+    });
+  }
+
   try {
     const body = await request.json();
     if (!body.clientName || !body.clientPhone || !body.serviceType || !body.preferredDate) {
