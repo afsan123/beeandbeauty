@@ -13,6 +13,9 @@ export interface BannerSlide {
   bgColor: string;
   accentColor: string;
   imageUrl?: string;
+  mediaType?: 'none' | 'image' | 'video' | 'gif';
+  mediaUrl?: string;
+  overlayOpacity?: number;
   bannerType: 'hero' | 'promo' | 'announcement';
   isActive: boolean;
   sortOrder: number;
@@ -42,7 +45,10 @@ export async function fetchRemoteBanners(): Promise<void> {
         secondaryCtaHref: row.secondary_cta_href,
         bgColor: row.bg_color || 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
         accentColor: row.accent_color || '#D4AF37',
-        imageUrl: row.image_url,
+        imageUrl: row.media_url || row.image_url,
+        mediaType: row.media_type || (row.media_url?.endsWith('.mp4') || row.media_url?.endsWith('.webm') ? 'video' : row.media_url?.endsWith('.gif') ? 'gif' : (row.media_url || row.image_url) ? 'image' : 'none'),
+        mediaUrl: row.media_url || row.image_url,
+        overlayOpacity: typeof row.overlay_opacity === 'number' ? row.overlay_opacity : 50,
         bannerType: row.banner_type || 'hero',
         isActive: row.is_active !== false,
         sortOrder: row.sort_order || 0,
@@ -94,7 +100,10 @@ export async function createBanner(input: Omit<BannerSlide, 'id'> & { id?: strin
       secondary_cta_href: newBanner.secondaryCtaHref,
       bg_color: newBanner.bgColor,
       accent_color: newBanner.accentColor,
-      image_url: newBanner.imageUrl,
+      image_url: newBanner.mediaUrl || newBanner.imageUrl,
+      media_url: newBanner.mediaUrl || newBanner.imageUrl,
+      media_type: newBanner.mediaType || 'none',
+      overlay_opacity: newBanner.overlayOpacity ?? 50,
       banner_type: newBanner.bannerType,
       is_active: newBanner.isActive,
       sort_order: newBanner.sortOrder,
@@ -132,7 +141,10 @@ export async function updateBanner(
         secondary_cta_href: updated.secondaryCtaHref,
         bg_color: updated.bgColor,
         accent_color: updated.accentColor,
-        image_url: updated.imageUrl,
+        image_url: updated.mediaUrl || updated.imageUrl,
+        media_url: updated.mediaUrl || updated.imageUrl,
+        media_type: updated.mediaType || 'none',
+        overlay_opacity: updated.overlayOpacity ?? 50,
         banner_type: updated.bannerType,
         is_active: updated.isActive,
         sort_order: updated.sortOrder,

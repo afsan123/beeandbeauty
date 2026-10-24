@@ -255,7 +255,8 @@ export async function createCoupon(payload: {
 export async function toggleCouponStatus(codeOrId: string, isActive: boolean): Promise<boolean> {
   const clean = codeOrId.trim();
   const upper = clean.toUpperCase();
-  if (CANONICAL_COUPONS[upper]) {
+  const hadInMemory = Boolean(CANONICAL_COUPONS[upper]);
+  if (hadInMemory) {
     CANONICAL_COUPONS[upper].is_active = isActive;
   }
 
@@ -270,6 +271,9 @@ export async function toggleCouponStatus(codeOrId: string, isActive: boolean): P
     }
 
     const { error } = await query;
+    if (error && hadInMemory) {
+      return true;
+    }
     return !error;
   } catch {
     return true;
@@ -279,6 +283,7 @@ export async function toggleCouponStatus(codeOrId: string, isActive: boolean): P
 export async function deleteCoupon(codeOrId: string): Promise<boolean> {
   const clean = codeOrId.trim();
   const upper = clean.toUpperCase();
+  const hadInMemory = Boolean(CANONICAL_COUPONS[upper]);
   delete CANONICAL_COUPONS[upper];
 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
@@ -292,6 +297,9 @@ export async function deleteCoupon(codeOrId: string): Promise<boolean> {
     }
 
     const { error } = await query;
+    if (error && hadInMemory) {
+      return true;
+    }
     return !error;
   } catch {
     return true;

@@ -13,6 +13,7 @@ import { ExecutiveCustomerLogisticsHub } from '../../components/admin/ExecutiveC
 import { OrderDetailModal } from '../../components/admin/OrderDetailModal.tsx';
 import type { StoredOrder } from '../../lib/services/orderService.ts';
 import { formatPrice } from '../../lib/formatters.ts';
+import { subscribeToRealtimeOrders } from '../../lib/services/realtimeOrders.ts';
 
 interface DashboardData {
   metrics: {
@@ -172,6 +173,21 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchDashboardData();
+
+    // Subscribe to live order updates to keep KPI metrics and recent orders in sync
+    const unsubscribe = subscribeToRealtimeOrders({
+      onNewOrder: () => {
+        fetchDashboardData();
+      },
+      onOrderUpdated: () => {
+        fetchDashboardData();
+      },
+      playAudio: false,
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const handleOrderUpdated = (updated: StoredOrder) => {

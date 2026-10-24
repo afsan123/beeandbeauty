@@ -6,6 +6,7 @@ import { AdminHeader } from '../../../components/admin/AdminHeader.tsx';
 import { OrderDetailModal } from '../../../components/admin/OrderDetailModal.tsx';
 import type { StoredOrder } from '../../../lib/services/orderService.ts';
 import { formatPrice } from '../../../lib/formatters.ts';
+import { subscribeToRealtimeOrders } from '../../../lib/services/realtimeOrders.ts';
 
 function AdminOrdersContent() {
   const searchParams = useSearchParams();
@@ -20,6 +21,10 @@ function AdminOrdersContent() {
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [zoneFilter, setZoneFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<StoredOrder | null>(null);
+
+  // Real-time alert states
+  const [newOrderAlert, setNewOrderAlert] = useState<StoredOrder | null>(null);
+  const [highlightOrderId, setHighlightOrderId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -45,6 +50,39 @@ function AdminOrdersContent() {
   useEffect(() => {
     fetchOrders();
   }, [activeTab, paymentFilter, zoneFilter]);
+
+  // Connect real-time order listener (Supabase Realtime + Smart Polling Heartbeat)
+  useEffect(() => {
+    const unsubscribe = subscribeToRealtimeOrders({
+      onNewOrder: (newOrder) => {
+        setOrders((prev) => {
+          const exists = prev.some(
+            (o) => o.id === newOrder.id || o.orderNumber === newOrder.orderNumber
+          );
+          if (exists) return prev;
+          return [newOrder, ...prev];
+        });
+
+        // Trigger visual highlight and notification banner
+        setHighlightOrderId(newOrder.id || newOrder.orderNumber);
+        setNewOrderAlert(newOrder);
+
+        // Clear row pulse highlight after 8 seconds
+        setTimeout(() => {
+          setHighlightOrderId(null);
+        }, 8000);
+      },
+      onOrderUpdated: (updated) => {
+        setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+      },
+      playAudio: true,
+      pollIntervalMs: 8000,
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,11 +280,29 @@ function AdminOrdersContent() {
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-stone-50/80 transition-colors">
+                orders.map((order) => {
+                  const isHighlighted =
+                    order.id === highlightOrderId || order.orderNumber === highlightOrderId;
+
+                  return (
+                    <tr
+                      key={order.id}
+                      className={`transition-all duration-500 ${
+                        isHighlighted
+                          ? 'bg-amber-100/90 ring-2 ring-amber-400 font-semibold'
+                          : 'hover:bg-stone-50/80'
+                      }`}
+                    >
                     {/* Order Number */}
                     <td className="py-3.5 px-4 font-mono font-bold text-stone-900">
-                      #{order.orderNumber}
+                      <div className="flex items-center gap-1.5">
+                        <span>#{order.orderNumber}</span>
+                        {isHighlighted && (
+                          <span className="rounded-full bg-amber-500 text-stone-900 text-[9px] font-bold px-1.5 py-0.2 animate-pulse">
+                            NEW
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Placed Date */}
@@ -340,14 +396,59 @@ function AdminOrdersContent() {
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {/* Real-Time Floating Order Alert Toast */}
+    {newOrderAlert && (
+      <div className="fixed bottom-6 right-6 z-50 max-w-sm sm:max-w-md w-full bg-stone-900/95 text-white rounded-2xl p-4 shadow-2xl border border-amber-400/80 animate-fade-in flex items-start justify-between gap-3 backdrop-blur-md">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-300 flex items-center justify-center text-xl shrink-0">
+            🔔
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-amber-300 font-mono text-xs">
+                #{newOrderAlert.orderNumber}
+              </span>
+              <span className="rounded-full bg-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2 py-0.5 border border-emerald-400/30">
+                Live Order
+              </span>
+            </div>
+            <p className="text-xs text-white font-semibold mt-0.5 truncate">
+              {newOrderAlert.customerName} &bull; {formatPrice(newOrderAlert.totalAmount)}
+            </p>
+            <p className="text-[11px] text-stone-400 mt-0.5 truncate">
+              {newOrderAlert.district} ({newOrderAlert.deliveryZone === 'dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}) • {newOrderAlert.paymentMethod.toUpperCase()}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <button
+            onClick={() => {
+              setSelectedOrder(newOrderAlert);
+              setNewOrderAlert(null);
+            }}
+            className="rounded-lg bg-[var(--bb-gold)] hover:bg-[#b8942a] text-stone-900 text-[11px] font-bold px-3 py-1 transition-all shadow-xs"
+          >
+            Inspect
+          </button>
+          <button
+            onClick={() => setNewOrderAlert(null)}
+            className="text-stone-400 hover:text-white text-xs px-1"
+          >
+            Dismiss
+          </button>
         </div>
       </div>
+    )}
 
-      {/* Order Detail Modal */}
+    {/* Order Detail Modal */}
       <OrderDetailModal
         order={selectedOrder}
         isOpen={Boolean(selectedOrder)}

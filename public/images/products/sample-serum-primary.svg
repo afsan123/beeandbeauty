@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF9F5" />
+      <stop offset="100%" stop-color="#F5EBE1" />
+    </linearGradient>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3E6351" />
+      <stop offset="100%" stop-color="#360C38" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)" />
+  <circle cx="300" cy="270" r="160" fill="#3E6351" opacity="0.08" />
+  <rect x="220" y="160" width="160" height="230" rx="16" fill="url(#brand)" stroke="#E5A93C" stroke-width="3" />
+  <rect x="240" y="130" width="120" height="30" rx="6" fill="#E5A93C" />
+  <text x="300" y="440" font-family="serif" font-size="28" font-weight="bold" fill="#6A1B6D" text-anchor="middle">Propolis Glow Serum</text>
+  <text x="300" y="475" font-family="sans-serif" font-size="16" fill="#888888" letter-spacing="2" text-anchor="middle">BARRIER REPAIR 50ML</text>
+  <text x="300" y="530" font-family="sans-serif" font-size="12" font-weight="bold" fill="#E5A93C" letter-spacing="4" text-anchor="middle">BEE &amp; BEAUTY</text>
+</svg>

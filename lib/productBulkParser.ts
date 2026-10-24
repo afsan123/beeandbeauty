@@ -493,8 +493,8 @@ export function getSampleCsvTemplate(): string {
       'Bangladesh',
       'Velvet Matte',
       'Propolis Infused',
-      '/images/products/placeholder.jpg',
-      '/images/products/placeholder.jpg',
+      '/images/products/sample-lipstick-primary.svg',
+      '/images/products/sample-lipstick-hover.svg',
     ],
     [
       'Propolis Barrier Glow Rescue Serum',
@@ -518,8 +518,8 @@ export function getSampleCsvTemplate(): string {
       'Korea / Bangladesh',
       'Dewy Glow',
       'Concentrated Ampoule',
-      '/images/products/placeholder.jpg',
-      '/images/products/placeholder.jpg',
+      '/images/products/sample-serum-primary.svg',
+      '/images/products/sample-serum-hover.svg',
     ],
     [
       'Honey Nectar Hydrating Lip Jelly Mask',
@@ -594,8 +594,8 @@ export function getSampleJsonTemplate(): string {
       origin: 'Bangladesh',
       finish: 'Velvet Matte',
       formulation: 'Propolis Infused',
-      primary_image: '/images/products/placeholder.jpg',
-      hover_image: '/images/products/placeholder.jpg',
+      primary_image: '/images/products/sample-lipstick-primary.svg',
+      hover_image: '/images/products/sample-lipstick-hover.svg',
     },
     {
       title: 'Propolis Barrier Glow Rescue Serum',
@@ -619,8 +619,8 @@ export function getSampleJsonTemplate(): string {
       origin: 'Korea / Bangladesh',
       finish: 'Dewy Glow',
       formulation: 'Concentrated Ampoule',
-      primary_image: '/images/products/placeholder.jpg',
-      hover_image: '/images/products/placeholder.jpg',
+      primary_image: '/images/products/sample-serum-primary.svg',
+      hover_image: '/images/products/sample-serum-hover.svg',
     },
   ];
 

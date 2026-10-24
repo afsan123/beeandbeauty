@@ -38,6 +38,7 @@ export function BulkProductUploadModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [importSuccessMsg, setImportSuccessMsg] = useState<string | null>(null);
   const [importErrorMsg, setImportErrorMsg] = useState<string | null>(null);
+  const [showImageGuide, setShowImageGuide] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,6 +228,13 @@ export function BulkProductUploadModal({
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowImageGuide(!showImageGuide)}
+              className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 font-bold text-amber-900 hover:bg-amber-100 transition-all shadow-2xs"
+            >
+              <span>🖼️</span>
+              <span>{showImageGuide ? 'Hide Image Guide' : 'Image Hosting Guide'}</span>
+            </button>
+            <button
               onClick={handleDownloadCsvTemplate}
               className="flex items-center gap-1.5 rounded-lg border border-[var(--bb-plum)]/30 bg-white px-3 py-1.5 font-bold text-[var(--bb-plum)] hover:bg-[var(--bb-plum)] hover:text-white transition-all shadow-2xs"
             >
@@ -242,6 +250,65 @@ export function BulkProductUploadModal({
             </button>
           </div>
         </div>
+
+        {/* Expandable Image Guide */}
+        {showImageGuide && (
+          <div className="bg-amber-50/70 border-b border-amber-200/80 px-6 py-4 text-xs text-stone-700 space-y-3 shrink-0">
+            <div className="flex items-center justify-between font-bold text-stone-900 text-sm">
+              <span className="flex items-center gap-2">
+                <span>📸</span>
+                <span>How to Format &amp; Host Product Images in Bulk Upload</span>
+              </span>
+              <button
+                onClick={() => setShowImageGuide(false)}
+                className="text-stone-400 hover:text-stone-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-amber-200 bg-white p-3.5 space-y-2">
+                <div className="font-bold text-[var(--bb-plum)] flex items-center gap-1.5">
+                  <span>📁</span>
+                  <span>Option A: Local Image Files (Recommended for Fast Setup)</span>
+                </div>
+                <p className="text-[11px] text-stone-600 leading-relaxed">
+                  Drop your image files (<code className="bg-stone-100 px-1 py-0.5 rounded text-stone-800">.jpg, .png, .webp, .svg</code>) into the project folder:
+                  <br />
+                  <code className="text-stone-800 font-bold block mt-1 bg-amber-50/80 p-1 rounded border border-amber-200/50">
+                    public/images/products/
+                  </code>
+                </p>
+                <div className="text-[11px] text-stone-600">
+                  Then in your CSV or JSON columns, reference them directly:
+                  <div className="font-mono text-[10px] bg-stone-50 border border-stone-200 p-1.5 rounded mt-1 space-y-0.5">
+                    <div><strong>primary_image</strong>: /images/products/my-lipstick.jpg</div>
+                    <div><strong>hover_image</strong>: /images/products/my-lipstick-swatch.jpg</div>
+                    <div><strong>gallery</strong>: /images/products/img1.jpg,/images/products/img2.jpg</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-amber-200 bg-white p-3.5 space-y-2">
+                <div className="font-bold text-[#3E6351] flex items-center gap-1.5">
+                  <span>☁️</span>
+                  <span>Option B: Cloud Storage / Supabase / External CDN</span>
+                </div>
+                <p className="text-[11px] text-stone-600 leading-relaxed">
+                  Upload images to your <strong>Supabase Storage bucket</strong>, Cloudinary, Imgur, or AWS S3, and paste the full public HTTPS URL directly into the column:
+                </p>
+                <div className="font-mono text-[10px] bg-stone-50 border border-stone-200 p-1.5 rounded mt-1 space-y-0.5 break-all">
+                  <div><strong>primary_image</strong>: https://your-project.supabase.co/storage/v1/object/public/products/lipstick.jpg</div>
+                  <div><strong>hover_image</strong>: https://your-cdn.com/images/lipstick-swatch.jpg</div>
+                </div>
+                <p className="text-[10px] text-stone-500 italic">
+                  💡 Note: If left blank or invalid, the platform automatically applies an elegant brand fallback placeholder.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1">
@@ -443,6 +510,7 @@ export function BulkProductUploadModal({
                       <tr>
                         <th className="py-2.5 px-3">#</th>
                         <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3">Image</th>
                         <th className="py-2.5 px-3">Product Title & Auto-Slug</th>
                         <th className="py-2.5 px-3">Category</th>
                         <th className="py-2.5 px-3 text-right">Price (BDT)</th>
@@ -476,6 +544,24 @@ export function BulkProductUploadModal({
                                     {e}
                                   </div>
                                 ))}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            {row.product?.images?.primary ? (
+                              <div className="relative h-10 w-10 rounded-lg border border-stone-200 overflow-hidden bg-stone-50 flex items-center justify-center shrink-0 shadow-2xs">
+                                <img
+                                  src={row.product.images.primary}
+                                  alt={row.product.title || 'Product'}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = '/images/products/placeholder.jpg';
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg border border-dashed border-stone-200 bg-stone-50 flex items-center justify-center text-[10px] text-stone-400">
+                                🖼️
                               </div>
                             )}
                           </td>

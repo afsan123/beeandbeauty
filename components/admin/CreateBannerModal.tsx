@@ -39,6 +39,11 @@ export function CreateBannerModal({
   const [sortOrder, setSortOrder] = useState<number>(1);
   const [isActive, setIsActive] = useState(true);
 
+  // Media Background State: image, video (mp4, webm), or animated gif
+  const [mediaType, setMediaType] = useState<'none' | 'image' | 'video' | 'gif'>('none');
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [overlayOpacity, setOverlayOpacity] = useState<number>(50);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -56,6 +61,13 @@ export function CreateBannerModal({
       setBannerType(initialBanner.bannerType || 'hero');
       setSortOrder(initialBanner.sortOrder || 1);
       setIsActive(initialBanner.isActive !== false);
+
+      const rawUrl = initialBanner.mediaUrl || initialBanner.imageUrl || '';
+      setMediaUrl(rawUrl);
+      const isVid = initialBanner.mediaType === 'video' || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm');
+      const isG = initialBanner.mediaType === 'gif' || rawUrl.endsWith('.gif');
+      setMediaType(initialBanner.mediaType || (isVid ? 'video' : isG ? 'gif' : rawUrl ? 'image' : 'none'));
+      setOverlayOpacity(typeof initialBanner.overlayOpacity === 'number' ? initialBanner.overlayOpacity : 50);
     } else {
       setTitle('');
       setSubtitle('');
@@ -69,6 +81,9 @@ export function CreateBannerModal({
       setBannerType('hero');
       setSortOrder(1);
       setIsActive(true);
+      setMediaType('none');
+      setMediaUrl('');
+      setOverlayOpacity(50);
     }
     setErrorMsg('');
   }, [initialBanner, isOpen]);
@@ -96,6 +111,10 @@ export function CreateBannerModal({
       bannerType,
       sortOrder: Number(sortOrder) || 1,
       isActive,
+      mediaType,
+      mediaUrl: mediaUrl.trim() || undefined,
+      imageUrl: mediaUrl.trim() || undefined,
+      overlayOpacity: Number(overlayOpacity) || 50,
     };
 
     try {
@@ -260,6 +279,162 @@ export function CreateBannerModal({
                 placeholder="e.g. /shop/all"
                 className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
               />
+            </div>
+          </div>
+
+          {/* Media Background Configuration (Image / Video / GIF) */}
+          <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block font-bold text-stone-800 text-xs">
+                Background Media (Image, Video, or GIF)
+              </label>
+              <span className="text-[10px] text-stone-500">
+                Optional visual background
+              </span>
+            </div>
+
+            {/* Media Type Tabs */}
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-stone-200/70 rounded-xl text-center text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => setMediaType('none')}
+                className={`py-1.5 px-2 rounded-lg transition-all ${
+                  mediaType === 'none'
+                    ? 'bg-white text-stone-900 shadow-2xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                🎨 Gradient
+              </button>
+              <button
+                type="button"
+                onClick={() => setMediaType('image')}
+                className={`py-1.5 px-2 rounded-lg transition-all ${
+                  mediaType === 'image'
+                    ? 'bg-white text-stone-900 shadow-2xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                🖼️ Image
+              </button>
+              <button
+                type="button"
+                onClick={() => setMediaType('video')}
+                className={`py-1.5 px-2 rounded-lg transition-all ${
+                  mediaType === 'video'
+                    ? 'bg-white text-stone-900 shadow-2xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                🎥 Video
+              </button>
+              <button
+                type="button"
+                onClick={() => setMediaType('gif')}
+                className={`py-1.5 px-2 rounded-lg transition-all ${
+                  mediaType === 'gif'
+                    ? 'bg-white text-stone-900 shadow-2xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                ✨ GIF
+              </button>
+            </div>
+
+            {mediaType !== 'none' && (
+              <div className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {mediaType === 'video' ? 'Video URL (.mp4 / .webm)' : mediaType === 'gif' ? 'Animated GIF URL (.gif)' : 'Image URL (.jpg, .png, .webp)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={mediaUrl}
+                    onChange={(e) => setMediaUrl(e.target.value)}
+                    placeholder={
+                      mediaType === 'video'
+                        ? 'e.g. /videos/hero.mp4 or https://.../loop.mp4'
+                        : mediaType === 'gif'
+                        ? 'e.g. /images/hero-glam.gif or https://.../shimmer.gif'
+                        : 'e.g. /images/products/sample-lipstick-primary.svg or https://...'
+                    }
+                    className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none font-mono"
+                  />
+                  <p className="text-[10px] text-stone-400 mt-1">
+                    Accepts project paths (<code className="text-stone-700">/images/...</code>, <code className="text-stone-700">/videos/...</code>) or public HTTPS cloud URLs.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-bold text-stone-700 mb-1">
+                    <span>Text Contrast Overlay Darkness</span>
+                    <span className="font-mono text-stone-500">{overlayOpacity}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="90"
+                    step="5"
+                    value={overlayOpacity}
+                    onChange={(e) => setOverlayOpacity(Number(e.target.value))}
+                    className="w-full accent-[var(--bb-plum)]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Live Miniature Slide Preview */}
+            <div className="mt-2 pt-2 border-t border-stone-200/80">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-1.5">
+                Live Storefront Slide Preview
+              </span>
+              <div className={`relative h-32 rounded-xl overflow-hidden flex items-center justify-center p-3 text-center bg-gradient-to-r ${bgColor} border border-stone-300 shadow-inner`}>
+                {/* Media layer */}
+                {mediaUrl && (mediaType === 'video' || mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm')) ? (
+                  <video
+                    src={mediaUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover z-0"
+                  />
+                ) : mediaUrl ? (
+                  <img
+                    src={mediaUrl}
+                    alt="Preview"
+                    className="absolute inset-0 w-full h-full object-cover z-0"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : null}
+
+                {/* Overlay */}
+                {mediaUrl ? (
+                  <div
+                    className="absolute inset-0 bg-black z-0 pointer-events-none"
+                    style={{ opacity: overlayOpacity / 100 }}
+                  />
+                ) : null}
+
+                {/* Text preview */}
+                <div className="relative z-10 max-w-xs space-y-1 text-white">
+                  {tagline && (
+                    <span className="inline-block text-[8px] font-bold uppercase tracking-widest text-[#D4AF37] bg-black/40 px-1.5 py-0.5 rounded">
+                      {tagline}
+                    </span>
+                  )}
+                  <h4 className="text-xs sm:text-sm font-bold font-serif uppercase tracking-wider line-clamp-1 drop-shadow-xs">
+                    {title || 'Banner Title'}
+                  </h4>
+                  <div className="pt-1">
+                    <span className="inline-block text-[9px] font-bold uppercase tracking-wider bg-[#D4AF37] text-stone-900 px-2.5 py-1 rounded shadow-xs">
+                      {ctaText || 'CTA Button'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

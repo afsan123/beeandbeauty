@@ -204,12 +204,52 @@ export default function AdminBannersPage() {
             >
               {/* Visual Banner Preview Ribbon */}
               <div
-                className={`p-6 text-white bg-gradient-to-r ${banner.bgColor || 'from-[#4A104C] to-[#360C38]'} relative min-h-[140px] flex flex-col justify-between`}
+                className={`p-6 text-white bg-gradient-to-r ${banner.bgColor || 'from-[#4A104C] to-[#360C38]'} relative min-h-[140px] flex flex-col justify-between overflow-hidden`}
               >
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-xs border border-white/10 text-amber-300">
-                    {banner.bannerType || 'hero'} #{banner.sortOrder}
-                  </span>
+                {/* Background media if present */}
+                {banner.mediaUrl && (banner.mediaType === 'video' || banner.mediaUrl.endsWith('.mp4') || banner.mediaUrl.endsWith('.webm')) ? (
+                  <video
+                    src={banner.mediaUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover z-0"
+                  />
+                ) : banner.mediaUrl ? (
+                  <img
+                    src={banner.mediaUrl}
+                    alt={banner.title}
+                    className="absolute inset-0 w-full h-full object-cover z-0"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : null}
+
+                {/* Overlay if media is present */}
+                {banner.mediaUrl && (
+                  <div
+                    className="absolute inset-0 bg-black z-0 pointer-events-none"
+                    style={{ opacity: (banner.overlayOpacity ?? 50) / 100 }}
+                  />
+                )}
+
+                <div className="relative z-10 flex items-center justify-between text-[10px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-xs border border-white/10 text-amber-300">
+                      {banner.bannerType || 'hero'} #{banner.sortOrder}
+                    </span>
+                    {banner.mediaUrl && (
+                      <span className="font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-900/70 border border-white/20 text-white text-[9px]">
+                        {banner.mediaType === 'video' || banner.mediaUrl.endsWith('.mp4') || banner.mediaUrl.endsWith('.webm')
+                          ? '🎥 Video'
+                          : banner.mediaType === 'gif' || banner.mediaUrl.endsWith('.gif')
+                          ? '✨ GIF'
+                          : '🖼️ Image'}
+                      </span>
+                    )}
+                  </div>
                   <span
                     className={`px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px] ${
                       banner.isActive
@@ -221,17 +261,17 @@ export default function AdminBannersPage() {
                   </span>
                 </div>
 
-                <div className="mt-4">
+                <div className="relative z-10 mt-4">
                   {banner.tagline && (
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-200/90 mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-200/90 mb-1 drop-shadow-xs">
                       {banner.tagline}
                     </p>
                   )}
-                  <h3 className="text-base font-bold font-serif leading-tight text-white line-clamp-2">
+                  <h3 className="text-base font-bold font-serif leading-tight text-white line-clamp-2 drop-shadow-sm">
                     {banner.title}
                   </h3>
                   {banner.subtitle && (
-                    <p className="text-[11px] text-stone-200/85 line-clamp-2 mt-1">
+                    <p className="text-[11px] text-stone-200/85 line-clamp-2 mt-1 drop-shadow-xs">
                       {banner.subtitle}
                     </p>
                   )}

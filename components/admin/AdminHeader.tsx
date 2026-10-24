@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminUI } from './AdminUIContext.tsx';
+import { isOrderSoundMuted, setOrderSoundMuted } from '../../lib/services/realtimeOrders.ts';
 
 interface AdminHeaderProps {
   onToggleSidebar?: () => void;
@@ -28,6 +29,17 @@ export function AdminHeader({
   secondaryActionButton,
 }: AdminHeaderProps) {
   const { toggleSidebar } = useAdminUI();
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    setMuted(isOrderSoundMuted());
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = !muted;
+    setMuted(next);
+    setOrderSoundMuted(next);
+  };
 
   const handleToggle = () => {
     if (onToggleSidebar) onToggleSidebar();
@@ -61,11 +73,27 @@ export function AdminHeader({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Supabase PostgreSQL Status */}
-        <div className="hidden sm:flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-800">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>PostgreSQL Active</span>
+        {/* Realtime Live Sync Status */}
+        <div className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span className="hidden sm:inline">Live Sync Active</span>
+          <span className="sm:hidden">Live</span>
         </div>
+
+        {/* Audio Alert Chime Toggle */}
+        <button
+          type="button"
+          onClick={handleToggleSound}
+          title={muted ? 'Order Chimes Muted (Click to Unmute)' : 'Order Chimes Active (Click to Mute)'}
+          className={`flex items-center justify-center h-8 w-8 rounded-full border transition-all ${
+            muted
+              ? 'border-stone-200 bg-stone-100 text-stone-400 hover:text-stone-700'
+              : 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 shadow-2xs'
+          }`}
+          aria-label={muted ? 'Unmute order audio alert' : 'Mute order audio alert'}
+        >
+          <span className="text-xs">{muted ? '🔇' : '🔔'}</span>
+        </button>
 
         {/* Currency BDT Tag */}
         <div className="hidden md:flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900">

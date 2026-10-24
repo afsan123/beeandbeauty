@@ -16,6 +16,9 @@ export interface HeroSlide {
   secondaryCtaHref?: string;
   bgColor: string;
   accentColor: string;
+  mediaType?: 'none' | 'image' | 'video' | 'gif';
+  mediaUrl?: string;
+  overlayOpacity?: number;
 }
 
 const DEFAULT_SLIDES: HeroSlide[] = [
@@ -82,18 +85,28 @@ export function HeroCarousel() {
         if (res.ok) {
           const data = await res.json();
           if (data.banners && data.banners.length > 0 && isMounted) {
-            const mapped: HeroSlide[] = data.banners.map((b: any) => ({
-              id: b.id,
-              tagline: b.tagline || 'BEE & BEAUTY EXCLUSIVE',
-              title: b.title,
-              subtitle: b.subtitle || '',
-              ctaText: b.ctaText,
-              ctaHref: b.ctaHref,
-              secondaryCtaText: b.secondaryCtaText,
-              secondaryCtaHref: b.secondaryCtaHref,
-              bgColor: b.bgColor || 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
-              accentColor: b.accentColor || '#D4AF37',
-            }));
+            const mapped: HeroSlide[] = data.banners.map((b: any) => {
+              const url = b.mediaUrl || b.imageUrl || '';
+              const isVideo = b.mediaType === 'video' || url.endsWith('.mp4') || url.endsWith('.webm');
+              const isGif = b.mediaType === 'gif' || url.endsWith('.gif');
+              const inferredType = isVideo ? 'video' : isGif ? 'gif' : url ? 'image' : 'none';
+
+              return {
+                id: b.id,
+                tagline: b.tagline || 'BEE & BEAUTY EXCLUSIVE',
+                title: b.title,
+                subtitle: b.subtitle || '',
+                ctaText: b.ctaText,
+                ctaHref: b.ctaHref,
+                secondaryCtaText: b.secondaryCtaText,
+                secondaryCtaHref: b.secondaryCtaHref,
+                bgColor: b.bgColor || 'from-[#4A104C] via-[#6A1B6D] to-[#360C38]',
+                accentColor: b.accentColor || '#D4AF37',
+                mediaType: b.mediaType || inferredType,
+                mediaUrl: url || undefined,
+                overlayOpacity: typeof b.overlayOpacity === 'number' ? b.overlayOpacity : 50,
+              };
+            });
             setSlides(mapped);
           }
         }
@@ -102,8 +115,16 @@ export function HeroCarousel() {
       }
     }
     loadRemoteBanners();
+
+    // Real-time synchronization: sync when window gains focus & periodic heartbeat
+    const handleFocus = () => loadRemoteBanners();
+    window.addEventListener('focus', handleFocus);
+    const syncInterval = setInterval(loadRemoteBanners, 20000);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(syncInterval);
     };
   }, []);
 
@@ -145,10 +166,36 @@ export function HeroCarousel() {
                 isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               )}
             >
-              {/* Subtle luxury geometric pattern */}
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px]" />
+              {/* Background Media: Video (MP4/WebM) or Image / Animated GIF */}
+              {slide.mediaUrl && (slide.mediaType === 'video' || slide.mediaUrl.endsWith('.mp4') || slide.mediaUrl.endsWith('.webm')) ? (
+                <video
+                  src={slide.mediaUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover z-0"
+                />
+              ) : slide.mediaUrl ? (
+                <img
+                  src={slide.mediaUrl}
+                  alt={slide.title}
+                  className="absolute inset-0 w-full h-full object-cover z-0"
+                />
+              ) : null}
 
-              <div className="relative max-w-5xl mx-auto px-6 py-12 text-center flex flex-col items-center">
+              {/* Contrast Darkening Overlay for text legibility */}
+              {slide.mediaUrl ? (
+                <div
+                  className="absolute inset-0 bg-black z-0 pointer-events-none transition-opacity duration-300"
+                  style={{ opacity: (slide.overlayOpacity ?? 50) / 100 }}
+                />
+              ) : null}
+
+              {/* Subtle luxury geometric pattern */}
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none z-0" />
+
+              <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 text-center flex flex-col items-center">
                 {/* Tagline */}
                 <span
                   className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] px-3.5 py-1.5 rounded-[2px] mb-3 md:mb-4 border border-[#D4AF37]/50 bg-black/25 backdrop-blur-xs text-[#D4AF37]"
