@@ -85,3 +85,14 @@ describe('Admin session revocation', () => {
     assert.equal(await isAdminSessionRevoked(session.sessionId), true);
   });
 });
+
+describe('Post-auth redirect guard', () => {
+  it('keeps same-site paths and rejects off-site tricks', async () => {
+    const { safeNextPath } = await import('../security/safeRedirect.ts');
+    assert.equal(safeNextPath('/account/orders?x=1'), '/account/orders?x=1');
+    assert.equal(safeNextPath('/account/set-password'), '/account/set-password');
+    for (const bad of ['//evil.com', '/\\evil.com', '/\t/evil.com', '/\n/evil.com', 'https://evil.com', 'evil.com', '']) {
+      assert.equal(safeNextPath(bad), '/account');
+    }
+  });
+});
