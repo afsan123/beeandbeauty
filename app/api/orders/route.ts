@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOrder, CreateOrderPayload } from '../../../lib/services/orderService';
+import { errorStatus } from '../../../lib/services/serviceError.ts';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '../../../lib/security/rateLimit.ts';
 
 export async function POST(req: NextRequest) {
@@ -38,7 +39,8 @@ export async function POST(req: NextRequest) {
         success: false,
         error: message,
       },
-      { status: 400 }
+      // Validation problems are 400; database failures carry their own status.
+      { status: errorStatus(err, 400) }
     );
   }
 }

@@ -19,11 +19,13 @@ export function isProductionRuntime(): boolean {
 }
 
 export function getSiteUrl(): string {
-  return (
+  const raw =
     cleanEnv(process.env.NEXT_PUBLIC_SITE_URL) ||
     cleanEnv(process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
-    'http://localhost:3000'
-  );
+    'http://localhost:3000';
+  // VERCEL_PROJECT_PRODUCTION_URL is a bare host; auth redirects need a scheme.
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return withScheme.replace(/\/+$/, '');
 }
 
 export function isSupabaseConfigured(): boolean {

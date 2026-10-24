@@ -16,7 +16,10 @@ export interface UseStorefrontRealtimeOptions {
 /**
  * Universal Storefront Real-Time Hook:
  * Subscribes the active browser page to live administrative mutations
- * via Supabase WebSockets (Broadcast channel & Postgres Table Replication).
+ * via a Supabase Realtime Broadcast channel. Admin writes call revalidateTag
+ * (server cache) and then send a 'storefront_mutation' broadcast; this hook
+ * just refreshes the router. No postgres_changes subscriptions, so table rows
+ * are never streamed to anonymous visitors.
  */
 export function useStorefrontRealtime({
   onCatalogUpdate,
@@ -74,63 +77,9 @@ export function useStorefrontRealtime({
           handleEvent(payload.payload as StorefrontSyncEvent);
         }
       })
-      // 2. Also listen directly to PostgreSQL changes as dual-safety
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
-        (payload) => {
-          handleEvent({
-            entity: 'product',
-            action: payload.eventType === 'INSERT' ? 'created' : payload.eventType === 'DELETE' ? 'deleted' : 'updated',
-            id: (payload.new as any)?.id || (payload.old as any)?.id,
-            slug: (payload.new as any)?.slug,
-            timestamp: new Date().toISOString(),
-            payload: payload.new,
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'product_inventory' },
-        (payload) => {
-          handleEvent({
-            entity: 'inventory',
-            action: 'updated',
-            id: (payload.new as any)?.product_id,
-            timestamp: new Date().toISOString(),
-            payload: payload.new,
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'banners' },
-        (payload) => {
-          handleEvent({
-            entity: 'banner',
-            action: payload.eventType === 'INSERT' ? 'created' : payload.eventType === 'DELETE' ? 'deleted' : 'updated',
-            id: (payload.new as any)?.id || (payload.old as any)?.id,
-            timestamp: new Date().toISOString(),
-            payload: payload.new,
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'limited_offers' },
-        (payload) => {
-          handleEvent({
-            entity: 'offer',
-            action: payload.eventType === 'INSERT' ? 'created' : payload.eventType === 'DELETE' ? 'deleted' : 'updated',
-            id: (payload.new as any)?.id || (payload.old as any)?.id,
-            timestamp: new Date().toISOString(),
-            payload: payload.new,
-          });
-        }
-      )
       .subscribe();
 
-    // 3. Sync on tab focus / visibility return
+    // Sync on tab focus / visibility return
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         debouncedRefresh();
