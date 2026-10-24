@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server.js';
+import { errorStatus } from '../../../../lib/services/serviceError.ts';
 import { getCurrentAdminUser } from '../../../../lib/services/adminAuth.ts';
 import {
   getAllCategories,
@@ -17,7 +18,7 @@ export async function GET() {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error fetching categories.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error creating category.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }

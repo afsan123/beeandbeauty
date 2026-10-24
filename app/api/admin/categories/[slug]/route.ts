@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server.js';
+import { errorStatus } from '../../../../../lib/services/serviceError.ts';
 import { getCurrentAdminUser } from '../../../../../lib/services/adminAuth.ts';
 import {
   updateCategory,
@@ -30,7 +31,7 @@ export async function PUT(
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error updating category.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }
@@ -58,7 +59,7 @@ export async function DELETE(
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error deleting category.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }

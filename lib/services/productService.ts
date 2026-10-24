@@ -1,6 +1,7 @@
 import { PRODUCTS } from '../../data/mock/catalogData.ts';
 import type { Product } from '../../data/types.ts';
-import { supabaseAdmin } from '../supabase/admin.ts';
+import { isSupabaseAdminReady, supabaseAdmin } from '../supabase/admin.ts';
+import { toServiceError } from './serviceError.ts';
 import { applyInventoryOverrides, clearInventoryCache, fetchRemoteInventoryOverrides } from './inventoryService.ts';
 import { generateSlug } from '../slug.ts';
 import { revalidateStoreCatalog } from './revalidateStore.ts';
@@ -37,8 +38,9 @@ function mapProductRow(row: Record<string, any>): Product {
         },
         price: Number(row.price),
         compareAtPrice: row.compare_at_price ? Number(row.compare_at_price) : undefined,
-        rating: Number(row.rating || 5.0),
+        // Ratings come only from real approved reviews (DB trigger).
         reviewCount: Number(row.review_count || 0),
+        rating: Number(row.review_count || 0) > 0 ? Number(row.rating || 0) : 0,
         badges: Array.isArray(row.badges) ? row.badges : [],
         shades: Array.isArray(row.shades) ? row.shades : [],
         images: row.images || {
@@ -110,8 +112,9 @@ export async function createCatalogProduct(
     description: input.description || '',
     howToUse: input.howToUse || '',
     ingredients: input.ingredients || '',
-    rating: input.rating || 5.0,
-    reviewCount: input.reviewCount || 0,
+    // Never accept ratings from admin input — they are derived from reviews.
+    rating: 0,
+    reviewCount: 0,
     badges: input.badges || [],
     shades: input.shades || [],
     tags: input.tags || [],
@@ -130,15 +133,8 @@ export async function createCatalogProduct(
     inStock: input.inStock !== false,
   };
 
-  const existingIdx = localProductOverrides.findIndex((p) => p.id === id);
-  if (existingIdx >= 0) {
-    localProductOverrides[existingIdx] = newProduct;
-  } else {
-    localProductOverrides.push(newProduct);
-  }
-
-  try {
-    await supabaseAdmin.from('products').upsert({
+  if (isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin.from('products').upsert({
       id: newProduct.id,
       slug: newProduct.slug,
       title: newProduct.title,
@@ -152,8 +148,6 @@ export async function createCatalogProduct(
       details: newProduct.details,
       price: newProduct.price,
       compare_at_price: newProduct.compareAtPrice,
-      rating: newProduct.rating,
-      review_count: newProduct.reviewCount,
       badges: newProduct.badges,
       shades: newProduct.shades,
       images: newProduct.images,
@@ -166,8 +160,16 @@ export async function createCatalogProduct(
       tags: newProduct.tags,
       updated_at: new Date().toISOString(),
     });
-  } catch (err) {
-    console.error('Remote product upsert fallback to memory:', err);
+    if (error) {
+      throw toServiceError(error, 'Saving the product', 'The selected category does not exist.');
+    }
+  }
+
+  const existingIdx = localProductOverrides.findIndex((p) => p.id === id);
+  if (existingIdx >= 0) {
+    localProductOverrides[existingIdx] = newProduct;
+  } else {
+    localProductOverrides.push(newProduct);
   }
 
   // Trigger store revalidation and broadcast
@@ -195,15 +197,8 @@ export async function updateCatalogProduct(
     ...updates,
   };
 
-  const customIdx = localProductOverrides.findIndex((p) => p.id === id);
-  if (customIdx >= 0) {
-    localProductOverrides[customIdx] = updated;
-  } else {
-    localProductOverrides.push(updated);
-  }
-
-  try {
-    await supabaseAdmin
+  if (isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin
       .from('products')
       .update({
         title: updated.title,
@@ -224,8 +219,16 @@ export async function updateCatalogProduct(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id);
-  } catch (err) {
-    console.error('Remote product update fallback to memory:', err);
+    if (error) {
+      throw toServiceError(error, 'Updating the product', 'The selected category does not exist.');
+    }
+  }
+
+  const customIdx = localProductOverrides.findIndex((p) => p.id === id);
+  if (customIdx >= 0) {
+    localProductOverrides[customIdx] = updated;
+  } else {
+    localProductOverrides.push(updated);
   }
 
   // Trigger store revalidation and broadcast
@@ -244,17 +247,24 @@ export async function deleteCatalogProduct(id: string): Promise<boolean> {
   const products = await getAllCatalogProducts();
   const target = products.find((p) => p.id === id);
 
+  if (!target) return false;
+
+  if (isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin.from('products').delete().eq('id', id);
+    if (error) {
+      throw toServiceError(
+        error,
+        'Deleting the product',
+        'This product appears in existing orders, so it cannot be deleted. Mark it out of stock instead to hide it from sale.'
+      );
+    }
+  }
+
   const customIdx = localProductOverrides.findIndex((p) => p.id === id);
   if (customIdx >= 0) {
     localProductOverrides.splice(customIdx, 1);
   }
   remoteProducts = remoteProducts.filter((p) => p.id !== id);
-
-  try {
-    await supabaseAdmin.from('products').delete().eq('id', id);
-  } catch (err) {
-    console.error('Remote product delete fallback to memory:', err);
-  }
 
   // Trigger store revalidation and broadcast
   revalidateStoreCatalog({
@@ -315,8 +325,8 @@ export async function bulkCreateCatalogProducts(
       ingredients: item.ingredients || '',
       price: item.price,
       compareAtPrice: item.compareAtPrice,
-      rating: item.rating || 5.0,
-      reviewCount: item.reviewCount || 0,
+      rating: 0,
+      reviewCount: 0,
       badges: item.badges || [],
       shades: item.shades || [],
       tags: item.tags || [],
@@ -364,8 +374,6 @@ export async function bulkCreateCatalogProducts(
       details: newProduct.details,
       price: newProduct.price,
       compare_at_price: newProduct.compareAtPrice,
-      rating: newProduct.rating,
-      review_count: newProduct.reviewCount,
       badges: newProduct.badges,
       shades: newProduct.shades,
       images: newProduct.images,
@@ -380,15 +388,12 @@ export async function bulkCreateCatalogProducts(
     });
   }
 
-  // Batch upsert to remote Supabase database
-  if (dbRows.length > 0) {
-    try {
-      const { error } = await supabaseAdmin.from('products').upsert(dbRows, { onConflict: 'id' });
-      if (error) {
-        console.error('Remote bulk product upsert partial failure:', error);
-      }
-    } catch (err) {
-      console.error('Remote bulk product upsert fallback to memory:', err);
+  // Batch upsert to Supabase. A failed write fails the whole upload so the
+  // admin never sees products that were not actually saved.
+  if (dbRows.length > 0 && isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin.from('products').upsert(dbRows, { onConflict: 'id' });
+    if (error) {
+      throw toServiceError(error, 'Bulk product upload', 'One or more products reference a category that does not exist.');
     }
   }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server.js';
+import { errorStatus } from '../../../../../lib/services/serviceError.ts';
 import { getCurrentAdminUser } from '../../../../../lib/services/adminAuth.ts';
 import {
   getProductById,
@@ -49,7 +50,7 @@ export async function PUT(
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error updating product.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }
@@ -77,7 +78,7 @@ export async function DELETE(
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error deleting product.' },
-      { status: 500 }
+      { status: errorStatus(error) }
     );
   }
 }

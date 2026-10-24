@@ -1,6 +1,7 @@
 import { CATEGORIES } from '../../data/mock/catalogData.ts';
 import type { Category } from '../../data/types.ts';
-import { supabaseAdmin } from '../supabase/admin.ts';
+import { isSupabaseAdminReady, supabaseAdmin } from '../supabase/admin.ts';
+import { toServiceError } from './serviceError.ts';
 import { revalidateStoreCategories } from './revalidateStore.ts';
 
 // In-memory persistent cache across server-side executions
@@ -65,18 +66,8 @@ export async function createCategory(
     subcategories: input.subcategories || [],
   };
 
-  // Update in-memory immediately (idempotent upsert)
-  const existingIdx = inMemoryCategories.findIndex(
-    (c) => c.slug === newCategory.slug || c.id === newCategory.id
-  );
-  if (existingIdx !== -1) {
-    inMemoryCategories[existingIdx] = newCategory;
-  } else {
-    inMemoryCategories.push(newCategory);
-  }
-
-  try {
-    await supabaseAdmin.from('categories').insert({
+  if (isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin.from('categories').insert({
       id: newCategory.id,
       slug: newCategory.slug,
       name: newCategory.name,
@@ -87,8 +78,18 @@ export async function createCategory(
       product_count: newCategory.productCount,
       subcategories: newCategory.subcategories,
     });
-  } catch (err) {
-    console.error('Remote category insert fallback to memory:', err);
+    if (error) {
+      throw toServiceError(error, 'Creating the category');
+    }
+  }
+
+  const existingIdx = inMemoryCategories.findIndex(
+    (c) => c.slug === newCategory.slug || c.id === newCategory.id
+  );
+  if (existingIdx !== -1) {
+    inMemoryCategories[existingIdx] = newCategory;
+  } else {
+    inMemoryCategories.push(newCategory);
   }
 
   // Trigger store revalidation and broadcast
@@ -101,17 +102,17 @@ export async function updateCategory(
   slug: string,
   updates: Partial<Category>
 ): Promise<Category | null> {
-  const index = inMemoryCategories.findIndex((c) => c.slug === slug);
-  if (index === -1) return null;
+  const existing = await getCategoryBySlug(slug);
+  if (!existing) return null;
 
   const updated: Category = {
-    ...inMemoryCategories[index],
+    ...existing,
     ...updates,
+    slug: existing.slug,
   };
-  inMemoryCategories[index] = updated;
 
-  try {
-    await supabaseAdmin
+  if (isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin
       .from('categories')
       .update({
         name: updated.name,
@@ -122,9 +123,13 @@ export async function updateCategory(
         subcategories: updated.subcategories,
       })
       .eq('slug', slug);
-  } catch (err) {
-    console.error('Remote category update fallback to memory:', err);
+    if (error) {
+      throw toServiceError(error, 'Updating the category');
+    }
   }
+
+  const index = inMemoryCategories.findIndex((c) => c.slug === slug);
+  if (index !== -1) inMemoryCategories[index] = updated;
 
   // Trigger store revalidation and broadcast
   revalidateStoreCategories(slug, 'updated');
@@ -133,16 +138,23 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(slug: string): Promise<boolean> {
-  const index = inMemoryCategories.findIndex((c) => c.slug === slug);
-  if (index === -1) return false;
+  const existing = await getCategoryBySlug(slug);
+  if (!existing) return false;
 
-  inMemoryCategories.splice(index, 1);
-
-  try {
-    await supabaseAdmin.from('categories').delete().eq('slug', slug);
-  } catch (err) {
-    console.error('Remote category delete fallback to memory:', err);
+  if (isSupabaseAdminReady()) {
+    const { error } = await supabaseAdmin.from('categories').delete().eq('slug', slug);
+    if (error) {
+      // products.category_slug -> categories(slug) ON DELETE RESTRICT
+      throw toServiceError(
+        error,
+        'Deleting the category',
+        'This category still has products. Move or delete those products first, then delete the category.'
+      );
+    }
   }
+
+  const index = inMemoryCategories.findIndex((c) => c.slug === slug);
+  if (index !== -1) inMemoryCategories.splice(index, 1);
 
   // Trigger store revalidation and broadcast
   revalidateStoreCategories(slug, 'deleted');
