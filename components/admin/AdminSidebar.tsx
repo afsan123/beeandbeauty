@@ -166,7 +166,11 @@ export function AdminSidebar({
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/admin/auth/logout', { method: 'POST' });
+      const res = await fetch('/api/admin/auth/logout', { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data?.error) alert(data.error);
+      }
       router.push('/admin/login');
       router.refresh();
     } catch {

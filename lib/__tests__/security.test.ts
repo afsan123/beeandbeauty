@@ -55,3 +55,33 @@ describe('Upload policy', () => {
     assert.equal(ALLOWED_IMAGE_MIME_TYPES.has('image/svg+xml'), false);
   });
 });
+
+describe('Admin session revocation', () => {
+  it('embeds a session id and rejects tokens without one', async () => {
+    const { verifyAdminSessionToken } = await import('../services/adminAuthToken.ts');
+    const crypto = await import('node:crypto');
+    const token = createAdminToken({ email: ADMIN_EMAIL, name: 'Executive Director', role: 'superadmin' });
+    const session = verifyAdminSessionToken(token);
+    assert.ok(session?.sessionId && session.sessionId.length >= 16);
+
+    const legacyPayload = Buffer.from(
+      JSON.stringify({ email: ADMIN_EMAIL, name: 'x', role: 'superadmin', issuedAt: Date.now(), expiresAt: Date.now() + 60000 })
+    ).toString('base64url');
+    const sig = crypto
+      .createHmac('sha256', 'test-admin-session-secret-at-least-32-chars')
+      .update(legacyPayload)
+      .digest('base64url');
+    assert.equal(verifyAdminSessionToken(`${legacyPayload}.${sig}`), null);
+  });
+
+  it('treats a logged-out session as revoked', async () => {
+    const { verifyAdminSessionToken } = await import('../services/adminAuthToken.ts');
+    const { isAdminSessionRevoked, revokeAdminSession } = await import('../services/adminSessionRevocation.ts');
+    const session = verifyAdminSessionToken(
+      createAdminToken({ email: ADMIN_EMAIL, name: 'Executive Director', role: 'superadmin' })
+    )!;
+    assert.equal(await isAdminSessionRevoked(session.sessionId), false);
+    assert.equal(await revokeAdminSession(session.sessionId, session.expiresAt), true);
+    assert.equal(await isAdminSessionRevoked(session.sessionId), true);
+  });
+});

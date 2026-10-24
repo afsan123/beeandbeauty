@@ -9,14 +9,18 @@ import {
   hasAdminRole,
   resolveAdminUser,
   validateAdminCredentials,
+  verifyAdminSessionToken,
   verifyAdminToken,
 } from './adminAuthToken.ts';
+import { isAdminSessionRevoked } from './adminSessionRevocation.ts';
 
 export async function getCurrentAdminUser(): Promise<AdminUser | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    return verifyAdminToken(token);
+    const session = verifyAdminSessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+    if (!session) return null;
+    if (await isAdminSessionRevoked(session.sessionId)) return null;
+    return { email: session.email, name: session.name, role: session.role };
   } catch {
     return null;
   }
@@ -43,6 +47,7 @@ export {
   hasAdminRole,
   resolveAdminUser,
   validateAdminCredentials,
+  verifyAdminSessionToken,
   verifyAdminToken,
 };
 export type { AdminRole, AdminUser };

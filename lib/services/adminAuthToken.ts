@@ -10,6 +10,14 @@ export interface AdminUser {
   role: AdminRole;
 }
 
+export interface AdminSession extends AdminUser {
+  /** Random per-login session id, used for server-side revocation. */
+  sessionId: string;
+  expiresAt: number;
+}
+
+export const ADMIN_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
 export const SESSION_COOKIE_NAME = 'bb_admin_session';
 
 const TEST_EMAIL = 'admin@beeandbeauty.bd';
@@ -90,8 +98,9 @@ export function createAdminToken(user: AdminUser): string {
     email: user.email,
     name: user.name,
     role,
+    sid: crypto.randomBytes(18).toString('base64url'),
     issuedAt: Date.now(),
-    expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    expiresAt: Date.now() + ADMIN_SESSION_TTL_MS,
   };
   const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const signature = crypto
@@ -102,7 +111,11 @@ export function createAdminToken(user: AdminUser): string {
   return `${base64Payload}.${signature}`;
 }
 
-export function verifyAdminToken(token: string | undefined): AdminUser | null {
+/**
+ * Signature/expiry check only (sync, safe for proxy.ts). Use
+ * getCurrentAdminUser() in route handlers — it also checks revocation.
+ */
+export function verifyAdminSessionToken(token: string | undefined): AdminSession | null {
   if (!token || !SESSION_SECRET) return null;
   const parts = token.split('.');
   if (parts.length !== 2) return null;
@@ -119,20 +132,33 @@ export function verifyAdminToken(token: string | undefined): AdminUser | null {
 
   try {
     const payload = JSON.parse(Buffer.from(base64Payload, 'base64url').toString('utf8'));
-    if (payload.expiresAt && Date.now() > payload.expiresAt) {
+    if (typeof payload.expiresAt !== 'number' || Date.now() > payload.expiresAt) {
       return null;
     }
     if (payload.role !== 'superadmin' && payload.role !== 'manager') {
+      return null;
+    }
+    // Tokens issued before server-side revocation existed have no sid and
+    // cannot be revoked, so they are no longer accepted.
+    if (typeof payload.sid !== 'string' || payload.sid.length < 16) {
       return null;
     }
     return {
       email: payload.email,
       name: payload.name || 'Executive Admin',
       role: payload.role,
+      sessionId: payload.sid,
+      expiresAt: payload.expiresAt,
     };
   } catch {
     return null;
   }
+}
+
+export function verifyAdminToken(token: string | undefined): AdminUser | null {
+  const session = verifyAdminSessionToken(token);
+  if (!session) return null;
+  return { email: session.email, name: session.name, role: session.role };
 }
 
 export function hasAdminRole(user: AdminUser | null, required?: AdminRole | AdminRole[]): boolean {
