@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export interface ShippingFormData {
   fullName: string;
@@ -47,6 +47,21 @@ export function AddressForm({
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof ShippingFormData, string>>>({});
+
+  // Synchronize form state whenever initialValues is updated or reset
+  useEffect(() => {
+    setFormData({
+      fullName: initialValues?.fullName || '',
+      email: initialValues?.email || '',
+      phone: initialValues?.phone || '',
+      streetAddress: initialValues?.streetAddress || '',
+      division: initialValues?.division || 'Dhaka Division',
+      district: initialValues?.district || 'Dhaka Metro',
+      postalCode: initialValues?.postalCode || '',
+      orderNotes: initialValues?.orderNotes || '',
+    });
+    setErrors({});
+  }, [initialValues]);
 
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof ShippingFormData, string>> = {};

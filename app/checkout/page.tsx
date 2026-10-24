@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   CheckCircle2,
   ShieldCheck,
@@ -12,6 +13,7 @@ import {
   ShoppingBag,
   MessageCircle,
   Phone,
+  RotateCcw,
 } from 'lucide-react';
 import { useCart } from '../../store/cart';
 import { CheckoutSteps } from '../../components/checkout/CheckoutSteps';
@@ -23,6 +25,7 @@ import { Logo } from '../../components/ui/Logo';
 type PaymentMethod = 'cod' | 'bkash' | 'nagad';
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { items, totals, appliedCoupon, clearCart } = useCart();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -32,6 +35,32 @@ export default function CheckoutPage() {
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState(0);
+
+  // Fully resets and reloads the checkout flow for a brand-new order
+  const resetCheckoutFlow = () => {
+    setCurrentStep(1);
+    setOrderNumber(null);
+    setShippingData(null);
+    setShippingZone('dhaka');
+    setPaymentMethod('cod');
+    setSubmitError(null);
+    setIsSubmitting(false);
+    setFormKey((prev) => prev + 1);
+    try {
+      router.refresh();
+    } catch {
+      // Non-blocking fallback
+    }
+  };
+
+  // Automatically reset checkout flow if customer adds new items to bag
+  // while an old confirmation state or order number is lingering in memory
+  useEffect(() => {
+    if (items.length > 0 && (currentStep === 4 || orderNumber !== null)) {
+      resetCheckoutFlow();
+    }
+  }, [items.length, currentStep, orderNumber]);
 
   // Handle address submit from Step 1
   const handleAddressSubmit = (data: ShippingFormData) => {
@@ -152,10 +181,23 @@ export default function CheckoutPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              resetCheckoutFlow();
+              router.push('/shop/all');
+            }}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs cursor-pointer"
+          >
+            <ShoppingBag size={15} className="text-[#D4AF37]" />
+            <span>Place Another Order</span>
+          </button>
+
           <Link
             href={`/track-order?orderNumber=${orderNumber}&phone=${encodeURIComponent(shippingData?.phone || '')}`}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#6A1B6D] hover:bg-[#521354] text-white text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs"
+            onClick={() => resetCheckoutFlow()}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#6A1B6D] text-[#6A1B6D] hover:bg-[#6A1B6D]/5 text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs"
           >
             <Truck size={15} className="text-[#D4AF37]" />
             <span>Track Order Live</span>
@@ -173,12 +215,16 @@ export default function CheckoutPage() {
             <span>Track on WhatsApp</span>
           </a>
 
-          <Link
-            href="/"
-            className="w-full sm:w-auto inline-block border border-[#6A1B6D] text-[#6A1B6D] hover:bg-[#6A1B6D]/5 text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs"
+          <button
+            type="button"
+            onClick={() => {
+              resetCheckoutFlow();
+              router.push('/');
+            }}
+            className="w-full sm:w-auto inline-flex items-center justify-center border border-neutral-300 text-neutral-700 hover:bg-neutral-100 text-xs font-bold uppercase tracking-[0.14em] py-3.5 px-6 rounded-[2px] transition-colors shadow-xs cursor-pointer"
           >
-            Return to Store
-          </Link>
+            <span>Return to Store</span>
+          </button>
         </div>
       </main>
     );
@@ -244,6 +290,7 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 <AddressForm
+                  key={formKey}
                   initialValues={shippingData || undefined}
                   onSubmit={handleAddressSubmit}
                 />
