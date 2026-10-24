@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import type { Product, Category, Shade } from '../../data/types.ts';
 import { generateSlug } from '../../lib/slug.ts';
+import { formatPrice } from '../../lib/formatters.ts';
+import { ImageUploadField } from './ImageUploadField.tsx';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -34,6 +36,7 @@ export function CreateProductModal({
   const [ingredients, setIngredients] = useState('');
   const [primaryImage, setPrimaryImage] = useState('');
   const [hoverImage, setHoverImage] = useState('');
+  const [isHoveringPreview, setIsHoveringPreview] = useState(false);
   const [tagsText, setTagsText] = useState('');
 
   // Flags
@@ -366,29 +369,117 @@ export function CreateProductModal({
             </div>
           </div>
 
-          {/* Image URLs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block font-bold text-stone-700 mb-1">Primary Image URL</label>
-              <input
-                type="text"
+          {/* Product Visuals & Direct Image Uploaders */}
+          <div className="space-y-4 rounded-2xl border border-stone-200/80 bg-stone-50/50 p-4">
+            <div className="flex items-center justify-between border-b border-stone-200/60 pb-2">
+              <div>
+                <h3 className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                  <span>📸</span>
+                  <span>Product Visuals & Media</span>
+                </h3>
+                <p className="text-[10px] text-stone-500">
+                  Upload high-resolution luxury product photos or paste direct cloud image URLs.
+                </p>
+              </div>
+              <span className="text-[10px] text-[var(--bb-plum)] font-semibold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
+                Direct Device Upload
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ImageUploadField
+                label="Primary Product Image"
                 value={primaryImage}
-                onChange={(e) => setPrimaryImage(e.target.value)}
-                placeholder="/images/products/... or https://..."
-                className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
+                onChange={setPrimaryImage}
+                helperText="Primary photo shown across shop grids, search results, and hero section."
+                recommendedDimensions="1000 x 1000 px (1:1)"
+              />
+
+              <ImageUploadField
+                label="Hover Swatch Image"
+                value={hoverImage}
+                onChange={setHoverImage}
+                helperText="Secondary photo displayed when customers hover their mouse over the card."
+                recommendedDimensions="1000 x 1000 px (1:1)"
               />
             </div>
 
-            <div>
-              <label className="block font-bold text-stone-700 mb-1">Hover Image URL</label>
-              <input
-                type="text"
-                value={hoverImage}
-                onChange={(e) => setHoverImage(e.target.value)}
-                placeholder="/images/products/... or https://..."
-                className="w-full rounded-xl border border-stone-200 px-3 py-2 text-xs focus:border-[var(--bb-plum)] outline-none"
-              />
-            </div>
+            {/* Interactive Live Card Hover Preview */}
+            {(primaryImage || hoverImage) && (
+              <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between text-xs font-bold text-stone-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>✨</span>
+                    <span>Live Customer Card Preview (Hover to test transition)</span>
+                  </span>
+                  <span className="text-[10px] text-stone-500 font-normal">
+                    Real-time catalog appearance
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div
+                    className="group relative w-36 h-36 shrink-0 rounded-xl overflow-hidden bg-white border border-stone-200/80 shadow-xs cursor-pointer"
+                    onMouseEnter={() => setIsHoveringPreview(true)}
+                    onMouseLeave={() => setIsHoveringPreview(false)}
+                  >
+                    <img
+                      src={
+                        isHoveringPreview && hoverImage
+                          ? hoverImage
+                          : primaryImage || '/images/products/placeholder.jpg'
+                      }
+                      alt={title || 'Product preview'}
+                      className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+                    />
+
+                    {/* Badges preview */}
+                    <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
+                      {isNewLaunch && (
+                        <span className="rounded bg-[var(--bb-plum)] px-1.5 py-0.5 text-[8px] font-bold text-white shadow-xs">
+                          NEW
+                        </span>
+                      )}
+                      {isBestseller && (
+                        <span className="rounded bg-[var(--bb-gold)] px-1.5 py-0.5 text-[8px] font-bold text-stone-900 shadow-xs">
+                          BESTSELLER
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Hover indicator overlay */}
+                    <div className="absolute bottom-1 inset-x-1 rounded bg-black/60 backdrop-blur-xs py-0.5 text-center text-[9px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      {hoverImage ? 'Hover Swatch Active' : 'Hover Active'}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-left text-xs flex-1 min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--bb-plum)]">
+                      {categories.find((c) => c.slug === categorySlug)?.name || 'Cosmetics'}
+                    </p>
+                    <h4 className="font-bold font-serif text-sm text-stone-900 truncate">
+                      {title || 'Royal Velvet Luxury Formulation'}
+                    </h4>
+                    <p className="text-[11px] text-stone-500 line-clamp-1">
+                      {subtitle || shortDescription || 'Infused with botanical nectar & propolis'}
+                    </p>
+                    <div className="pt-0.5 flex items-baseline gap-2">
+                      <span className="text-sm font-bold text-stone-900 font-mono">
+                        {price ? formatPrice(Number(price)) : '৳0'}
+                      </span>
+                      {compareAtPrice && Number(compareAtPrice) > Number(price) && (
+                        <span className="text-xs text-stone-400 line-through font-mono">
+                          {formatPrice(Number(compareAtPrice))}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-stone-500 italic pt-0.5">
+                      💡 Hover cursor over the image box to test the primary ➔ hover swatch swap.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Short & Full Description */}
