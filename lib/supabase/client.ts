@@ -1,26 +1,36 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseAnonKey, getSupabaseUrl } from '../env.ts';
 
-const DEFAULT_URL = 'https://xhhjowchwnaglimgpygr.supabase.co';
-const DEFAULT_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoaGpvd2Nod25hZ2xpbWdweWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2ODE3OTMsImV4cCI6MjEwNzI1Nzc5M30.Kp1i2RXxmS9B9m5KVouxl8lMRHHcFa2i6DZG1sk3biw';
+let browserClient: SupabaseClient | null = null;
 
-function cleanEnv(val?: string | null): string | null {
-  if (!val) return null;
-  const trimmed = val.trim().replace(/^['"]|['"]$/g, '').trim();
-  if (!trimmed || trimmed === 'undefined' || trimmed === 'null') {
+/**
+ * Public browser client. Uses only the anon/publishable key.
+ * Returns null when env vars are absent so prerender and local builds succeed.
+ */
+export function createBrowserSupabaseClient(): SupabaseClient | null {
+  if (typeof window === 'undefined') {
     return null;
   }
-  return trimmed;
+
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
+  if (!url || !key) {
+    return null;
+  }
+
+  if (!browserClient) {
+    browserClient = createBrowserClient(url, key);
+  }
+  return browserClient;
 }
 
-const supabaseUrl = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL) || DEFAULT_URL;
-const supabaseAnonKey = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) || DEFAULT_ANON_KEY;
-
-let client: SupabaseClient;
-try {
-  client = createClient(supabaseUrl, supabaseAnonKey);
-} catch {
-  client = createClient(DEFAULT_URL, DEFAULT_ANON_KEY);
+export function getBrowserSupabaseOrThrow(): SupabaseClient {
+  const client = createBrowserSupabaseClient();
+  if (!client) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Add the public keys in Vercel environment variables.'
+    );
+  }
+  return client;
 }
-
-export const supabase = client;
